@@ -1,0 +1,6 @@
+**/node_modules
+**/node_modules/**/*
+config/tokens.json
+lib/
+.env
+.env.old
