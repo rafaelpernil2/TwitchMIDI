@@ -7,7 +7,7 @@ export let input: Input | undefined;
 export let output: Output | undefined;
 export let tempo = 120;
 const timer = new NanoTimer();
-let loopActive = false;
+let loopActiveId = "";
 let chordProgressionActive = false;
 let tick = 0;
 let volume = 0.8;
@@ -52,7 +52,9 @@ export async function sendMIDIChord(channel: string, message: string, { loopMode
     if (input == null || output == null) {
         throw new Error("Bad MIDI connection. Try !midion first");
     }
-    loopActive = loopMode;
+    if (!loopMode) {
+        loopActiveId = "";
+    }
     const chordProgression = message.split(" ").slice(1);
     const parsedChordProgression = chordProgression.map((chord) => {
         try {
@@ -66,7 +68,8 @@ export async function sendMIDIChord(channel: string, message: string, { loopMode
         }
     });
 
-    await barStart()
+    await barStart();
+
     chordProgressionActive = true;
     for (const { parsedChordNotes, timeout } of parsedChordProgression) {
         output.sendNoteOn(parsedChordNotes, { attack: volume, channels: 1 })
@@ -77,14 +80,14 @@ export async function sendMIDIChord(channel: string, message: string, { loopMode
 }
 
 export async function sendMIDILoop(channel: string, message: string): Promise<void> {
-    loopActive = true;
-    while (loopActive) {
+    loopActiveId = message;
+    while (loopActiveId === message) {
         await sendMIDIChord(channel, message, { loopMode: true });
     }
 }
 
 export function stopMIDILoop(): void {
-    loopActive = false;
+    loopActiveId = "";
 }
 
 export function setVolume(message: string): number {
@@ -109,7 +112,7 @@ export function fullStop(): void {
     if (input == null || output == null) {
         throw new Error("Bad MIDI connection. Try !midion first");
     }
-    loopActive = false;
+    loopActiveId = "";
     tick = 0;
     output.sendStop();
     output.sendAllNotesOff();
@@ -137,6 +140,10 @@ function parseChord(chord: string): string {
     }
     if (parsedChord.length === 1 || (parsedChord.length === 2 && (parsedChord.includes("b") || parsedChord.includes("#")))) {
         return parsedChord + "M";
+    }
+    if (parsedChord.includes("min")) {
+        const [pre, post] = parsedChord.split("min");
+        return pre + "m" + post;
     }
     if (["7", "6"].includes(parsedChord.charAt(parsedChord.length - 1)) && (parsedChord.length < 3 || (parsedChord.length === 3 ? parsedChord.includes("b") || parsedChord.includes("#") : false))) {
         return parsedChord + "th"
