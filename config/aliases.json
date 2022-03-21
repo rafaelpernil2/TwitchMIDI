@@ -2,7 +2,7 @@
     "chordProgressions": {
         "autumn leaves": "Cm7 F7 Bbmaj7 Ebmaj7 Cm6 D7 Gm6",
         "bossa nova": "Dmaj7(2) Dbm7(2) Cmaj7(2) Bm7(2)",
-        "giant steps": "Dm7(1) Eb7(1) Ab(1) B7(1) E(2) G7(4) C(4)"
+        "giant steps": "Dm7(1) Eb7(1) Ab(1) B7(1) E(2) G7(2) C(4)"
     },
     "ccCommands": {
         "cutoff sweep": [

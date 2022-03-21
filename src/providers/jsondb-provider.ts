@@ -26,14 +26,7 @@ export class JSONDatabase<T> implements Database<T>{
         }
         return this.db[path]?.[key];
     }
-    insert<P extends keyof T>(path: P, value: T[P]): [ResponseStatus, string] {
-        if (this.dbCommit == null) {
-            return [ResponseStatus.Error, ""];
-        }
-        this.dbCommit[path] = { ...this.dbCommit[path], ...value };
-        return [ResponseStatus.Ok, path as string]
-    }
-    update<P extends keyof T>(path: P, value: T[P]): ResponseStatus {
+    insertUpdate<P extends keyof T>(path: P, value: T[P]): ResponseStatus {
         if (this.dbCommit == null) {
             return ResponseStatus.Error;
         }

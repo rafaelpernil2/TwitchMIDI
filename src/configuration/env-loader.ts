@@ -1,4 +1,4 @@
-import {EnvObject} from '../types/env-object-type';
+import { EnvObject } from "../types/env-object-type";
 
 function getLoadedEnvVariables(): EnvObject {
   const variablesToLoad: Partial<EnvObject> = {
