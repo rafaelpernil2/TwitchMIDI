@@ -1,4 +1,4 @@
-import {EnvObject} from '../types/env-object';
+import {EnvObject} from '../types/env-object-type';
 
 function getLoadedEnvVariables(): EnvObject {
   const variablesToLoad: Partial<EnvObject> = {
@@ -7,7 +7,8 @@ function getLoadedEnvVariables(): EnvObject {
     INITIAL_ACCESS_TOKEN: undefined,
     INITIAL_REFRESH_TOKEN: undefined,
     TARGET_CHANNEL: undefined,
-    TARGET_MIDI_NAME: undefined
+    TARGET_MIDI_NAME: undefined,
+    TARGET_MIDI_CHANNEL: undefined,
   };
   const loadedVariables = Object.fromEntries(Object.entries(variablesToLoad).map(([key]) => ([key, process.env[key]]))) as EnvObject;
   areVariablesValid(loadedVariables);

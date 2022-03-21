@@ -8,11 +8,19 @@ import { onMessageHandlerClosure } from "./handlers/message-handler";
 import { WebMidi } from "webmidi";
 
 (async () => {
-  const { CLIENT_ID, CLIENT_SECRET, INITIAL_ACCESS_TOKEN, INITIAL_REFRESH_TOKEN, TARGET_CHANNEL, TARGET_MIDI_NAME } = getLoadedEnvVariables();
+  const {
+    CLIENT_ID,
+    CLIENT_SECRET,
+    INITIAL_ACCESS_TOKEN,
+    INITIAL_REFRESH_TOKEN,
+    TARGET_CHANNEL,
+    TARGET_MIDI_NAME,
+    TARGET_MIDI_CHANNEL
+  } = getLoadedEnvVariables();
   const authProvider = await getAuthProvider(CLIENT_ID, CLIENT_SECRET, INITIAL_ACCESS_TOKEN, INITIAL_REFRESH_TOKEN);
   const chatClient = new ChatClient({ authProvider, channels: [TARGET_CHANNEL] });
   await chatClient.connect();
-  chatClient.onMessage(onMessageHandlerClosure(chatClient, TARGET_MIDI_NAME));
+  chatClient.onMessage(onMessageHandlerClosure(chatClient, TARGET_MIDI_NAME, Number(TARGET_MIDI_CHANNEL)));
 
   WebMidi.enable().catch(() => console.log("First WebMIDI connection"))
 })();

@@ -5,4 +5,5 @@ export interface EnvObject extends Record<string, string> {
     INITIAL_REFRESH_TOKEN: string;
     TARGET_CHANNEL: string;
     TARGET_MIDI_NAME: string;
+    TARGET_MIDI_CHANNEL: string;
 }
