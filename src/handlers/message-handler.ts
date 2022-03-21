@@ -75,7 +75,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             await removeChordAlias(channel, message);
             chatClient.say(channel, 'Chord progression removed! ');
         },
-        [GET_CHORD_LIST]: async (channel, user, message) => {
+        [GET_CHORD_LIST]: async (channel) => {
             const chordProgressionList = await getChordList();
             chatClient.say(channel, 'Here is the list of saved chord progresison/loop:');
             for (const [alias, chordProgression] of chordProgressionList) {
