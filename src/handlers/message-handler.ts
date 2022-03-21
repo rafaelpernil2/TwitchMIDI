@@ -1,6 +1,6 @@
 import { ChatClient } from "@twurple/chat";
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage";
-import { addChordAlias, disableMidi, fullStop, getChordList, initMidi, removeChordAlias, sendMIDIChord, sendMIDILoop, sendMIDINote, setMidiTempo, setVolume, stopMIDILoop, syncMidi } from "./midi-handler";
+import { addChordAlias, disableMidi, fullStop, getChordList, initMidi, removeChordAlias, sendCCMessage, sendMIDIChord, sendMIDILoop, sendMIDINote, setMidiTempo, setVolume, stopMIDILoop, syncMidi } from "./midi-handler";
 
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number) => {
     const MIDI_ON = "midion";
@@ -11,6 +11,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
     const SEND_NOTE = "sendnote";
     const SEND_CHORD = "sendchord";
     const SEND_LOOP = "sendloop";
+    const SEND_CC = "sendcc";
     const MIDI_VOLUME = "midivolume";
     const STOP_LOOP = "stoploop";
     const FULL_STOP = "fullstopmidi";
@@ -24,6 +25,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         typeof REMOVE_CHORD_ALIAS |
         typeof GET_CHORD_LIST |
         typeof SEND_NOTE |
+        typeof SEND_CC |
         typeof SEND_LOOP |
         typeof STOP_LOOP |
         typeof SYNC |
@@ -62,6 +64,10 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         [SEND_NOTE]: async (channel, user, message) => {
             chatClient.say(channel, 'Note sent! ');
             await sendMIDINote(channel, message, targetMidiChannel);
+        },
+        [SEND_CC]: async (channel, user, message, msg) => {
+            const [key] = await sendCCMessage(channel, message, msg, targetMidiChannel);
+            chatClient.say(channel, `Control Change(CC#${key}) message sent! `);
         },
         [SEND_CHORD]: async (channel, user, message) => {
             chatClient.say(channel, 'Chord progression enqueued! ');
@@ -132,7 +138,9 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         "deletechord": REMOVE_CHORD_ALIAS,
         "looplist": GET_CHORD_LIST,
         "nota": SEND_NOTE,
-        "note": SEND_NOTE
+        "note": SEND_NOTE,
+        "cc": SEND_CC,
+        "controlchange": SEND_CC
     }
     return async (channel: string, user: string, message: string, msg: TwitchPrivateMessage): Promise<void> => {
         // Ignore messages that are not commands

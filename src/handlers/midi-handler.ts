@@ -4,11 +4,12 @@ import { inlineChord } from "harmonics";
 import { setTimeoutPromise } from "../utils/promise-utils";
 import { Output, WebMidi } from "webmidi";
 import { JSONDatabase } from "../providers/jsondb-provider";
-import { AliasesType, CHORD_PROGRESSIONS } from "../types/aliases-type";
+import { AliasesType, CC_COMMANDS, CHORD_PROGRESSIONS } from "../types/aliases-type";
 import { ResponseStatus } from "../types/status-type";
 import EventEmitter from "events";
-import { firstMessageValue, getCommandContent, parseChord, calculateTimeout, removeTimeFigure, calculateClockTickTimeNs } from "../utils/midi-message-utils";
+import { firstMessageValue, getCommandContent, parseChord, calculateTimeout, removeParenthesisPart, calculateClockTickTimeNs, validateControllerMessage, sweep } from "../utils/midi-message-utils";
 import { CONFIG, ERROR_MSG, GLOBAL } from "../constants/constants";
+import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage";
 // Constants
 const timer = new NanoTimer();
 const BAR_LOOP_CHANGE_EVENT = "barLoopChange"
@@ -57,6 +58,25 @@ export async function setMidiTempo(channel: string, message: string): Promise<nu
     return tempo;
 }
 
+export async function sendCCMessage(channel: string, message: string, { userInfo }: TwitchPrivateMessage, channels: number): Promise<[key: number, value: number, time: number][]> {
+    if (output == null) {
+        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+    }
+
+    if (!userInfo.isSubscriber && !userInfo.isBroadcaster && !userInfo.isMod) {
+        throw new Error(ERROR_MSG.INSUFFICIENT_PERMISSIONS)
+    }
+
+    const ccCommandList = _getCCCommandList(message);
+    const processedCommandList = _processCCCommandList(ccCommandList);
+
+    for (const [controller, value, time] of processedCommandList) {
+        output.sendControlChange(controller, value, { channels, time: WebMidi.time + time });
+    }
+
+    return ccCommandList.map(validateControllerMessage);
+}
+
 export async function sendMIDIChord(channel: string, message: string, channels: number, { loopMode = false } = {}): Promise<void> {
     // Reset on new non-looped chord progression
     if (!loopMode) {
@@ -79,11 +99,12 @@ export async function sendMIDIChord(channel: string, message: string, channels: 
 }
 
 export async function sendMIDINote(channel: string, message: string, channels: number): Promise<void> {
-    const note = firstMessageValue(message);
-    const parsedNote = removeTimeFigure(note);
-    const timeout = calculateTimeout(note, tempo);
-
-    await _triggerNoteList(parsedNote, timeout, channels);
+    const noteList = getCommandContent(message).split(" ");
+    for (const note of noteList) {
+        const parsedNote = removeParenthesisPart(note);
+        const timeout = calculateTimeout(note, tempo);
+        await _triggerNoteListDelay(parsedNote, timeout, channels);
+    }
 }
 
 export async function sendMIDILoop(channel: string, message: string, targetMidiChannel: number): Promise<void> {
@@ -165,6 +186,14 @@ async function _triggerNoteList(noteList: number | string | string[], release: n
     output.sendNoteOff(noteList, { channels })
 }
 
+async function _triggerNoteListDelay(noteList: number | string | string[], release: number, channels: number) {
+    if (output == null) {
+        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+    }
+    output.sendNoteOn(noteList, { attack: volume, channels })
+    output.sendNoteOff(noteList, { channels, time: WebMidi.time + Math.floor(release / 1_000_000) })
+}
+
 async function _isBarStart(): Promise<void> {
     return new Promise(resolve => {
         const listener = () => {
@@ -208,12 +237,40 @@ function _processChordProgression(chordProgression: string): Array<[noteList: st
     return chordProgressionList.map((chord, index) => {
         try {
             // If it is the last, reduce the note length to make sure the loop executes properly
-            const multiplier = index !== lastChordIndex ? 1 : 0.92;
+            const multiplier = index !== lastChordIndex ? 1 : 0.90;
             return [inlineChord(parseChord(chord)), Math.floor(calculateTimeout(chord, tempo) * multiplier)]
         } catch (error) {
             throw new Error(ERROR_MSG.INVALID_CHORD(chord))
         }
     });
+}
+
+function _getCCCommandList(message: string): string[] {
+    const parsedMessage = getCommandContent(message);
+    // Let's try to lookup values
+    const aliasToLookup = parsedMessage.toLowerCase();
+    return (aliasesDB.select(CC_COMMANDS, aliasToLookup) ?? [parsedMessage]);
+}
+
+type CCCommand = [controller: number, value: number, time: number];
+
+function _processCCCommandList(ccCommandList: string[], precission = 1000): Array<CCCommand> {
+    if (ccCommandList.length === 1) {
+        return [validateControllerMessage(ccCommandList[0])];
+    }
+    let result: Array<CCCommand> = [];
+    for (let preIndex = 0, postIndex = 1; preIndex < ccCommandList.length - 1, postIndex < ccCommandList.length; preIndex++, postIndex++) {
+        const [preController, preValue, preTime] = validateControllerMessage(ccCommandList[preIndex]);
+        const [postController, postValue, postTime] = validateControllerMessage(ccCommandList[postIndex]);
+        // If there's a sweep
+        const timeDiff = postTime - preTime;
+        if (preController === postController && timeDiff !== 0) {
+            result = [...result,
+            ...sweep(preValue, postValue, timeDiff, precission).map<CCCommand>(([value, time]) => [postController, value, time])];
+        }
+        result = [...result, [postController, postValue, postTime]]
+    }
+    return result;
 }
 
 function _initVariables() {

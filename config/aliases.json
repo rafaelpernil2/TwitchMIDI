@@ -2,11 +2,19 @@
     "chordProgressions": {
         "autumn leaves": "Cm7 F7 Bbmaj7 Ebmaj7 Cm6 D7 Gm6",
         "bossa nova": "Dmaj7(2) Dbm7(2) Cmaj7(2) Bm7(2)",
-        "giant steps": "Dm7(1) Eb7(1) Ab(1) B7(1) E(2) G7(2) C(4)"
+        "giant steps": "Dm7(1) Eb7(1) Ab(1) B7(1) E(2) G7(2) C(4)",
+        "sunshine of my life": "C(2) F6(2) Em7(2) Bbdim(2) Dm7(2) G7(2) C(2) Dm7(1) G7(1) C(2) F6(2) Em7(2) Bbdim(2) Dm7(2) G7(2) C(2) Dm7(1) G7(1)"
     },
     "ccCommands": {
         "cutoff sweep": [
-            "CC#74 sweep"
+            "CC#43 100(00)",
+            "CC#43 0(5000)",
+            "CC#43 120(10000)"
+        ],
+        "lfo sweep": [
+            "CC#26 0(0)",
+            "CC#26 20(10000)",
+            "CC#26 0(20000)"
         ],
         "next sound": [
             "PC +1"
