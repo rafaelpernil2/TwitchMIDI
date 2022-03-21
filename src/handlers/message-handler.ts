@@ -1,6 +1,6 @@
 import { ChatClient } from "@twurple/chat";
 import { TwitchPrivateMessage } from "@twurple/chat/lib/commands/TwitchPrivateMessage";
-import { addChordAlias, disableMidi, fullStop, getChordList, initMidi, removeChordAlias, sendCCMessage, sendMIDIChord, sendMIDILoop, sendMIDINote, setMidiTempo, setVolume, stopMIDILoop, syncMidi } from "./midi-handler";
+import { addChordAlias, disableMidi, fetchAliasesDB, fullStop, getChordList, initMidi, removeChordAlias, sendCCMessage, sendMIDIChord, sendMIDILoop, sendMIDINote, setMidiTempo, setVolume, stopMIDILoop, syncMidi } from "./midi-handler";
 
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number) => {
     const MIDI_ON = "midion";
@@ -17,6 +17,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
     const FULL_STOP = "fullstopmidi";
     const SET_TEMPO = "settempo";
     const SYNC = "syncmidi";
+    const FETCH_DB = "fetchdb";
     type CommandType =
         typeof MIDI_ON |
         typeof SET_TEMPO |
@@ -31,7 +32,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         typeof SYNC |
         typeof FULL_STOP |
         typeof MIDI_OFF |
-        typeof MIDI_VOLUME;
+        typeof MIDI_VOLUME |
+        typeof FETCH_DB;
     const onMessageMap: Record<CommandType, (channel: string, user: string, message: string, msg: TwitchPrivateMessage) => Promise<void>> = {
         [MIDI_ON]: async (channel, user, message, msg) => {
             const { isMod, isBroadcaster } = msg.userInfo;
@@ -108,6 +110,14 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         [SYNC]: async (channel) => {
             syncMidi();
             chatClient.say(channel, "Let's fix this mess... Done!");
+        },
+        [FETCH_DB]: async (channel, user, message, msg) => {
+            const { isBroadcaster } = msg.userInfo;
+            if (!isBroadcaster) {
+                return;
+            }
+            await fetchAliasesDB();
+            chatClient.say(channel, "MIDI lists updated!");
         }
     }
     const aliasMap: Record<string, CommandType> = {

@@ -144,6 +144,10 @@ export async function removeChordAlias(channel: string, message: string): Promis
     await aliasesDB.commit();
 }
 
+export async function fetchAliasesDB(): Promise<void> {
+    await aliasesDB.fetchDB();
+}
+
 export function stopMIDILoop(): void {
     loopActiveId = GLOBAL.EMPTY_MESSAGE;
 }

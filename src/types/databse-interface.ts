@@ -9,4 +9,5 @@ export interface Database<T extends CustomObject<T>> {
     delete<P extends keyof T>(path: P, key: keyof T[P]): ResponseStatus
     commit(): Promise<ResponseStatus>
     rollback(): Promise<ResponseStatus>
+    fetchDB(): Promise<void>
 }

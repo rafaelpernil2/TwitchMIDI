@@ -11,7 +11,7 @@ export class JSONDatabase<T> implements Database<T>{
         filePath: string
     ) {
         this.filePath = filePath
-        this.loadDB();
+        this.fetchDB();
     }
 
     get value(): T | undefined {
@@ -44,7 +44,7 @@ export class JSONDatabase<T> implements Database<T>{
     async commit(): Promise<ResponseStatus> {
         try {
             await fs.writeFile(this.filePath, JSON.stringify(this.dbCommit, null, 4), { encoding: 'utf-8' })
-            await this.loadDB();
+            await this.fetchDB();
             return ResponseStatus.Ok
         } catch (error) {
             return ResponseStatus.Error;
@@ -56,7 +56,7 @@ export class JSONDatabase<T> implements Database<T>{
         return ResponseStatus.Ok
     }
 
-    private async loadDB() {
+    async fetchDB(): Promise<void> {
         this.db = JSON.parse(await fs.readFile(this.filePath, { encoding: 'utf-8' }))
         this.dbCommit = JSON.parse(JSON.stringify(this.db));
     }
