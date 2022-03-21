@@ -17,15 +17,17 @@ const barEventEmitter = new EventEmitter(); // I use Node.js events for notifyin
 
 // Closure variables
 let output: Output | undefined;
-let tempo = CONFIG.DEFAULT_TEMPO;
-let loopActiveId = GLOBAL.EMPTY_MESSAGE;
-let chordProgressionActive = false;
-let tick = 0;
-let volume = CONFIG.DEFAULT_VOLUME;
+let tempo: number;
+let loopActiveId: string;
+let chordProgressionActive: boolean;
+let tick: number;
+let volume: number;
+_initVariables();
 
 export async function initMidi(targetMIDIName: string): Promise<void> {
     try {
         await WebMidi.enable();
+        _initVariables();
         output = WebMidi.outputs.find(output => output.name.includes(targetMIDIName));
         console.log("WebMidi enabled!");
     } catch (error) {
@@ -212,5 +214,13 @@ function _processChordProgression(chordProgression: string): Array<[noteList: st
             throw new Error(ERROR_MSG.INVALID_CHORD(chord))
         }
     });
+}
+
+function _initVariables() {
+    tempo = CONFIG.DEFAULT_TEMPO;
+    loopActiveId = GLOBAL.EMPTY_MESSAGE;
+    chordProgressionActive = false;
+    tick = 0;
+    volume = CONFIG.DEFAULT_VOLUME;
 }
 
