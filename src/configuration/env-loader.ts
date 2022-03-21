@@ -23,4 +23,4 @@ function areVariablesValid(loadedVariables: Record<string, string | undefined>):
   return invalidVariables.length === 0;
 }
 
-export {getLoadedEnvVariables};
+export { getLoadedEnvVariables };
