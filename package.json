@@ -1,10 +1,11 @@
 {
-  "name": "twitch-midi",
+  "name": "twitch-midi-bot",
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
+    "preinstall": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "tsc",
     "lint": "eslint -c .eslintrc.json --ext .ts src/**/*.ts",
@@ -42,5 +43,9 @@
     "trailingComma": "none",
     "singleQuote": true,
     "tabWidth": 4
-  }
+  },
+  "bin": {
+    "twitch-midi-bot": "lib/index.js"
+  },
+  "preferGlobal": true
 }

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // This NEEDS to be executed first
 import 'dotenv/config';
 
