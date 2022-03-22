@@ -26,6 +26,8 @@ export const GLOBAL = {
 
 export const CONFIG = {
     ALIASES_DB_PATH: './config/aliases.json',
+    TOKENS_TEMPLATE_PATH: './config/tokens.template.json',
+    TOKENS_PATH: './config/tokens.json',
     DEFAULT_VOLUME: 0.8,
     DEFAULT_TEMPO: 120
 };
