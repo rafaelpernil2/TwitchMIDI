@@ -374,7 +374,7 @@ function _processCCCommandList(ccCommandList: string[], precission = 128): Array
             result = result.concat(sweep(preValue, postValue, timeDiff, precission).map<CCCommand>(([value, time]) => [postController, value, time]));
             continue;
         }
-        result = result.concat([postController, postValue, postTime]);
+        result = result.concat([[postController, postValue, postTime]]);
     }
     return result;
 }
