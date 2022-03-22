@@ -1,3 +1,3 @@
 declare module 'harmonics' {
-    declare function inlineChord(string): string[]
+    declare function inlineChord(string): string[];
 }

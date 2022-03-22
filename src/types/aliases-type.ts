@@ -3,5 +3,5 @@ export interface AliasesType {
     ccCommands: Record<string, string[]>;
 }
 
-export const CHORD_PROGRESSIONS = "chordProgressions";
-export const CC_COMMANDS = "ccCommands";
+export const CHORD_PROGRESSIONS = 'chordProgressions';
+export const CC_COMMANDS = 'ccCommands';
