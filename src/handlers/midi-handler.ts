@@ -349,7 +349,7 @@ function _processChordProgression(chordProgression: string): Array<[noteList: st
  */
 function _getCCCommandList(message: string): string[] {
     const aliasToLookup = message.toLowerCase();
-    return aliasesDB.select(CC_COMMANDS, aliasToLookup) ?? message.split(',');
+    return aliasesDB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
 }
 
 /**

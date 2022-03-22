@@ -16,6 +16,7 @@ export const ERROR_MSG = {
 
 export const GLOBAL = {
     EMPTY_MESSAGE: '',
+    COMMA_SEPARATOR: ',',
     SLASH_SEPARATOR: '/',
     SPACE_SEPARATOR: ' ',
     EXCLAMATION_TOKEN: '!',
