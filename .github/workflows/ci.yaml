@@ -18,7 +18,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm install
       - name: "Create binaries"
-        run: npm bundle
+        run: npm run bundle
       - name: Publish tag on GitHub
         uses: Klemensas/action-autotag@1.2.3
         with:
