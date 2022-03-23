@@ -29,7 +29,7 @@ jobs:
       - name: Upload binaries to release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.tag.outputs.version }}
+          tag_name: "v${{ steps.tag.outputs.version }}"
           files: TwitchMidiBot*
 
 
