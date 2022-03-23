@@ -5,7 +5,6 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "preinstall": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "tsc",
     "lint": "eslint -c .eslintrc.json --ext .ts src/**/*.ts",
