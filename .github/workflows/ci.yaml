@@ -25,9 +25,5 @@ jobs:
           tag_prefix: "v"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Upload binaries to release
-        uses: softprops/action-gh-release@v0.1.14
-        with:
-          files: TwitchMidiBot*
 
 

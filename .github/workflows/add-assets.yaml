@@ -1,0 +1,17 @@
+name: add-tags
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Upload binaries to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: TwitchMidiBot*
