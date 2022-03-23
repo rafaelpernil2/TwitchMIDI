@@ -19,9 +19,17 @@ jobs:
       - run: npm install
       - name: "Create binaries"
         run: npm run bundle
+      - name: Publish tag on GitHub
+        id: tag
+        uses: Klemensas/action-autotag@1.2.3
+        with:
+          tag_prefix: "v"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Upload binaries to release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
           files: TwitchMidiBot*
 
 
