@@ -12,7 +12,7 @@
     "watch-build": "tsc -w",
     "serve": "npm run build && npm run start",
     "start": "node ./lib/index.js",
-    "bundle": "ncc build src/index.ts -m -o dist -e jzz && pkg -o TwitchMidiBot -t node14-windows,node14-linux,node14-macos dist/index.js"
+    "bundle": "ncc build src/index.ts -m -o dist -e jzz -e jazz-midi && pkg . -C -o TwitchMidiBot"
   },
   "keywords": [],
   "author": "",
@@ -23,14 +23,25 @@
     "@twurple/chat": "^5.0.18",
     "@twurple/eventsub": "^5.0.18",
     "@twurple/pubsub": "^5.0.18",
-    "@types/nanotimer": "^0.3.0",
     "dotenv": "^16.0.0",
     "harmonics": "^1.1.0",
     "nanotimer": "^0.3.15",
     "webmidi": "^3.0.15",
     "jzz": "^1.4.5"
   },
+  "pkg": {
+    "assets": [
+      "./node_modules/jzz",
+      "./node_modules/jazz-midi"
+    ],
+    "targets": [
+      "node14-windows",
+      "node14-linux",
+      "node14-macos"
+    ]
+  },
   "devDependencies": {
+    "@types/nanotimer": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
     "@vercel/ncc": "^0.33.3",
@@ -47,8 +58,6 @@
     "singleQuote": true,
     "tabWidth": 4
   },
-  "bin": {
-    "twitch-midi-bot": "lib/index.js"
-  },
+  "bin": "dist/index.js",
   "preferGlobal": true
 }
