@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi-bot",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -12,7 +12,10 @@
     "watch-build": "tsc -w",
     "serve": "npm run build && npm run start",
     "start": "node ./lib/index.js",
-    "bundle": "ncc build src/index.ts -m -o dist -e jzz -e jazz-midi && pkg . -C -o TwitchMidiBot"
+    "ncc": "ncc build src/index.ts -m -o dist -e jzz -e jazz-midi",
+    "package": "pkg . -C -o package/TwitchMidiBot",
+    "zip": "cd package/ && bestzip ../TwitchMidiBotInstallation.zip * ../config/tokens.template.json ../config/aliases.json",
+    "bundle": "npm run ncc && npm run package && npm run zip"
   },
   "keywords": [],
   "author": "",
@@ -35,20 +38,22 @@
       "./node_modules/jazz-midi"
     ],
     "targets": [
-      "node14-windows",
-      "node14-linux",
-      "node14-macos"
-    ]
+      "node14-windows-x64",
+      "node14-linux-x64",
+      "node14-macos-x64"
+    ],
+    "outputPath": "package"
   },
   "devDependencies": {
     "@types/nanotimer": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
     "@vercel/ncc": "^0.33.3",
-    "pkg": "^5.5.2",
+    "bestzip": "^2.2.0",
+    "eslint": "^8.11.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
-    "eslint": "^8.11.0",
+    "pkg": "^5.5.2",
     "prettier": "^2.6.0",
     "typescript": "^4.6.2"
   },

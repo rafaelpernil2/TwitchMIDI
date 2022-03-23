@@ -3,7 +3,8 @@
 config/tokens.json
 lib/
 dist/
+package/
 .env
 .env.old
 # Bundles
-TwitchMidiBot-*
+TwitchMidiBot*
