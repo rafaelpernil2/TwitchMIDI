@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // This NEEDS to be executed first
 import 'dotenv/config';
+// Workaround for bad "webmidi" package dependency injection
+import 'jzz';
 
 import { getLoadedEnvVariables } from './configuration/env-loader';
 import { getAuthProvider } from './providers/auth-provider';
