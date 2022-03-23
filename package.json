@@ -14,7 +14,8 @@
     "start": "node ./lib/index.js",
     "ncc": "ncc build src/index.ts -m -o dist -e jzz -e jazz-midi",
     "package": "pkg . -C -o package/TwitchMidiBot",
-    "zip": "cd package/ && bestzip ../TwitchMidiBotInstallation.zip * ../config/tokens.template.json ../config/aliases.json",
+    "prezip": "cpy .env.template package --rename=.env && cpy config/tokens.template.json config/aliases.json package",
+    "zip": "cd package && bestzip ../TwitchMidiBotInstallation.zip *",
     "bundle": "npm run ncc && npm run package && npm run zip"
   },
   "keywords": [],
@@ -50,6 +51,7 @@
     "@typescript-eslint/parser": "^5.15.0",
     "@vercel/ncc": "^0.33.3",
     "bestzip": "^2.2.0",
+    "cpy-cli": "^4.1.0",
     "eslint": "^8.11.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
