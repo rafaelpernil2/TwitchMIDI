@@ -11,10 +11,12 @@ export const ERROR_MSG = {
     BAD_CC_MESSAGE: 'Bad Control Change message, please review your values. Controller/value must be between 0 and 127 (inclusive)',
     INSUFFICIENT_PERMISSIONS: "You don't have enough permissions to use this command, ask me or a mod to launch this command or subscribe to this channel",
     INVALID_SWEEP_RANGE: 'Invalid sweep range',
-    TWITCH_API: 'Could not connect to Twitch'
+    TWITCH_API: 'Could not connect to Twitch',
+    INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot'
 };
 
 export const GLOBAL = {
+    POUND: '#',
     EMPTY_MESSAGE: '',
     COMMA_SEPARATOR: ',',
     SLASH_SEPARATOR: '/',
@@ -23,12 +25,14 @@ export const GLOBAL = {
     OPEN_PARENTHESIS_SEPARATOR: '(',
     CLOSE_PARENTHESIS_SEPARATOR: ')',
     CC_CONTROLLER: 'CC#'
-};
+} as const;
 
 export const CONFIG = {
     ALIASES_DB_PATH: './config/aliases.json',
     TOKENS_TEMPLATE_PATH: './config/tokens.template.json',
-    TOKENS_PATH: './config/tokens.json',
+    BOT_TOKENS_PATH: './config/bot-tokens.json',
+    BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
+    REWARDS_PATH: './config/rewards.json',
     DEFAULT_VOLUME: 0.8,
     DEFAULT_TEMPO: 120
 };
@@ -49,6 +53,24 @@ export const COMMANDS = {
     SET_TEMPO: 'settempo',
     SYNC: 'syncmidi',
     FETCH_DB: 'fetchdb'
+} as const;
+
+export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boolean> = {
+    midion: false,
+    midioff: false,
+    addchord: false,
+    removechord: false,
+    chordlist: true,
+    sendnote: false,
+    sendchord: false,
+    sendloop: false,
+    sendcc: false,
+    midivolume: false,
+    stoploop: false,
+    fullstopmidi: false,
+    settempo: false,
+    syncmidi: true,
+    fetchdb: false
 } as const;
 
 export const ALIAS_MAP: Record<string, CommandType> = {

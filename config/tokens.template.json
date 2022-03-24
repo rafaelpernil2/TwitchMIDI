@@ -2,6 +2,8 @@
     "accessToken": "",
     "refreshToken": "",
     "scope": [
+        "channel:manage:redemptions",
+        "channel:read:redemptions",
         "chat:edit",
         "chat:read"
     ],

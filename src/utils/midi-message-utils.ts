@@ -1,4 +1,4 @@
-import { ERROR_MSG, GLOBAL } from '../constants/constants';
+import { ERROR_MSG, GLOBAL } from '../configuration/constants';
 import { removeParenthesisPart, getParenthesisValue } from './message-utils';
 
 export function parseChord(chord: string): string {

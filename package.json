@@ -14,7 +14,7 @@
     "start": "node ./lib/index.js",
     "ncc": "ncc build src/index.ts -m -o dist -e jzz -e jazz-midi",
     "package": "pkg . -C -o package/TwitchMidiBot",
-    "prezip": "cpy .env.template package --rename=.env && cpy config/tokens.template.json config/aliases.json package",
+    "prezip": "cpy .env.template package --rename=.env && cpy config package",
     "zip": "cd package && bestzip ../TwitchMidiBotInstallation.zip * .env",
     "bundle": "npm run ncc && npm run package && npm run zip"
   },

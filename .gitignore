@@ -1,6 +1,7 @@
 **/node_modules
 **/node_modules/**/*
-config/tokens.json
+config/bot-tokens.json
+config/broadcaster-tokens.json
 lib/
 dist/
 package/

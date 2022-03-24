@@ -4,11 +4,14 @@ function getLoadedEnvVariables(): EnvObject {
     const variablesToLoad: Partial<EnvObject> = {
         CLIENT_ID: undefined,
         CLIENT_SECRET: undefined,
-        INITIAL_ACCESS_TOKEN: undefined,
-        INITIAL_REFRESH_TOKEN: undefined,
+        BOT_ACCESS_TOKEN: undefined,
+        BOT_REFRESH_TOKEN: undefined,
+        BROADCASTER_ACCESS_TOKEN: undefined,
+        BROADCASTER_REFRESH_TOKEN: undefined,
         TARGET_CHANNEL: undefined,
         TARGET_MIDI_NAME: undefined,
-        TARGET_MIDI_CHANNEL: undefined
+        TARGET_MIDI_CHANNEL: undefined,
+        REWARDS_MODE: undefined
     };
     const loadedVariables = Object.fromEntries(Object.entries(variablesToLoad).map(([key]) => [key, process.env[key]])) as EnvObject;
     areVariablesValid(loadedVariables);

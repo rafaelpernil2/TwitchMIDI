@@ -1,0 +1,14 @@
+{
+    "rewardTitleCommandMap": {
+        "Twitch Midi - Loop": "!sendloop",
+        "Twitch Midi - Add chord progression": "!addchord",
+        "Twitch Midi - Remove chord progression": "!removechord",
+        "Twitch Midi - Send notes": "!sendnote",
+        "Twitch Midi - Chord Progression": "!sendchord",
+        "Twitch Midi - Send MIDI CC": "!sendcc",
+        "Twitch Midi - Change volume": "!midivolume",
+        "Twitch Midi - Stop loop": "!stoploop",
+        "Twitch Midi - Stop MIDI": "!fullstopmidi",
+        "Twitch Midi - Change tempo": "!settempo"
+    }
+}

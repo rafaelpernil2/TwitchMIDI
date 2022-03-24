@@ -5,3 +5,9 @@ export interface AliasesType {
 
 export const CHORD_PROGRESSIONS = 'chordProgressions';
 export const CC_COMMANDS = 'ccCommands';
+
+export interface RewardsType {
+    rewardTitleCommandMap: Record<string, string>;
+}
+
+export const REWARD_TITLE_COMMAND = 'rewardTitleCommandMap';

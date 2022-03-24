@@ -4,11 +4,11 @@ import { inlineChord } from 'harmonics';
 import { setTimeoutPromise } from '../utils/promise-utils';
 import { Output, WebMidi } from 'webmidi';
 import { JSONDatabase } from '../providers/jsondb-provider';
-import { AliasesType, CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/aliases-type';
+import { AliasesType, CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/jsondb-types';
 import { ResponseStatus } from '../types/status-type';
 import EventEmitter from 'events';
 import { parseChord, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from '../utils/midi-message-utils';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../constants/constants';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
 import { firstMessageValue, removeParenthesisPart, splitMessageArguments } from '../utils/message-utils';
 import { CCCommand } from '../types/midi-types';
 
@@ -210,6 +210,7 @@ export function syncMidi(): void {
     }
     tick = 0;
     output.sendStop();
+    output.sendAllNotesOff();
     output.sendStart();
 }
 

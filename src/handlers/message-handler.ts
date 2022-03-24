@@ -1,7 +1,7 @@
 import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { ALIAS_MAP, COMMANDS, ERROR_MSG } from '../constants/constants';
-import { CommandType, MessageHandler } from '../types/message-types';
+import { ALIAS_MAP, COMMANDS, ERROR_MSG, SAFE_COMMANDS } from '../configuration/constants';
+import { CommandHandler, CommandType, MessageHandler } from '../types/message-types';
 import { getCommand, getCommandContent } from '../utils/message-utils';
 import {
     addChordAlias,
@@ -21,10 +21,10 @@ import {
     syncMidi
 } from './midi-handler';
 
-export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number) => {
-    const onMessageMap: Record<CommandType, MessageHandler> = {
-        [COMMANDS.MIDI_ON]: async (channel, user, message, msg) => {
-            const { isMod, isBroadcaster } = msg.userInfo;
+export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false): MessageHandler => {
+    const onMessageMap: Record<CommandType, CommandHandler> = {
+        [COMMANDS.MIDI_ON]: async (channel, user, message, userInfo) => {
+            const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
                 await initMidi(targetMidiName);
                 chatClient.say(channel, 'MIDI magic enabled!');
@@ -32,8 +32,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
                 chatClient.say(channel, 'Meeeec, you do not have enough permissions');
             }
         },
-        [COMMANDS.MIDI_OFF]: async (channel, user, message, msg) => {
-            const { isMod, isBroadcaster } = msg.userInfo;
+        [COMMANDS.MIDI_OFF]: async (channel, user, message, userInfo) => {
+            const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
                 await disableMidi();
                 chatClient.say(channel, 'MIDI magic disabled!');
@@ -53,7 +53,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             chatClient.say(channel, 'Note sent! ');
             sendMIDINote(message, targetMidiChannel);
         },
-        [COMMANDS.SEND_CC]: (channel, user, message, { userInfo }) => {
+        [COMMANDS.SEND_CC]: (channel, user, message, userInfo) => {
             if (!userInfo.isSubscriber && !userInfo.isBroadcaster && !userInfo.isMod) {
                 throw new Error(ERROR_MSG.INSUFFICIENT_PERMISSIONS);
             }
@@ -90,8 +90,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             stopMIDILoop();
             chatClient.say(channel, 'Dequeuing loop.. Done! ');
         },
-        [COMMANDS.FULL_STOP]: (channel, user, message, msg) => {
-            const { isMod, isBroadcaster } = msg.userInfo;
+        [COMMANDS.FULL_STOP]: (channel, user, message, userInfo) => {
+            const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
                 fullStop();
                 chatClient.say(channel, 'Stopping all MIDI... Done!');
@@ -103,8 +103,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             syncMidi();
             chatClient.say(channel, "Let's fix this mess... Done!");
         },
-        [COMMANDS.FETCH_DB]: async (channel, user, message, msg) => {
-            const { isBroadcaster } = msg.userInfo;
+        [COMMANDS.FETCH_DB]: async (channel, user, message, userInfo) => {
+            const { isBroadcaster } = userInfo;
             if (!isBroadcaster) {
                 return;
             }
@@ -113,7 +113,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         }
     };
 
-    return async (channel: string, user: string, message: string, msg: TwitchPrivateMessage): Promise<void> => {
+    return async (channel: string, user: string, message: string, msg?: TwitchPrivateMessage): Promise<void> => {
         const commandMessage = getCommand(message);
         // Ignore messages that are not commands
         if (commandMessage == null) {
@@ -123,7 +123,14 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             // Try to get the function directly or look up by alias
             const handler = onMessageMap?.[commandMessage] ?? onMessageMap?.[ALIAS_MAP[commandMessage]];
             const processedMessage = getCommandContent(message);
-            await handler?.(channel, user, processedMessage, msg);
+
+            // If rewards mode enabled and not an admin, disallow everything
+            if (rewardsMode && !msg?.userInfo.isBroadcaster && !SAFE_COMMANDS[ALIAS_MAP[commandMessage]] && !SAFE_COMMANDS[commandMessage]) {
+                return;
+            }
+
+            // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
+            await handler?.(channel, user, processedMessage, msg?.userInfo ?? { isBroadcaster: true, isMod: false, isSubscriber: true });
         } catch (error) {
             chatClient.say(channel, String(error));
         }
