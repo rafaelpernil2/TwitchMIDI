@@ -124,8 +124,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             const handler = onMessageMap?.[commandMessage] ?? onMessageMap?.[ALIAS_MAP[commandMessage]];
             const processedMessage = getCommandContent(message);
 
-            // If rewards mode enabled and not an admin, disallow everything
-            if (rewardsMode && !msg?.userInfo.isBroadcaster && !SAFE_COMMANDS[ALIAS_MAP[commandMessage]] && !SAFE_COMMANDS[commandMessage]) {
+            // If rewards mode enabled and not streamer or mod, disallow everything
+            if (rewardsMode && !msg?.userInfo.isBroadcaster && !msg?.userInfo.isMod && !SAFE_COMMANDS[commandMessage] && !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]) {
                 return;
             }
 
