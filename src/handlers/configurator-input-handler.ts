@@ -16,6 +16,14 @@ const NEW_CODE = 'newCode';
 export async function setupConfiguration(): Promise<EnvObject> {
     console.log(
         chalk.yellow(`
+        _______       _ _       _     __  __ _____ _____ _____ 
+        |__   __|     (_) |     | |   |  \\/  |_   _|  __ \\_   _|
+           | |_      ___| |_ ___| |__ | \\  / | | | | |  | || |  
+           | \\ \\ /\\ / / | __/ __| '_ \\| |\\/| | | | | |  | || |  
+           | |\\ V  V /| | || (__| | | | |  | |_| |_| |__| || |_ 
+           |_| \\_/\\_/ |_|\\__\\___|_| |_|_|  |_|_____|_____/_____|
+                                               by rafaelpernil2
+                                                                
     If you are seeing this, it means this is your first time
     running this software (or some setting was wrong). Welcome! :)
 
