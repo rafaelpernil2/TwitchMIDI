@@ -2,13 +2,13 @@ import readline from 'readline';
 import http from 'http';
 import EventEmitter from 'events';
 import { httpsRequestPromise } from '../utils/promise-utils';
-import * as dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import { EnvObject } from '../types/env-object-type';
 import { getBooleanByString } from '../utils/data-utils';
 import { AccessToken } from '@twurple/auth/lib';
 import { CONFIG } from '../configuration/constants';
 import chalk from 'chalk';
+import clipboard from 'clipboardy';
 
 const localHTTPServerEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 const NEW_CODE = 'newCode';
@@ -88,15 +88,18 @@ export async function setupConfiguration(): Promise<EnvObject> {
     `)
     );
 
-    _createAuthServer(CONFIG.LOCAL_SERVER_HOST, CONFIG.LOCAL_SERVER_PORT);
+    const server = _createAuthServer(CONFIG.LOCAL_SERVER_HOST, CONFIG.LOCAL_SERVER_PORT);
 
     // CODE
     const authUrl = await _createAuthURL(CLIENT_ID);
+    // Copy URL to clipboard
+    await clipboard.write(authUrl);
     console.log(
         chalk.magenta(`
-        STEP 2 - Go to (Ctrl+click/Double click select + Right click copy):\n\t\t${authUrl}
+        Go to (it's on your clipboard, just paste ;) ):\n\t\t${authUrl}
     `)
     );
+
     // Wait until user clicks and authorizes
     const BROADCASTER_CODE = await getAuthCode();
 
@@ -118,7 +121,7 @@ export async function setupConfiguration(): Promise<EnvObject> {
         console.log(
             chalk.magenta(`
         Let's repeat but, before, login to your bot account.
-        Then go to (Ctrl+click/Double click select + Right click copy):\n\t\t${authUrl}
+        Then go to (it's on your clipboard, just paste ;) ):\n\t\t${authUrl}
         `)
         );
         // Wait until user clicks and authorizes
@@ -191,6 +194,7 @@ export async function setupConfiguration(): Promise<EnvObject> {
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REWARDS_MODE=' + String(REWARDS_MODE) + '\n');
 
     rl.close();
+    server.close();
     console.log(
         chalk.greenBright(`
     STEP ???? - Profit
@@ -207,8 +211,6 @@ export async function setupConfiguration(): Promise<EnvObject> {
     ***** Software developed by Rafael Pernil (@rafaelpernil2) ***** 
     `)
     );
-    // Reload variables
-    dotenv.config();
 
     return {
         CLIENT_ID,
@@ -240,7 +242,7 @@ async function getAuthCode(): Promise<string> {
     });
 }
 
-function _createAuthServer(host: string, port: number): void {
+function _createAuthServer(host: string, port: number): http.Server {
     const requestListener: http.RequestListener = function (req, res) {
         const code = new URLSearchParams(req.url).get('/?code');
         if (code == null) {
@@ -254,6 +256,7 @@ function _createAuthServer(host: string, port: number): void {
     };
     const server = http.createServer(requestListener);
     server.listen(port, host);
+    return server;
 }
 
 async function _createAuthURL(client_id: string): Promise<string> {

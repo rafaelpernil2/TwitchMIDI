@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi-bot",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -28,6 +28,7 @@
     "@twurple/eventsub": "^5.0.18",
     "@twurple/pubsub": "^5.0.18",
     "chalk": "^4.1.2",
+    "clipboardy": "^2.3.0",
     "dotenv": "^16.0.0",
     "harmonics": "^1.1.0",
     "jzz": "^1.4.5",
