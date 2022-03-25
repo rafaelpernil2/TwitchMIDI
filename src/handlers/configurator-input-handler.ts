@@ -8,7 +8,6 @@ import { getBooleanByString } from '../utils/data-utils';
 import { AccessToken } from '@twurple/auth/lib';
 import { CONFIG } from '../configuration/constants';
 import chalk from 'chalk';
-import clipboard from 'clipboardy';
 
 const localHTTPServerEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 const NEW_CODE = 'newCode';
@@ -92,11 +91,9 @@ export async function setupConfiguration(): Promise<EnvObject> {
 
     // CODE
     const authUrl = await _createAuthURL(CLIENT_ID);
-    // Copy URL to clipboard
-    await clipboard.write(authUrl);
     console.log(
         chalk.magenta(`
-        Go to (it's on your clipboard, just paste ;) ):\n\t\t${authUrl}
+        Go to (Ctrl+click/Double click select + Right click copy):\n\t\t${authUrl}
     `)
     );
 
@@ -121,7 +118,7 @@ export async function setupConfiguration(): Promise<EnvObject> {
         console.log(
             chalk.magenta(`
         Let's repeat but, before, login to your bot account.
-        Then go to (it's on your clipboard, just paste ;) ):\n\t\t${authUrl}
+        Then go to (Ctrl+click/Double click select + Right click copy):\n\t\t${authUrl}
         `)
         );
         // Wait until user clicks and authorizes
