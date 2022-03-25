@@ -1,7 +1,7 @@
 import readline from 'readline';
 import http from 'http';
 import EventEmitter from 'events';
-import { httpsRequestPromise } from '../utils/promise-utils';
+import { httpsRequestPromise, setTimeoutPromise } from '../utils/promise-utils';
 import { promises as fs } from 'fs';
 import { EnvObject } from '../types/env-object-type';
 import { getBooleanByString } from '../utils/data-utils';
@@ -30,6 +30,8 @@ export async function setupConfiguration(): Promise<EnvObject> {
     and configurations, but don't worry about specifics, this will be easy.
     `)
     );
+    // Arbitrary delay for usability
+    await setTimeoutPromise(5_000_000_000);
     // This executes when there is not a valid .env file
     const rl = readline.createInterface({
         input: process.stdin,
