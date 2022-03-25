@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi-bot",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -40,9 +40,9 @@
       "./node_modules/jazz-midi"
     ],
     "targets": [
-      "node14-windows-x64",
-      "node14-linux-x64",
-      "node14-macos-x64"
+      "node16-windows-x64",
+      "node16-linux-x64",
+      "node16-macos-x64"
     ],
     "outputPath": "package"
   },
