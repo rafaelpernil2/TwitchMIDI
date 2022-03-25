@@ -1,3 +1,5 @@
+import { JSONDatabase } from '../providers/jsondb-provider';
+import { AliasesType, COMMANDS_KEY } from '../types/jsondb-types';
 import { CommandType } from '../types/message-types';
 
 export const ERROR_MSG = {
@@ -79,37 +81,8 @@ export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boole
     fetchdb: false
 } as const;
 
-export const ALIAS_MAP: Record<string, CommandType> = {
-    encendermidi: COMMANDS.MIDI_ON,
-    encenderjamones: COMMANDS.MIDI_ON,
-    apagarmidi: COMMANDS.MIDI_OFF,
-    apagarjamones: COMMANDS.MIDI_OFF,
-    volumemidi: COMMANDS.MIDI_VOLUME,
-    volumenmidi: COMMANDS.MIDI_VOLUME,
-    volumenacorde: COMMANDS.MIDI_VOLUME,
-    volumenloop: COMMANDS.MIDI_VOLUME,
-    volumenbucle: COMMANDS.MIDI_VOLUME,
-    tempo: COMMANDS.SET_TEMPO,
-    chord: COMMANDS.SEND_CHORD,
-    acordes: COMMANDS.SEND_CHORD,
-    progresion: COMMANDS.SEND_CHORD,
-    loop: COMMANDS.SEND_LOOP,
-    pararbucle: COMMANDS.STOP_LOOP,
-    pararloop: COMMANDS.STOP_LOOP,
-    bucle: COMMANDS.SEND_LOOP,
-    sync: COMMANDS.SYNC,
-    sincronizar: COMMANDS.SYNC,
-    stop: COMMANDS.FULL_STOP,
-    fullstop: COMMANDS.FULL_STOP,
-    addloop: COMMANDS.ADD_CHORD_ALIAS,
-    deleteloop: COMMANDS.REMOVE_CHORD_ALIAS,
-    quitarloop: COMMANDS.REMOVE_CHORD_ALIAS,
-    deletechord: COMMANDS.REMOVE_CHORD_ALIAS,
-    looplist: COMMANDS.GET_CHORD_LIST,
-    nota: COMMANDS.SEND_NOTE,
-    note: COMMANDS.SEND_NOTE,
-    cc: COMMANDS.SEND_CC,
-    controlchange: COMMANDS.SEND_CC
-};
+export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
+
+export const ALIAS_MAP: Record<string, CommandType> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
 
 export const COMMAND_VALUES = Object.fromEntries([...Object.entries(ALIAS_MAP), ...Object.entries(COMMANDS).map(([, v]) => [v, 1])]) as Record<string, string>;

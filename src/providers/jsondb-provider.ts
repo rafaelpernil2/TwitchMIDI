@@ -1,6 +1,6 @@
 import { Database } from '../types/databse-interface';
 import { ResponseStatus } from '../types/status-type';
-import { promises as fs } from 'fs';
+import { promises as fs, readFileSync } from 'fs';
 
 export class JSONDatabase<T> implements Database<T> {
     private filePath: string;
@@ -9,7 +9,7 @@ export class JSONDatabase<T> implements Database<T> {
 
     constructor(filePath: string) {
         this.filePath = filePath;
-        this.fetchDB();
+        this.syncFetchDB();
     }
 
     get value(): T | undefined {
@@ -17,6 +17,13 @@ export class JSONDatabase<T> implements Database<T> {
     }
     set value(newDB: T | undefined) {
         this.db = newDB;
+    }
+
+    selectAll<P extends keyof T>(path: P): T[P] | undefined {
+        if (this.db == null) {
+            return;
+        }
+        return this.db[path];
     }
 
     select<P extends keyof T, S extends keyof T[P]>(path: P, key: S): T[P][S] | undefined {
@@ -59,6 +66,11 @@ export class JSONDatabase<T> implements Database<T> {
 
     async fetchDB(): Promise<void> {
         this.db = JSON.parse(await fs.readFile(this.filePath, { encoding: 'utf-8' })) as T;
+        this.dbCommit = JSON.parse(JSON.stringify(this.db)) as T;
+    }
+
+    syncFetchDB(): void {
+        this.db = JSON.parse(readFileSync(this.filePath, { encoding: 'utf-8' })) as T;
         this.dbCommit = JSON.parse(JSON.stringify(this.db)) as T;
     }
 }

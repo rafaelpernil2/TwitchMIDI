@@ -3,19 +3,17 @@ import NanoTimer from 'nanotimer';
 import { inlineChord } from 'harmonics';
 import { setTimeoutPromise } from '../utils/promise-utils';
 import { Output, WebMidi } from 'webmidi';
-import { JSONDatabase } from '../providers/jsondb-provider';
-import { AliasesType, CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/jsondb-types';
+import { CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/jsondb-types';
 import { ResponseStatus } from '../types/status-type';
 import EventEmitter from 'events';
 import { parseChord, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from '../utils/midi-message-utils';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
+import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
 import { firstMessageValue, removeParenthesisPart, splitMessageArguments } from '../utils/message-utils';
 import { CCCommand } from '../types/midi-types';
 
 // Constants
 const timer = new NanoTimer();
 const BAR_LOOP_CHANGE_EVENT = 'barLoopChange';
-const aliasesDB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
 const barEventEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 
 // Closure variables
@@ -158,7 +156,7 @@ export async function sendMIDILoop(message: string, targetMidiChannel: number): 
  * @return List of chord progressions with their respective alias
  */
 export function getChordList(): Array<[aliasName: string, chordList: string]> {
-    return Object.entries(aliasesDB.value?.chordProgressions ?? {});
+    return Object.entries(ALIASES_DB.value?.chordProgressions ?? {});
 }
 
 /**
@@ -167,11 +165,11 @@ export function getChordList(): Array<[aliasName: string, chordList: string]> {
  */
 export async function addChordAlias(message: string): Promise<void> {
     const [alias, chordProgression] = message.split(GLOBAL.SLASH_SEPARATOR);
-    const insertStatus = aliasesDB.insertUpdate(CHORD_PROGRESSIONS, { [alias.toLowerCase()]: chordProgression });
+    const insertStatus = ALIASES_DB.insertUpdate(CHORD_PROGRESSIONS, { [alias.toLowerCase()]: chordProgression });
     if (insertStatus === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION);
     }
-    await aliasesDB.commit();
+    await ALIASES_DB.commit();
 }
 
 /**
@@ -180,18 +178,18 @@ export async function addChordAlias(message: string): Promise<void> {
  */
 export async function removeChordAlias(message: string): Promise<void> {
     const parsedAlias = message.toLowerCase();
-    const status = aliasesDB.delete(CHORD_PROGRESSIONS, parsedAlias);
+    const status = ALIASES_DB.delete(CHORD_PROGRESSIONS, parsedAlias);
     if (status === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND);
     }
-    await aliasesDB.commit();
+    await ALIASES_DB.commit();
 }
 
 /**
  * Fetches data from the alias database, refreshing the copy in memory
  */
 export async function fetchAliasesDB(): Promise<void> {
-    await aliasesDB.fetchDB();
+    await ALIASES_DB.fetchDB();
 }
 
 /**
@@ -320,7 +318,7 @@ function _getChordProgression(message: string, loopMode = false): string {
         return loopActiveId;
     }
     const aliasToLookup = message.toLowerCase();
-    return aliasesDB.select(CHORD_PROGRESSIONS, aliasToLookup) ?? message;
+    return ALIASES_DB.select(CHORD_PROGRESSIONS, aliasToLookup) ?? message;
 }
 
 /**
@@ -350,7 +348,7 @@ function _processChordProgression(chordProgression: string): Array<[noteList: st
  */
 function _getCCCommandList(message: string): string[] {
     const aliasToLookup = message.toLowerCase();
-    return aliasesDB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
+    return ALIASES_DB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
 }
 
 /**
