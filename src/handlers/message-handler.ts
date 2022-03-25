@@ -6,7 +6,7 @@ import { getCommand, getCommandContent } from '../utils/message-utils';
 import {
     addChordAlias,
     disableMidi,
-    fetchAliasesDB,
+    fetchDBs,
     fullStop,
     getChordList,
     initMidi,
@@ -58,10 +58,10 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
                 throw new Error(ERROR_MSG.INSUFFICIENT_PERMISSIONS);
             }
             const ccMessageList = sendCCMessage(message, targetMidiChannel);
-            const controllerList = [...new Set(ccMessageList.map(([controller]) => controller))];
-            for (const controller of controllerList) {
-                chatClient.say(channel, `Control Change(CC#${controller}) message sent! `);
-            }
+            const [first, ...restOfControllers] = [...new Set(ccMessageList.map(([controller]) => controller))] as number[];
+            const controllerListString = restOfControllers.reduce((acc, curr) => `${acc}, CC#${curr}`, `CC#${first}`);
+
+            chatClient.say(channel, `Control Change (${controllerListString}) message(s) sent! `);
         },
         [COMMANDS.SEND_CHORD]: async (channel, user, message) => {
             chatClient.say(channel, 'Chord progression enqueued! ');
@@ -108,7 +108,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             if (!isBroadcaster) {
                 return;
             }
-            await fetchAliasesDB();
+            await fetchDBs();
             chatClient.say(channel, 'MIDI lists updated!');
         }
     };

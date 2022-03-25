@@ -9,7 +9,7 @@ import { getAuthProvider } from './providers/auth-provider';
 import { ChatClient } from '@twurple/chat';
 import { onMessageHandlerClosure } from './handlers/message-handler';
 import { WebMidi } from 'webmidi';
-import { CONFIG, ERROR_MSG, GLOBAL } from './configuration/constants';
+import { CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
 import { getBooleanByString } from './utils/data-utils';
@@ -50,11 +50,10 @@ import { setupConfiguration } from './handlers/configurator-input-handler';
             const pubSubClient = new PubSubClient();
             const userId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
 
-            const rewardsDB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH);
             await pubSubClient.onRedemption(userId, async (redemption: PubSubRedemptionMessage) => {
                 const { rewardTitle, message: args } = redemption;
                 // Look up the command
-                const command = rewardsDB.select(REWARD_TITLE_COMMAND, rewardTitle);
+                const command = REWARDS_DB.select(REWARD_TITLE_COMMAND, rewardTitle);
 
                 // For rewards that are not part of this plugin
                 if (!command) {
