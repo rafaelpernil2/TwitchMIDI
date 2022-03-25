@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi-bot",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -27,11 +27,12 @@
     "@twurple/chat": "^5.0.18",
     "@twurple/eventsub": "^5.0.18",
     "@twurple/pubsub": "^5.0.18",
+    "chalk": "^4.1.2",
     "dotenv": "^16.0.0",
     "harmonics": "^1.1.0",
+    "jzz": "^1.4.5",
     "nanotimer": "^0.3.15",
-    "webmidi": "^3.0.15",
-    "jzz": "^1.4.5"
+    "webmidi": "^3.0.15"
   },
   "pkg": {
     "assets": [
@@ -47,6 +48,7 @@
   },
   "devDependencies": {
     "@types/nanotimer": "^0.3.0",
+    "@types/node": "^17.0.23",
     "@typescript-eslint/eslint-plugin": "^5.15.0",
     "@typescript-eslint/parser": "^5.15.0",
     "@vercel/ncc": "^0.33.3",
@@ -63,7 +65,8 @@
     "printWidth": 180,
     "trailingComma": "none",
     "singleQuote": true,
-    "tabWidth": 4
+    "tabWidth": 4,
+    "endOfLine": "auto"
   },
   "bin": "dist/index.js",
   "preferGlobal": true

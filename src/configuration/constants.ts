@@ -12,7 +12,8 @@ export const ERROR_MSG = {
     INSUFFICIENT_PERMISSIONS: "You don't have enough permissions to use this command, ask me or a mod to launch this command or subscribe to this channel",
     INVALID_SWEEP_RANGE: 'Invalid sweep range',
     TWITCH_API: 'Could not connect to Twitch',
-    INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot'
+    INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
+    BAD_SETUP_PROCESS: 'Bad setup, try again'
 };
 
 export const GLOBAL = {
@@ -33,8 +34,13 @@ export const CONFIG = {
     BOT_TOKENS_PATH: './config/bot-tokens.json',
     BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
     REWARDS_PATH: './config/rewards.json',
+    DOT_ENV_PATH: '.env',
     DEFAULT_VOLUME: 0.8,
-    DEFAULT_TEMPO: 120
+    DEFAULT_TEMPO: 120,
+    LOCAL_SERVER_HOST: 'localhost',
+    LOCAL_SERVER_PORT: 8000,
+    REDIRECT_URI: 'http://localhost:8000',
+    TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/'
 };
 
 export const COMMANDS = {

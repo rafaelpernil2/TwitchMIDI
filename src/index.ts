@@ -16,6 +16,7 @@ import { getBooleanByString } from './utils/data-utils';
 import { JSONDatabase } from './providers/jsondb-provider';
 import { RewardsType, REWARD_TITLE_COMMAND } from './types/jsondb-types';
 import { getCommand } from './utils/message-utils';
+import { setupConfiguration } from './handlers/configurator-input-handler';
 
 (async () => {
     const {
@@ -29,7 +30,7 @@ import { getCommand } from './utils/message-utils';
         TARGET_MIDI_NAME,
         TARGET_MIDI_CHANNEL,
         REWARDS_MODE
-    } = getLoadedEnvVariables();
+    } = await getLoadedEnvVariables(setupConfiguration);
     try {
         const botAuthProvider = await getAuthProvider(CLIENT_ID, CLIENT_SECRET, BOT_ACCESS_TOKEN, BOT_REFRESH_TOKEN, 'BOT');
         const broadcasterAuthProvider = await getAuthProvider(CLIENT_ID, CLIENT_SECRET, BROADCASTER_ACCESS_TOKEN, BROADCASTER_REFRESH_TOKEN, 'BROADCASTER');
@@ -39,7 +40,7 @@ import { getCommand } from './utils/message-utils';
         await chatClient.connect();
         WebMidi.enable().catch(() => console.log('First WebMIDI connection'));
 
-        console.log('Rewards mode: ' + REWARDS_MODE);
+        console.log('Bot ready! - Rewards/Channel Points mode: ' + REWARDS_MODE);
         // Chat code
         const isRewardsMode = getBooleanByString(REWARDS_MODE);
         chatClient.onMessage(onMessageHandlerClosure(chatClient, TARGET_MIDI_NAME, Number(TARGET_MIDI_CHANNEL), isRewardsMode));

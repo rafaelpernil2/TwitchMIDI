@@ -2,10 +2,10 @@
     "accessToken": "",
     "refreshToken": "",
     "scope": [
-        "channel:manage:redemptions",
-        "channel:read:redemptions",
+        "chat:read",
         "chat:edit",
-        "chat:read"
+        "channel:read:redemptions",
+        "channel:manage:redemptions"
     ],
     "expiresIn": 0,
     "obtainmentTimestamp": 0
