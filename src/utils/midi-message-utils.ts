@@ -1,4 +1,5 @@
-import { ERROR_MSG, GLOBAL } from '../configuration/constants';
+import { ALIASES_DB, ERROR_MSG, GLOBAL, TOGGLE_MIDI_VALUES } from '../configuration/constants';
+import { CC_CONTROLLERS } from '../types/jsondb-types';
 import { removeParenthesisPart, getParenthesisValue } from './message-utils';
 
 export function parseChord(chord: string): string {
@@ -31,22 +32,22 @@ export function calculateClockTickTimeNs(tempo: number): number {
     return Math.floor(60_000_000_000 / (tempo * 24));
 }
 
-export function validateMIDIMessage(message: string): number {
+export function validateMIDIMessage(message: string | number): number {
     const parsedMessage = Number(message);
     if (isNaN(parsedMessage) || parsedMessage < 0 || parsedMessage > 127) {
-        throw new Error(ERROR_MSG.BAD_CC_MESSAGE + ': ' + message);
+        throw new Error(ERROR_MSG.BAD_CC_MESSAGE + ': ' + String(message));
     }
     return parsedMessage;
 }
 
-export function sweep(startValue: number, endValue: number, timeLapse: number, precision = 128): [value: number, time: number][] {
+export function sweep(startValue: number, endValue: number, startTime: number, endTime: number, precision = 256): [value: number, time: number][] {
     const direction = startValue <= endValue ? 1 : -1;
-    const timeStepSize = timeLapse / precision;
+    const timeStepSize = Math.abs(endTime - startTime) / precision;
     const valueStepSize = Math.abs(endValue - startValue) / precision;
     const result: Array<[value: number, time: number]> = [];
     for (let index = 1; index <= precision; index++) {
         const value = Math.floor(startValue + valueStepSize * index * direction);
-        const time = Math.floor(timeStepSize * index);
+        const time = Math.floor(startTime + timeStepSize * index);
         result.push([value, time]);
     }
     return result;
@@ -55,8 +56,16 @@ export function sweep(startValue: number, endValue: number, timeLapse: number, p
 export function validateControllerMessage(ccCommand: string): [controller: number, value: number, time: number] {
     const [rawController, rawValue] = ccCommand.split(GLOBAL.SPACE_SEPARATOR);
 
-    const controller = validateMIDIMessage(rawController.replace(GLOBAL.CC_CONTROLLER, ''));
-    const value = validateMIDIMessage(removeParenthesisPart(rawValue));
+    const preparedController = rawController.replace(GLOBAL.CC_CONTROLLER, '').toLowerCase();
+    const parsedController = ALIASES_DB.select(CC_CONTROLLERS, preparedController) ?? preparedController;
+
+    const controller = validateMIDIMessage(parsedController);
+
+    // Parse toggle values (on/off)
+    const preparedValue = removeParenthesisPart(rawValue).toLowerCase();
+    const parsedValue = TOGGLE_MIDI_VALUES[preparedValue] ?? preparedValue;
+
+    const value = validateMIDIMessage(parsedValue);
     const time = Number(getParenthesisValue(rawValue) || '0'); // Time to add in ms
 
     return [controller, value, time];

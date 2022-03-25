@@ -1,5 +1,5 @@
 import { JSONDatabase } from '../providers/jsondb-provider';
-import { AliasesType, COMMANDS_KEY } from '../types/jsondb-types';
+import { AliasesType, COMMANDS_KEY, RewardsType } from '../types/jsondb-types';
 import { CommandType } from '../types/message-types';
 
 export const ERROR_MSG = {
@@ -17,6 +17,8 @@ export const ERROR_MSG = {
     INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
     BAD_SETUP_PROCESS: 'Bad setup, try again'
 };
+
+export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };
 
 export const GLOBAL = {
     POUND: '#',
@@ -82,6 +84,7 @@ export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boole
 } as const;
 
 export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
+export const REWARDS_DB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH);
 
 export const ALIAS_MAP: Record<string, CommandType> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
 

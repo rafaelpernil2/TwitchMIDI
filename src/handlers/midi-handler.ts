@@ -7,7 +7,7 @@ import { CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/jsondb-types';
 import { ResponseStatus } from '../types/status-type';
 import EventEmitter from 'events';
 import { parseChord, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from '../utils/midi-message-utils';
-import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
+import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from '../configuration/constants';
 import { firstMessageValue, removeParenthesisPart, splitMessageArguments } from '../utils/message-utils';
 import { CCCommand } from '../types/midi-types';
 
@@ -186,10 +186,11 @@ export async function removeChordAlias(message: string): Promise<void> {
 }
 
 /**
- * Fetches data from the alias database, refreshing the copy in memory
+ * Fetches data from the alias and rewards database, refreshing the copy in memory
  */
-export async function fetchAliasesDB(): Promise<void> {
+export async function fetchDBs(): Promise<void> {
     await ALIASES_DB.fetchDB();
+    await REWARDS_DB.fetchDB();
 }
 
 /**
@@ -357,7 +358,7 @@ function _getCCCommandList(message: string): string[] {
  * @param precission The amoutn of steps for sweeps
  * @return List of processed CC commands
  */
-function _processCCCommandList(ccCommandList: string[], precission = 128): Array<CCCommand> {
+function _processCCCommandList(ccCommandList: string[], precission = 256): Array<CCCommand> {
     if (ccCommandList.length < 1) {
         throw new Error(ERROR_MSG.BAD_CC_MESSAGE);
     }
@@ -370,7 +371,7 @@ function _processCCCommandList(ccCommandList: string[], precission = 128): Array
         const timeDiff = postTime - preTime;
         // If there's a sweep
         if (preController === postController && timeDiff !== 0) {
-            result = result.concat(sweep(preValue, postValue, timeDiff, precission).map<CCCommand>(([value, time]) => [postController, value, time]));
+            result = result.concat(sweep(preValue, postValue, preTime, postTime, precission).map<CCCommand>(([value, time]) => [postController, value, time]));
             continue;
         }
         result = result.concat([[postController, postValue, postTime]]);
