@@ -1,14 +1,14 @@
-// import { setTimeoutPromise } from "../utils/promise-utils";
 import NanoTimer from 'nanotimer';
 import { inlineChord } from 'harmonics';
 import { setTimeoutPromise } from '../utils/promise-utils';
-import { Output, WebMidi } from 'webmidi';
+import * as JZZ from 'jzz';
+import { JZZTypes } from '../custom-typing/jzz';
 import { CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/jsondb-types';
 import { ResponseStatus } from '../types/status-type';
 import EventEmitter from 'events';
-import { parseChord, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from '../utils/midi-message-utils';
+import { parseChord, parseNote, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from '../utils/midi-message-utils';
 import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from '../configuration/constants';
-import { firstMessageValue, removeParenthesisPart, splitMessageArguments } from '../utils/message-utils';
+import { firstMessageValue, splitMessageArguments } from '../utils/message-utils';
 import { CCCommand } from '../types/midi-types';
 
 // Constants
@@ -17,7 +17,7 @@ const BAR_LOOP_CHANGE_EVENT = 'barLoopChange';
 const barEventEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 
 // Closure variables
-let output: Output | undefined;
+let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
 let tempo: number;
 let loopActiveId: string;
 let chordProgressionActive: boolean;
@@ -31,9 +31,9 @@ _initVariables();
  */
 export async function initMidi(targetMIDIName: string): Promise<void> {
     try {
-        await WebMidi.enable();
+        const midi = await JZZ.default();
         _initVariables();
-        output = WebMidi.outputs.find((output) => output.name.includes(targetMIDIName));
+        output = midi.openMidiOut(targetMIDIName);
         console.log('WebMidi enabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
@@ -43,12 +43,12 @@ export async function initMidi(targetMIDIName: string): Promise<void> {
 /**
  * Disables WebMIDI connectivity and stops all MIDI
  */
-export async function disableMidi(): Promise<void> {
+export async function disableMidi(targetMIDIChannel: number): Promise<void> {
     try {
-        fullStop();
-        await WebMidi.disable();
+        fullStop(targetMIDIChannel);
+        await output?.close();
         output = undefined;
-        console.log('WebMidi disabled!');
+        console.log('MIDI disabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
     }
@@ -59,14 +59,14 @@ export async function disableMidi(): Promise<void> {
  * @param message Command arguments (tempo)
  * @return Parsed tempo value
  */
-export function setMidiTempo(message: string): number {
+export function setMidiTempo(targetMIDIChannel: number, message: string): number {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     tempo = parseInt(firstMessageValue(message));
 
     // Generates a MIDI clock
-    _midiClock(output, calculateClockTickTimeNs(tempo));
+    _midiClock(targetMIDIChannel, output, calculateClockTickTimeNs(tempo));
 
     return tempo;
 }
@@ -86,7 +86,7 @@ export function sendCCMessage(message: string, channels: number): Array<[key: nu
     const processedCommandList = _processCCCommandList(ccCommandList);
 
     for (const [controller, value, time] of processedCommandList) {
-        output.sendControlChange(controller, value, { channels, time: WebMidi.time + time });
+        output.wait(time).control(channels, controller, value);
     }
 
     return ccCommandList.map(validateControllerMessage);
@@ -99,10 +99,9 @@ export function sendCCMessage(message: string, channels: number): Array<[key: nu
  */
 export function sendMIDINote(message: string, channels: number): void {
     const noteList = splitMessageArguments(message);
-    for (const note of noteList) {
-        const timeout = calculateTimeout(note, tempo);
-        const parsedNote = removeParenthesisPart(note);
-        _triggerNoteListDelay(parsedNote, timeout, channels);
+    const parsedNoteList = noteList.map<[note: string, tempo: number]>((note) => [parseNote(note), calculateTimeout(note, tempo)]);
+    for (const [note, timeout] of parsedNoteList) {
+        _triggerNoteListDelay(note, timeout, channels);
     }
 }
 
@@ -203,27 +202,27 @@ export function stopMIDILoop(): void {
 /**
  * Syncrhonizes the MIDI clock and the beat. Useful when the instruments are out-of-sync
  */
-export function syncMidi(): void {
+export function syncMidi(targetMidiChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     tick = 0;
-    output.sendStop();
-    output.sendAllNotesOff();
-    output.sendStart();
+    output.stop();
+    output.allNotesOff(targetMidiChannel);
+    output.start();
 }
 
 /**
  * Stops sound, MIDI clock and MIDI loop
  */
-export function fullStop(): void {
+export function fullStop(targetMidiChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     loopActiveId = GLOBAL.EMPTY_MESSAGE;
     tick = 0;
-    output.sendStop();
-    output.sendAllNotesOff();
+    output.stop();
+    output.allNotesOff(targetMidiChannel);
     timer.clearInterval();
 }
 
@@ -237,7 +236,8 @@ export function setVolume(message: string): number {
     if (isNaN(value) || value < 0 || value > 100) {
         throw new Error(ERROR_MSG.INVALID_VOLUME);
     }
-    volume = value / 100;
+    // Convert to range 0-127
+    volume = Math.floor(value * 1.27);
     return value;
 }
 
@@ -251,9 +251,14 @@ async function _triggerNoteList(noteList: number | string | string[], release: n
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    output.sendNoteOn(noteList, { attack: volume, channels });
+    const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
+    for (const note of parsedNoteList) {
+        output.noteOn(channels, note, volume);
+    }
     await setTimeoutPromise(release);
-    output.sendNoteOff(noteList, { channels });
+    for (const note of parsedNoteList) {
+        output.noteOff(channels, note, volume);
+    }
 }
 
 /**
@@ -267,8 +272,11 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    output.sendNoteOn(noteList, { attack: volume, channels });
-    output.sendNoteOff(noteList, { channels, time: WebMidi.time + Math.floor(release / 1_000_000) });
+    const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
+    const releaseTime = Math.floor(release / 1_000_000);
+    for (const note of parsedNoteList) {
+        output.note(channels, note, volume, releaseTime);
+    }
 }
 
 /**
@@ -292,17 +300,17 @@ async function _isBarStart(): Promise<void> {
  * @param output VirtualMIDI device
  * @param clockTickTimeNs Clock time in nanoseconds
  */
-function _midiClock(output: Output, clockTickTimeNs: number): void {
+function _midiClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, clockTickTimeNs: number): void {
     const sendTick = () => {
         if (tick === 0 && !chordProgressionActive) {
             barEventEmitter.emit(BAR_LOOP_CHANGE_EVENT);
         }
-        output.sendClock();
+        output.clock();
         tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
     };
     // First tick
     timer.clearInterval();
-    syncMidi();
+    syncMidi(targetMIDIChannel);
     sendTick();
     // Next ticks
     timer.setInterval(sendTick, '', String(clockTickTimeNs) + 'n');

@@ -54,20 +54,20 @@
         "space": [
             "reverb on",
             "reverbtype 43",
-            "reverbtime 80",
-            "reverbdepth 80"
+            "reverbtime 40",
+            "reverbdepth 64"
         ],
         "riser": [
             "reverb on",
             "reverbtype 50",
-            "reverbtime 80",
-            "reverbdepth 80"
+            "reverbtime 40",
+            "reverbdepth 64"
         ],
         "submarine": [
             "reverb on",
             "reverbtype 57",
-            "reverbtime 80",
-            "reverbdepth 80"
+            "reverbtime 40",
+            "reverbdepth 64"
         ],
         "polydelay": [
             "delay on",
