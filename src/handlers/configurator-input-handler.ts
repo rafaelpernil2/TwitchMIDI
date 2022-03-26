@@ -15,14 +15,14 @@ const NEW_CODE = 'newCode';
 export async function setupConfiguration(): Promise<EnvObject> {
     console.log(
         chalk.yellow(`
-        _______       _ _       _     __  __ _____ _____ _____ 
+        _______       _ _       _     __  __ _____ _____ _____
         |__   __|     (_) |     | |   |  \\/  |_   _|  __ \\_   _|
-           | |_      ___| |_ ___| |__ | \\  / | | | | |  | || |  
-           | \\ \\ /\\ / / | __/ __| '_ \\| |\\/| | | | | |  | || |  
-           | |\\ V  V /| | || (__| | | | |  | |_| |_| |__| || |_ 
+           | |_      ___| |_ ___| |__ | \\  / | | | | |  | || |
+           | \\ \\ /\\ / / | __/ __| '_ \\| |\\/| | | | | |  | || |
+           | |\\ V  V /| | || (__| | | | |  | |_| |_| |__| || |_
            |_| \\_/\\_/ |_|\\__\\___|_| |_|_|  |_|_____|_____/_____|
                                                by rafaelpernil2
-                                                                
+
     If you are seeing this, it means this is your first time
     running this software (or some setting was wrong). Welcome! :)
 
@@ -66,11 +66,9 @@ export async function setupConfiguration(): Promise<EnvObject> {
 
     `)
     );
-    // CLIENT_ID
 
-    const CLIENT_ID = await makeQuestion(rl, '*********** Paste your Client ID and press enter\n');
-    // CLIENT_SECRET=
-    const CLIENT_SECRET = await makeQuestion(rl, '*********** Paste your Client Secret and press enter\n');
+    const CLIENT_ID = await _makeQuestion(rl, '*********** Paste your Client ID and press enter\n');
+    const CLIENT_SECRET = await _makeQuestion(rl, '*********** Paste your Client Secret and press enter\n');
 
     console.log(
         chalk.greenBright(`
@@ -88,10 +86,8 @@ export async function setupConfiguration(): Promise<EnvObject> {
     If it all went well, you will see a page that says "Authentication successful!"
     `)
     );
-
+    // This server awaits the response from the URL
     const server = _createAuthServer(CONFIG.LOCAL_SERVER_HOST, CONFIG.LOCAL_SERVER_PORT);
-
-    // CODE
     const authUrl = await _createAuthURL(CLIENT_ID);
     console.log(
         chalk.magenta(`
@@ -100,15 +96,13 @@ export async function setupConfiguration(): Promise<EnvObject> {
     );
 
     // Wait until user clicks and authorizes
-    const BROADCASTER_CODE = await getAuthCode();
+    const BROADCASTER_CODE = await _getAuthCode();
 
     const { access_token, refresh_token } = await _createTokenURL(CLIENT_ID, CLIENT_SECRET, BROADCASTER_CODE);
     const BROADCASTER_ACCESS_TOKEN = access_token;
     const BROADCASTER_REFRESH_TOKEN = refresh_token;
 
-    // BOT_ACCESS_TOKEN=
-    // BOT_REFRESH_TOKEN=
-    const isBotDifferent = getBooleanByString((await makeQuestion(rl, 'Do you want to use a different user for your bot? (Y/n)\n')) || 'Y');
+    const isBotDifferent = getBooleanByString((await _makeQuestion(rl, 'Do you want to use a different user for your bot? (Y/n)\n')) || 'Y');
     let BOT_ACCESS_TOKEN = BROADCASTER_ACCESS_TOKEN;
     let BOT_REFRESH_TOKEN = BROADCASTER_REFRESH_TOKEN;
     if (isBotDifferent) {
@@ -124,7 +118,7 @@ export async function setupConfiguration(): Promise<EnvObject> {
         `)
         );
         // Wait until user clicks and authorizes
-        const BOT_CODE = await getAuthCode();
+        const BOT_CODE = await _getAuthCode();
         const { access_token, refresh_token } = await _createTokenURL(CLIENT_ID, CLIENT_SECRET, BOT_CODE);
 
         BOT_ACCESS_TOKEN = access_token;
@@ -148,10 +142,8 @@ export async function setupConfiguration(): Promise<EnvObject> {
 
     `)
     );
-    // TARGET_CHANNEL=
-    const TARGET_CHANNEL = await makeQuestion(rl, '*********** Enter the Twitch channel where you stream\n');
-    // REWARDS_MODE=
-    const rewardsModeFlag = (await makeQuestion(rl, '*********** Do you want to use Rewards/Channel Points mode instead of chat? (Y/n)\n')) || 'Y';
+    const TARGET_CHANNEL = await _makeQuestion(rl, '*********** Enter the Twitch channel where you stream\n');
+    const rewardsModeFlag = (await _makeQuestion(rl, '*********** Do you want to use Rewards/Channel Points mode instead of chat? (Y/n)\n')) || 'Y';
     const REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
 
     console.log(
@@ -171,11 +163,10 @@ export async function setupConfiguration(): Promise<EnvObject> {
 
     `)
     );
-    // TARGET_MIDI_NAME=
-    const TARGET_MIDI_NAME = (await makeQuestion(rl, '*********** Enter the name of the Virtual MIDI device to use (Default: loopMIDI Port)\n')) || 'loopMIDI Port';
-    // TARGET_MIDI_CHANNEL=
-    const TARGET_MIDI_CHANNEL = (await makeQuestion(rl, '*********** Enter the MIDI channel to use with your Virtual MIDI device (Default: 1)\n')) || '1';
+    const TARGET_MIDI_NAME = (await _makeQuestion(rl, '*********** Enter the name of the Virtual MIDI device to use (Default: loopMIDI Port)\n')) || 'loopMIDI Port';
+    const TARGET_MIDI_CHANNEL = (await _makeQuestion(rl, '*********** Enter the MIDI channel to use with your Virtual MIDI device (Default: 1)\n')) || '1';
 
+    // Delete the original file first
     try {
         await fs.unlink(CONFIG.DOT_ENV_PATH);
     } catch (error) {
@@ -225,13 +216,13 @@ export async function setupConfiguration(): Promise<EnvObject> {
     };
 }
 
-function makeQuestion(rl: readline.Interface, question: string): Promise<string> {
+function _makeQuestion(rl: readline.Interface, question: string): Promise<string> {
     return new Promise<string>((resolve) => {
         rl.question(question, (answer) => resolve(answer));
     });
 }
 
-async function getAuthCode(): Promise<string> {
+async function _getAuthCode(): Promise<string> {
     return new Promise((resolve) => {
         const listener = (code: string) => {
             resolve(code);
@@ -259,6 +250,7 @@ function _createAuthServer(host: string, port: number): http.Server {
 }
 
 async function _createAuthURL(client_id: string): Promise<string> {
+    // Obtains the scopes from the template file
     const accessTokenTemplate = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;
     const scope = accessTokenTemplate.scope.reduce((acc, curr) => (acc += '+' + curr));
     const authParams = new URLSearchParams({
