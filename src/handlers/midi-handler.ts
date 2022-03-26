@@ -159,6 +159,14 @@ export function getChordList(): Array<[aliasName: string, chordList: string]> {
 }
 
 /**
+ * Obtains the list of Control Change (CC) actions saved and returns it
+ * @return List of Control Change (CC) actions aliases
+ */
+export function getCCList(): string[] {
+    return Object.keys(ALIASES_DB.value?.ccCommands ?? {});
+}
+
+/**
  * Saves a chord progresion with an alias to be used later
  * @param message Command arguments (alias/chords)
  */

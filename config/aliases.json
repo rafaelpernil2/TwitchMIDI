@@ -13,6 +13,8 @@
         "volumenbucle": "midivolume",
         "tempo": "settempo",
         "chord": "sendchord",
+        "chords": "sendchord",
+        "acorde": "sendchord",
         "acordes": "sendchord",
         "progresion": "sendchord",
         "loop": "sendloop",
@@ -29,8 +31,13 @@
         "deletechord": "removechord",
         "looplist": "chordlist",
         "nota": "sendnote",
+        "notas": "sendnote",
         "note": "sendnote",
+        "notes": "sendnote",
         "cc": "sendcc",
+        "cccommands": "cclist",
+        "comandoscc": "cclist",
+        "controlchangelist": "cclist",
         "controlchange": "sendcc"
     },
     "chordProgressions": {

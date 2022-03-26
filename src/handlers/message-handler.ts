@@ -8,6 +8,7 @@ import {
     disableMidi,
     fetchDBs,
     fullStop,
+    getCCList,
     getChordList,
     initMidi,
     removeChordAlias,
@@ -76,6 +77,10 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
 
             chatClient.say(channel, `Control Change (${controllerListString}) message(s) sent! `);
         },
+        [COMMANDS.GET_CC_LIST]: (channel) => {
+            const [first, ...restOfCommands] = getCCList();
+            chatClient.say(channel, '🟠Here is the list of saved Control Change (CC) actions🟠: ' + restOfCommands.reduce<string>((acc, curr) => `${acc}, ${curr}`, first));
+        },
         [COMMANDS.SEND_CHORD]: async (channel, user, message) => {
             chatClient.say(channel, 'Chord progression enqueued! ');
             await sendMIDIChord(message, targetMidiChannel);
@@ -90,7 +95,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         },
         [COMMANDS.GET_CHORD_LIST]: (channel) => {
             const chordProgressionList = getChordList();
-            chatClient.say(channel, 'Here is the list of saved chord progresison/loop:');
+            chatClient.say(channel, '🔵Here is the list of saved chord progresison/loop🔵:');
             for (const [alias, chordProgression] of chordProgressionList) {
                 chatClient.say(channel, `🎵${alias}🎵:🎼${chordProgression}🎼`);
             }
