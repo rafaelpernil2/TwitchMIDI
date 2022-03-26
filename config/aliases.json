@@ -1,5 +1,7 @@
 {
     "commands": {
+        "ayudamidi": "midihelp",
+        "midicommands": "midihelp",
         "encendermidi": "midion",
         "encenderjamones": "midion",
         "apagarmidi": "midioff",

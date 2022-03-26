@@ -1,8 +1,8 @@
 import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { ALIAS_MAP, COMMANDS, ERROR_MSG, SAFE_COMMANDS } from '../configuration/constants';
+import { ALIAS_MAP, COMMANDS, COMMAND_DESCRIPTIONS, ERROR_MSG, GLOBAL, SAFE_COMMANDS } from '../configuration/constants';
 import { CommandHandler, CommandType, MessageHandler } from '../types/message-types';
-import { getCommand, getCommandContent } from '../utils/message-utils';
+import { firstMessageValue, getCommand, getCommandContent, isValidCommand } from '../utils/message-utils';
 import {
     addChordAlias,
     disableMidi,
@@ -23,6 +23,19 @@ import {
 
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false): MessageHandler => {
     const onMessageMap: Record<CommandType, CommandHandler> = {
+        [COMMANDS.MIDI_HELP]: (channel, user, message, userInfo) => {
+            const commandToTest = firstMessageValue(message);
+
+            if (isValidCommand(commandToTest)) {
+                chatClient.say(channel, `🟡Command info!🟡 !${commandToTest}: ${COMMAND_DESCRIPTIONS[commandToTest] ?? COMMAND_DESCRIPTIONS[ALIAS_MAP[commandToTest]]}`);
+            } else {
+                const [first, ...restOfCommands] = Object.values(COMMANDS);
+                chatClient.say(
+                    channel,
+                    '🟣TwitchMIDI available commands - Use "!midihelp yourcommand" for more info🟣: ' + restOfCommands.reduce<string>((acc, curr) => `${acc}, ${curr}`, first)
+                );
+            }
+        },
         [COMMANDS.MIDI_ON]: async (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
@@ -59,7 +72,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             }
             const ccMessageList = sendCCMessage(message, targetMidiChannel);
             const [first, ...restOfControllers] = [...new Set(ccMessageList.map(([controller]) => controller))] as number[];
-            const controllerListString = restOfControllers.reduce((acc, curr) => `${acc}, CC#${curr}`, `CC#${first}`);
+            const controllerListString = restOfControllers.reduce((acc, curr) => `${acc}, ${GLOBAL.CC_CONTROLLER}${curr}`, `${GLOBAL.CC_CONTROLLER}${first}`);
 
             chatClient.say(channel, `Control Change (${controllerListString}) message(s) sent! `);
         },
