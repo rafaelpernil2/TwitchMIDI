@@ -48,7 +48,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         [COMMANDS.MIDI_OFF]: async (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
-                await disableMidi();
+                await disableMidi(targetMidiChannel);
                 chatClient.say(channel, 'MIDI magic disabled!');
             } else {
                 chatClient.say(channel, 'Meeeec, you do not have enough permissions');
@@ -59,7 +59,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             chatClient.say(channel, 'Volume set to ' + String(volume) + '%');
         },
         [COMMANDS.SET_TEMPO]: (channel, user, message) => {
-            const tempo = setMidiTempo(message);
+            const tempo = setMidiTempo(targetMidiChannel, message);
             chatClient.say(channel, 'Tempo set to ' + String(tempo));
         },
         [COMMANDS.SEND_NOTE]: (channel, user, message) => {
@@ -106,14 +106,14 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         [COMMANDS.FULL_STOP]: (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
-                fullStop();
+                fullStop(targetMidiChannel);
                 chatClient.say(channel, 'Stopping all MIDI... Done!');
             } else {
                 chatClient.say(channel, 'Ask a mod to run this command');
             }
         },
         [COMMANDS.SYNC]: (channel) => {
-            syncMidi();
+            syncMidi(targetMidiChannel);
             chatClient.say(channel, "Let's fix this mess... Done!");
         },
         [COMMANDS.FETCH_DB]: async (channel, user, message, userInfo) => {

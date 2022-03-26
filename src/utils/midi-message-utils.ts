@@ -1,4 +1,4 @@
-import { ALIASES_DB, ERROR_MSG, GLOBAL, TOGGLE_MIDI_VALUES } from '../configuration/constants';
+import { CONFIG, ALIASES_DB, ERROR_MSG, GLOBAL, TOGGLE_MIDI_VALUES } from '../configuration/constants';
 import { CC_CONTROLLERS } from '../types/jsondb-types';
 import { removeParenthesisPart, getParenthesisValue } from './message-utils';
 
@@ -69,6 +69,13 @@ export function validateControllerMessage(ccCommand: string): [controller: numbe
     const time = Number(getParenthesisValue(rawValue) || '0'); // Time to add in ms
 
     return [controller, value, time];
+}
+
+export function parseNote(note: string): string {
+    const preparedNote = removeParenthesisPart(note);
+    const lastChar = preparedNote.charAt(preparedNote.length - 1);
+    const octave = isNaN(Number(lastChar)) ? CONFIG.DEFAULT_OCTAVE : '';
+    return preparedNote + octave;
 }
 
 function _getQuarterMultiplier(chordNoteToken: string): number {
