@@ -9,12 +9,11 @@ import { getAuthProvider } from './providers/auth-provider';
 import { ChatClient } from '@twurple/chat';
 import { onMessageHandlerClosure } from './handlers/message-handler';
 import { WebMidi } from 'webmidi';
-import { CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
+import { ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
 import { getBooleanByString } from './utils/data-utils';
-import { JSONDatabase } from './providers/jsondb-provider';
-import { RewardsType, REWARD_TITLE_COMMAND } from './types/jsondb-types';
+import { REWARD_TITLE_COMMAND } from './types/jsondb-types';
 import { getCommand } from './utils/message-utils';
 import { setupConfiguration } from './handlers/configurator-input-handler';
 

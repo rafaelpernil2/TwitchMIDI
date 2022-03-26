@@ -48,6 +48,7 @@ export const CONFIG = {
 };
 
 export const COMMANDS = {
+    MIDI_HELP: 'midihelp',
     MIDI_ON: 'midion',
     MIDI_OFF: 'midioff',
     ADD_CHORD_ALIAS: 'addchord',
@@ -65,7 +66,27 @@ export const COMMANDS = {
     FETCH_DB: 'fetchdb'
 } as const;
 
+export const COMMAND_DESCRIPTIONS: Record<typeof COMMANDS[keyof typeof COMMANDS], string> = {
+    midihelp: 'Shows all commands available and info about each command. Syntax: command (e.g "sendloop")',
+    midion: 'Turns on the bot',
+    midioff: 'Turns off the bot',
+    addchord: 'Adds a chord progression or loop with an alias. Syntax: name/chords (e.g. "pop/C G Amin F")',
+    removechord: 'Removes a chord progression or loop with an alias. Syntax: alias (e.g. "pop")',
+    chordlist: 'Shows all saved chord progressions or loops that can be used',
+    sendnote: 'Sends a note or a set of notes. Syntax: note1 note2 ... (e.g. "C4 E4 G4")',
+    sendchord: 'Sends a chord progression with an alias or with chords. Syntax: chord1 chord2... (e.g. "C G Amin F","pop")',
+    sendloop: 'Sends a loop with an alias or with chords. Syntax: chord1 chord2... (e.g. "C G Amin F","pop")',
+    sendcc: 'Sends a MIDI CC message with an alias, code or value sweeps. Syntax: controller value,controller2 value2(delay_in_ms) (e.g. "43 100,43 60","cutoff sweep","cutoff 100,cutoff 60","cutoff 100,cutoff 10(10000)")',
+    midivolume: 'Sets the velocity for the chords/notes/loops. Syntax: value between 0 and 100 (e.g. "50","100")',
+    stoploop: 'Stops the loop once it ends',
+    fullstopmidi: 'Stops all MIDI messages and sound',
+    settempo: 'Starts the MIDI clock and sets a tempo. Syntax: tempo (e.g. "120", "200")',
+    syncmidi: 'Restarts the MIDI clock and syncs loop and clock on the next repetition',
+    fetchdb: 'Refreshes aliases configuration'
+} as const;
+
 export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boolean> = {
+    midihelp: true,
     midion: false,
     midioff: false,
     addchord: false,
