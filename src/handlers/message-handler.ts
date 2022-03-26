@@ -23,7 +23,7 @@ import {
 
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false): MessageHandler => {
     const onMessageMap: Record<CommandType, CommandHandler> = {
-        [COMMANDS.MIDI_HELP]: (channel, user, message, userInfo) => {
+        [COMMANDS.MIDI_HELP]: (channel, user, message) => {
             const commandToTest = firstMessageValue(message);
 
             if (isValidCommand(commandToTest)) {
