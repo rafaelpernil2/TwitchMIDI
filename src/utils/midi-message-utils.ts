@@ -7,19 +7,23 @@ export function parseChord(chord: string): string {
     if (parsedChord.length === 0) {
         return '';
     }
+    // If only a note is provided, it will be transformed into a major chord (e.g CM, EbM...)
     if (parsedChord.length === 1 || (parsedChord.length === 2 && (parsedChord.includes('b') || parsedChord.includes('#')))) {
         return parsedChord + 'M';
     }
+    // If "min" is used to represent a minor chord, it will be converted to harmonics syntax "m"
     if (parsedChord.includes('min')) {
         const [pre, post] = parsedChord.split('min');
         return pre + 'm' + post;
     }
+    // If a 9,7 or 6 chord is provided but without "th", it will be converted to harmonics syntax "th"
     if (
         ['9', '7', '6'].includes(parsedChord.charAt(parsedChord.length - 1)) &&
         (parsedChord.length < 3 || (parsedChord.length === 3 ? parsedChord.includes('b') || parsedChord.includes('#') : false))
     ) {
         return parsedChord + 'th';
     }
+    // Default
     return parsedChord;
 }
 

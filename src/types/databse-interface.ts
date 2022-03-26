@@ -1,6 +1,3 @@
-import { CustomObject } from './custom-object-type';
-import { ResponseStatus } from './status-type';
-
 export interface Database<T extends CustomObject<T>> {
     get value(): T | undefined;
     set value(v: T | undefined);
@@ -12,3 +9,12 @@ export interface Database<T extends CustomObject<T>> {
     rollback(): ResponseStatus;
     fetchDB(): Promise<void>;
 }
+
+export enum ResponseStatus {
+    Ok,
+    Error
+}
+
+type CustomObject<Type> = {
+    [Property in keyof Type]: Type[Property];
+};

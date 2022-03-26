@@ -4,7 +4,7 @@ import { setTimeoutPromise } from '../utils/promise-utils';
 import * as JZZ from 'jzz';
 import { JZZTypes } from '../custom-typing/jzz';
 import { CC_COMMANDS, CHORD_PROGRESSIONS } from '../types/jsondb-types';
-import { ResponseStatus } from '../types/status-type';
+import { ResponseStatus } from '../types/databse-interface';
 import EventEmitter from 'events';
 import { parseChord, parseNote, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from '../utils/midi-message-utils';
 import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from '../configuration/constants';
