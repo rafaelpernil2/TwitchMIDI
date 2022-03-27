@@ -104,7 +104,7 @@ export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boole
     stoploop: false,
     fullstopmidi: false,
     settempo: false,
-    syncmidi: true,
+    syncmidi: false,
     fetchdb: false
 } as const;
 
