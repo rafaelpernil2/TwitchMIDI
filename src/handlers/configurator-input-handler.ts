@@ -98,7 +98,7 @@ export async function setupConfiguration(): Promise<EnvObject> {
     // Wait until user clicks and authorizes
     const BROADCASTER_CODE = await _getAuthCode();
 
-    const { access_token, refresh_token } = await _createTokenURL(CLIENT_ID, CLIENT_SECRET, BROADCASTER_CODE);
+    const { access_token, refresh_token } = await _requestTokenByCode(CLIENT_ID, CLIENT_SECRET, BROADCASTER_CODE);
     const BROADCASTER_ACCESS_TOKEN = access_token;
     const BROADCASTER_REFRESH_TOKEN = refresh_token;
 
@@ -119,7 +119,7 @@ export async function setupConfiguration(): Promise<EnvObject> {
         );
         // Wait until user clicks and authorizes
         const BOT_CODE = await _getAuthCode();
-        const { access_token, refresh_token } = await _createTokenURL(CLIENT_ID, CLIENT_SECRET, BOT_CODE);
+        const { access_token, refresh_token } = await _requestTokenByCode(CLIENT_ID, CLIENT_SECRET, BOT_CODE);
 
         BOT_ACCESS_TOKEN = access_token;
         BOT_REFRESH_TOKEN = refresh_token;
@@ -263,7 +263,7 @@ async function _createAuthURL(client_id: string): Promise<string> {
     return CONFIG.TWITCH_BASE_AUTH_URL + 'authorize?' + decodeURIComponent(authParams.toString());
 }
 
-async function _createTokenURL(client_id: string, client_secret: string, code: string): Promise<{ access_token: string; refresh_token: string }> {
+async function _requestTokenByCode(client_id: string, client_secret: string, code: string): Promise<{ access_token: string; refresh_token: string }> {
     const tokenParams = new URLSearchParams({
         client_id,
         client_secret,
