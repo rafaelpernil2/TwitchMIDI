@@ -384,13 +384,12 @@ function _processCCCommandList(ccCommandList: string[], precission = 256): Array
     for (let preIndex = 0, postIndex = 1; preIndex < ccCommandList.length - 1, postIndex < ccCommandList.length; preIndex++, postIndex++) {
         const [preController, preValue, preTime] = validateControllerMessage(ccCommandList[preIndex]);
         const [postController, postValue, postTime] = validateControllerMessage(ccCommandList[postIndex]);
-        const timeDiff = postTime - preTime;
         // If there's a sweep
-        if (preController === postController && timeDiff !== 0) {
-            result = result.concat(sweep(preValue, postValue, preTime, postTime, precission).map<CCCommand>(([value, time]) => [postController, value, time]));
-            continue;
+        if (preController === postController && postTime - preTime !== 0) {
+            result = result.concat(sweep(preValue, postValue, preTime, postTime, precission).map(([value, time]) => [postController, value, time]));
+        } else {
+            result = result.concat([[postController, postValue, postTime]]);
         }
-        result = result.concat([[postController, postValue, postTime]]);
     }
     return result;
 }

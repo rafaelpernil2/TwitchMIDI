@@ -1,6 +1,6 @@
 import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { ALIAS_MAP, COMMANDS, COMMAND_DESCRIPTIONS, ERROR_MSG, GLOBAL, SAFE_COMMANDS } from '../configuration/constants';
+import { ALIAS_MAP, COMMANDS, COMMAND_DESCRIPTIONS, GLOBAL, SAFE_COMMANDS } from '../configuration/constants';
 import { CommandHandler, CommandType, MessageHandler } from '../types/message-types';
 import { firstMessageValue, getCommand, getCommandContent, isValidCommand } from '../utils/message-utils';
 import {
@@ -67,10 +67,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             chatClient.say(channel, 'Note sent! ');
             sendMIDINote(message, targetMidiChannel);
         },
-        [COMMANDS.SEND_CC]: (channel, user, message, userInfo) => {
-            if (!userInfo.isSubscriber && !userInfo.isBroadcaster && !userInfo.isMod) {
-                throw new Error(ERROR_MSG.INSUFFICIENT_PERMISSIONS);
-            }
+        [COMMANDS.SEND_CC]: (channel, user, message) => {
             const ccMessageList = sendCCMessage(message, targetMidiChannel);
             const [first, ...restOfControllers] = [...new Set(ccMessageList.map(([controller]) => controller))] as number[];
             const controllerListString = restOfControllers.reduce((acc, curr) => `${acc}, ${GLOBAL.CC_CONTROLLER}${curr}`, `${GLOBAL.CC_CONTROLLER}${first}`);
@@ -117,7 +114,11 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
                 chatClient.say(channel, 'Ask a mod to run this command');
             }
         },
-        [COMMANDS.SYNC]: (channel) => {
+        [COMMANDS.SYNC]: (channel, user, message, userInfo) => {
+            const { isBroadcaster, isMod } = userInfo;
+            if (!isMod && !isBroadcaster) {
+                return;
+            }
             syncMidi(targetMidiChannel);
             chatClient.say(channel, "Let's fix this mess... Done!");
         },
