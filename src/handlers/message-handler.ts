@@ -143,8 +143,15 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             const handler = onMessageMap?.[commandMessage] ?? onMessageMap?.[ALIAS_MAP[commandMessage]];
             const processedMessage = getCommandContent(message);
 
-            // If rewards mode enabled and not streamer or mod, only allow safe commands
-            if (rewardsMode && !msg?.userInfo.isBroadcaster && !msg?.userInfo.isMod && !SAFE_COMMANDS[commandMessage] && !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]) {
+            // If rewards mode enabled and the input is a command and the user is not streamer or mod or vip, only allow safe commands
+            if (
+                rewardsMode &&
+                !msg?.userInfo.isBroadcaster &&
+                !msg?.userInfo.isMod &&
+                !msg?.userInfo.isVip &&
+                !SAFE_COMMANDS[commandMessage] &&
+                !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]
+            ) {
                 return;
             }
 
