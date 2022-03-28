@@ -1,13 +1,14 @@
 import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { ALIAS_MAP, COMMANDS, ERROR_MSG, SAFE_COMMANDS } from '../configuration/constants';
+import { ALIAS_MAP, COMMANDS, COMMAND_DESCRIPTIONS, GLOBAL, SAFE_COMMANDS } from '../configuration/constants';
 import { CommandHandler, CommandType, MessageHandler } from '../types/message-types';
-import { getCommand, getCommandContent } from '../utils/message-utils';
+import { firstMessageValue, getCommand, getCommandContent, isValidCommand } from '../utils/message-utils';
 import {
     addChordAlias,
     disableMidi,
-    fetchAliasesDB,
+    fetchDBs,
     fullStop,
+    getCCList,
     getChordList,
     initMidi,
     removeChordAlias,
@@ -23,6 +24,19 @@ import {
 
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false): MessageHandler => {
     const onMessageMap: Record<CommandType, CommandHandler> = {
+        [COMMANDS.MIDI_HELP]: (channel, user, message) => {
+            const commandToTest = firstMessageValue(message);
+
+            if (isValidCommand(commandToTest)) {
+                chatClient.say(channel, `🟡Command info!🟡 !${commandToTest}: ${COMMAND_DESCRIPTIONS[commandToTest] ?? COMMAND_DESCRIPTIONS[ALIAS_MAP[commandToTest]]}`);
+            } else {
+                const [first, ...restOfCommands] = Object.values(COMMANDS);
+                chatClient.say(
+                    channel,
+                    '🟣TwitchMIDI available commands - Use "!midihelp yourcommand" for more info🟣: ' + restOfCommands.reduce<string>((acc, curr) => `${acc}, ${curr}`, first)
+                );
+            }
+        },
         [COMMANDS.MIDI_ON]: async (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
@@ -35,7 +49,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         [COMMANDS.MIDI_OFF]: async (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
-                await disableMidi();
+                await disableMidi(targetMidiChannel);
                 chatClient.say(channel, 'MIDI magic disabled!');
             } else {
                 chatClient.say(channel, 'Meeeec, you do not have enough permissions');
@@ -46,22 +60,23 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             chatClient.say(channel, 'Volume set to ' + String(volume) + '%');
         },
         [COMMANDS.SET_TEMPO]: (channel, user, message) => {
-            const tempo = setMidiTempo(message);
+            const tempo = setMidiTempo(targetMidiChannel, message);
             chatClient.say(channel, 'Tempo set to ' + String(tempo));
         },
         [COMMANDS.SEND_NOTE]: (channel, user, message) => {
             chatClient.say(channel, 'Note sent! ');
             sendMIDINote(message, targetMidiChannel);
         },
-        [COMMANDS.SEND_CC]: (channel, user, message, userInfo) => {
-            if (!userInfo.isSubscriber && !userInfo.isBroadcaster && !userInfo.isMod) {
-                throw new Error(ERROR_MSG.INSUFFICIENT_PERMISSIONS);
-            }
+        [COMMANDS.SEND_CC]: (channel, user, message) => {
             const ccMessageList = sendCCMessage(message, targetMidiChannel);
-            const controllerList = [...new Set(ccMessageList.map(([controller]) => controller))];
-            for (const controller of controllerList) {
-                chatClient.say(channel, `Control Change(CC#${controller}) message sent! `);
-            }
+            const [first, ...restOfControllers] = [...new Set(ccMessageList.map(([controller]) => controller))] as number[];
+            const controllerListString = restOfControllers.reduce((acc, curr) => `${acc}, ${GLOBAL.CC_CONTROLLER}${curr}`, `${GLOBAL.CC_CONTROLLER}${first}`);
+
+            chatClient.say(channel, `Control Change (${controllerListString}) message(s) sent! `);
+        },
+        [COMMANDS.GET_CC_LIST]: (channel) => {
+            const [first, ...restOfCommands] = getCCList();
+            chatClient.say(channel, '🟠Here is the list of saved Control Change (CC) actions🟠: ' + restOfCommands.reduce<string>((acc, curr) => `${acc}, ${curr}`, first));
         },
         [COMMANDS.SEND_CHORD]: async (channel, user, message) => {
             chatClient.say(channel, 'Chord progression enqueued! ');
@@ -77,7 +92,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         },
         [COMMANDS.GET_CHORD_LIST]: (channel) => {
             const chordProgressionList = getChordList();
-            chatClient.say(channel, 'Here is the list of saved chord progresison/loop:');
+            chatClient.say(channel, '🔵Here is the list of saved chord progresison/loop🔵:');
             for (const [alias, chordProgression] of chordProgressionList) {
                 chatClient.say(channel, `🎵${alias}🎵:🎼${chordProgression}🎼`);
             }
@@ -93,14 +108,18 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         [COMMANDS.FULL_STOP]: (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
             if (isMod || isBroadcaster) {
-                fullStop();
+                fullStop(targetMidiChannel);
                 chatClient.say(channel, 'Stopping all MIDI... Done!');
             } else {
                 chatClient.say(channel, 'Ask a mod to run this command');
             }
         },
-        [COMMANDS.SYNC]: (channel) => {
-            syncMidi();
+        [COMMANDS.SYNC]: (channel, user, message, userInfo) => {
+            const { isBroadcaster, isMod } = userInfo;
+            if (!isMod && !isBroadcaster) {
+                return;
+            }
+            syncMidi(targetMidiChannel);
             chatClient.say(channel, "Let's fix this mess... Done!");
         },
         [COMMANDS.FETCH_DB]: async (channel, user, message, userInfo) => {
@@ -108,7 +127,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             if (!isBroadcaster) {
                 return;
             }
-            await fetchAliasesDB();
+            await fetchDBs();
             chatClient.say(channel, 'MIDI lists updated!');
         }
     };
@@ -124,8 +143,15 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             const handler = onMessageMap?.[commandMessage] ?? onMessageMap?.[ALIAS_MAP[commandMessage]];
             const processedMessage = getCommandContent(message);
 
-            // If rewards mode enabled and not streamer or mod, disallow everything
-            if (rewardsMode && !msg?.userInfo.isBroadcaster && !msg?.userInfo.isMod && !SAFE_COMMANDS[commandMessage] && !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]) {
+            // If rewards mode enabled and the input is a command and the user is not streamer or mod or vip, only allow safe commands
+            if (
+                rewardsMode &&
+                !msg?.userInfo.isBroadcaster &&
+                !msg?.userInfo.isMod &&
+                !msg?.userInfo.isVip &&
+                !SAFE_COMMANDS[commandMessage] &&
+                !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]
+            ) {
                 return;
             }
 

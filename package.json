@@ -1,7 +1,7 @@
 {
   "name": "twitch-midi-bot",
-  "version": "0.1.7",
-  "description": "",
+  "version": "0.2.6",
+  "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -12,39 +12,40 @@
     "watch-build": "tsc -w",
     "serve": "npm run build && npm run start",
     "start": "node ./lib/index.js",
-    "ncc": "ncc build src/index.ts -m -o dist -e jzz -e jazz-midi",
-    "package": "pkg . -C -o package/TwitchMidiBot",
+    "ncc": "ncc build src/index.ts -m -o dist -e jazz-midi",
+    "package": "pkg . -C -o package/TwitchMIDI",
     "prezip": "cpy .env.template package --rename=.env && cpy config package",
-    "zip": "cd package && bestzip ../TwitchMidiBotInstallation.zip * .env",
+    "zip": "cd package && bestzip ../TwitchMIDI.zip * .env",
     "bundle": "npm run ncc && npm run package && npm run zip"
   },
-  "keywords": [],
+  "keywords": [
+    "webmidi",
+    "midi",
+    "twitch",
+    "chatbot",
+    "jzz"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@twurple/api": "^5.0.18",
     "@twurple/auth": "^5.0.18",
     "@twurple/chat": "^5.0.18",
-    "@twurple/eventsub": "^5.0.18",
     "@twurple/pubsub": "^5.0.18",
     "chalk": "^4.1.2",
     "dotenv": "^16.0.0",
     "harmonics": "^1.1.0",
-    "jzz": "^1.4.5",
-    "nanotimer": "^0.3.15",
-    "webmidi": "^3.0.15"
+    "jzz": "^1.4.9",
+    "nanotimer": "^0.3.15"
   },
   "pkg": {
     "assets": [
-      "./node_modules/jzz",
       "./node_modules/jazz-midi"
     ],
     "targets": [
-      "node14-windows-x64",
-      "node14-linux-x64",
-      "node14-macos-x64"
-    ],
-    "outputPath": "package"
+      "node16-windows-x64",
+      "node16-linux-x64",
+      "node16-macos-x64"
+    ]
   },
   "devDependencies": {
     "@types/nanotimer": "^0.3.0",
@@ -68,6 +69,5 @@
     "tabWidth": 4,
     "endOfLine": "auto"
   },
-  "bin": "dist/index.js",
-  "preferGlobal": true
+  "bin": "dist/index.js"
 }

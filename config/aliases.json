@@ -1,5 +1,7 @@
 {
     "commands": {
+        "ayudamidi": "midihelp",
+        "midicommands": "midihelp",
         "encendermidi": "midion",
         "encenderjamones": "midion",
         "apagarmidi": "midioff",
@@ -11,6 +13,8 @@
         "volumenbucle": "midivolume",
         "tempo": "settempo",
         "chord": "sendchord",
+        "chords": "sendchord",
+        "acorde": "sendchord",
         "acordes": "sendchord",
         "progresion": "sendchord",
         "loop": "sendloop",
@@ -27,8 +31,13 @@
         "deletechord": "removechord",
         "looplist": "chordlist",
         "nota": "sendnote",
+        "notas": "sendnote",
         "note": "sendnote",
+        "notes": "sendnote",
         "cc": "sendcc",
+        "cccommands": "cclist",
+        "comandoscc": "cclist",
+        "controlchangelist": "cclist",
         "controlchange": "sendcc"
     },
     "chordProgressions": {
@@ -39,24 +48,98 @@
     },
     "ccCommands": {
         "cutoff sweep": [
-            "CC#43 100(00)",
-            "CC#43 0(5000)",
-            "CC#43 120(10000)"
+            "cutoff 64",
+            "cutoff 20(5000)",
+            "cutoff 120(10000)",
+            "cutoff 64(15000)"
         ],
         "lfo sweep": [
-            "CC#26 0(0)",
-            "CC#26 20(10000)",
-            "CC#26 0(20000)"
+            "lfointensity 64",
+            "lfointensity 80(300)",
+            "lfointensity 64(600)"
         ],
-        "next sound": [
-            "PC +1"
+        "space": [
+            "reverb on",
+            "reverbtype 43",
+            "reverbtime 40",
+            "reverbdepth 64"
         ],
-        "previous sound": [
-            "PC -1"
+        "riser": [
+            "reverb on",
+            "reverbtype 50",
+            "reverbtime 40",
+            "reverbdepth 64"
         ],
-        "next bank": [
-            "CC#0 +1",
-            "CC#32 +1"
+        "submarine": [
+            "reverb on",
+            "reverbtype 57",
+            "reverbtime 40",
+            "reverbdepth 64"
+        ],
+        "polydelay": [
+            "delay on",
+            "delaytype 64",
+            "delaytime 40",
+            "delaydepth 110"
         ]
+    },
+    "ccControllers": {
+        "portamento": 5,
+        "volume": 7,
+        "expression": 11,
+        "voicemodedepth": 27,
+        "damper": 64,
+        "allsoundoff": 120,
+        "resetall": 121,
+        "vco1wave": 50,
+        "vco1octave": 48,
+        "vco1pitch": 34,
+        "vco1shape": 36,
+        "vco2wave": 51,
+        "vco2octave": 49,
+        "vco2pitch": 35,
+        "vco2shape": 37,
+        "sync": 80,
+        "ring": 81,
+        "crossmoddepth": 41,
+        "type": 53,
+        "subtype": 103,
+        "shape": 54,
+        "shiftshape": 104,
+        "vco1vol": 39,
+        "vco2vol": 40,
+        "multivol": 33,
+        "cutoff": 43,
+        "resonance": 44,
+        "drive": 84,
+        "keytrack": 83,
+        "ampattack": 16,
+        "ampdecay": 17,
+        "ampsustain": 18,
+        "amprelease": 19,
+        "egattack": 20,
+        "egdecay": 21,
+        "egintensity": 22,
+        "egtarget": 23,
+        "lfotarget": 56,
+        "lfowave": 57,
+        "lfomode": 58,
+        "lforate": 24,
+        "lfointensity": 26,
+        "modtype": 88,
+        "modsubtype": 96,
+        "modtime": 28,
+        "moddepth": 29,
+        "delaytype": 89,
+        "delaytime": 105,
+        "delaydepth": 106,
+        "delayamount": 107,
+        "reverbtype": 90,
+        "reverbtime": 108,
+        "reverbdepth": 109,
+        "reverbamount": 110,
+        "modulation": 92,
+        "delay": 93,
+        "reverb": 94
     }
 }

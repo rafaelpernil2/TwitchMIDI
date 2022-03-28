@@ -3,8 +3,8 @@ import https from 'https';
 import http from 'http';
 import { isJsonString } from './data-utils';
 
-const timer = new NanoTimer();
 export async function setTimeoutPromise(timeout: number) {
+    const timer = new NanoTimer();
     return new Promise((resolve) => {
         timer.setTimeout(resolve, '', String(timeout) + 'n');
     });
