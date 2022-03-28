@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi-bot",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -13,9 +13,9 @@
     "serve": "npm run build && npm run start",
     "start": "node ./lib/index.js",
     "ncc": "ncc build src/index.ts -m -o dist -e jazz-midi",
-    "package": "pkg . -C -o package/TwitchMidiBot",
+    "package": "pkg . -C -o package/TwitchMIDI",
     "prezip": "cpy .env.template package --rename=.env && cpy config package",
-    "zip": "cd package && bestzip ../TwitchMidiBot.zip * .env",
+    "zip": "cd package && bestzip ../TwitchMIDI.zip * .env",
     "bundle": "npm run ncc && npm run package && npm run zip"
   },
   "keywords": [
