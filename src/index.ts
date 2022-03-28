@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // This NEEDS to be executed first
 import 'dotenv/config';
 import * as JZZ from 'jzz';
