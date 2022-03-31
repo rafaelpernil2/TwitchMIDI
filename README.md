@@ -117,42 +117,42 @@ So far, this first version does all that, keep reading the features for more det
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!midihelp
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shows all commands available and info about each command.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` command // (e.g "sendloop")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````command // (e.g "sendloop")````
 
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!settempo
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starts the MIDI clock and sets a tempo.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` tempo // (e.g. "120", "200")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````tempo // (e.g. "120", "200")````
 
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!addchord
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adds a chord progression or loop with an alias.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` name/chords(chord length in quarter notes) // (e.g. "pop/C G(2) Amin(2) F")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````name/chords(chord length in quarter notes) // (e.g. "pop/C G(2) Amin(2) F")````
 
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!removechord
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes a chord progression or loop with an alias.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` alias // (e.g. "pop")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````alias // (e.g. "pop")````
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!chordlist
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shows all saved chord progressions or loops that can be used
 
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!sendnote
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends a note or a set of notes.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` note1 note2 ... // (e.g. "C4 E4 G4")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````note1 note2 ... // (e.g. "C4 E4 G4")````
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!sendchord
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends a chord progression with an alias or with chords.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` chord1 chord2(chord length in quarter notes)... // (e.g. "C(4) G Amin(2) F","pop")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````chord1 chord2(chord length in quarter notes)... // (e.g. "C(4) G Amin(2) F","pop")````
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!sendloop
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends a loop with an alias or with chords.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` chord1 chord2(chord length in quarter notes)... // (e.g. "C G Amin F","pop")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````chord1 chord2(chord length in quarter notes)... // (e.g. "C G Amin F","pop")````
 
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!sendcc
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sends a MIDI CC message with an alias, code or value sweeps.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` controller value,controller2 value2(delay_in_ms) // (e.g. "43 100,43 60","cutoff sweep","cutoff 100,cutoff 60","cutoff 100,cutoff 10(10000)")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````controller value,controller2 value2(delay_in_ms) // (e.g. "43 100,43 60","cutoff sweep","cutoff 100,cutoff 60","cutoff 100,cutoff 10(10000)")````
 
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!cclist
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Shows a list of available CC command macros (e.g. cutoff sweep)
@@ -160,7 +160,7 @@ So far, this first version does all that, keep reading the features for more det
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!midivolume
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sets the velocity for the chords/notes/loops.
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax:```` value between 0 and 100 // (e.g. "50","100")````
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Syntax: ````value between 0 and 100 // (e.g. "50","100")````
 ####  &nbsp;&nbsp;&nbsp;&nbsp;!stoploop
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Stops the loop once it ends
 
