@@ -68,28 +68,28 @@ So far, this first version does all that, keep reading the features for more det
 ## Features
 
 * Wide set of MIDI functionalities:
-  * High precision MIDI Clock using "nanotimer" with adjustable tempo via !settempo
+  * High precision MIDI Clock using "nanotimer" with adjustable tempo via [!settempo](#settempo)
   * Sequencer on 4/4 time signature with infinite subdivisions (1 = Quarter note, 0.5 = 8th note, 0.25 = 16th note...)
-  * Trigger individual notes or build a chord via !sendnote
-  * Trigger chord progressions with specific length per chord via !sendchord
-  * Loop chord progressions via !sendloop
-  * Change MIDI velocity via !midivolume
-  * Send CC (Control Change) messages and sweeps between values via !sendcc
-  * Clock-Loop synchronizer to correct sync issues via !syncmidi
+  * Trigger individual notes or build a chord via [!sendnote](#sendnote)
+  * Trigger chord progressions with specific length per chord via [!sendchord](#sendchord)
+  * Loop chord progressions via [!sendloop](#sendloop)
+  * Change MIDI velocity via [!midivolume](#midivolume)
+  * Send CC (Control Change) messages and sweeps between values via [!sendcc](#sendcc)
+  * Clock-Loop synchronizer to correct sync issues via [!syncmidi](#syncmidi)
   * Automatic synchronization that forces loops to wait until the start of the beat
   * On/Off bot toggle
 * Configurable aliases on [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json)
   * Commands - Add as many command aliases as you want
   * Chord progressions/loops - Add an alias for a chord progresion to play or loop using "name/chords" syntax
-    * Add chord progressions via !addchord
-    * Remove chord progression via !removechord
-    * List all added chord progressions with their name with !chordlist
+    * Add chord progressions via [!addchord](#addchord)
+    * Remove chord progression via [!removechord](#removechord)
+    * List all added chord progressions with their name with [!chordlist](#chordlist)
   * Control Change controller names - Put a name to your Control Change controllers (e.g sustain: 64)
   * Control Change commands - Assign a set of cc commands
     * Sweep functionality, specify two values and the time in milliseconds to get from one value to other (e.g "cutoff 20(5000),cutoff 120(10000)")
-    * List all added chord progressions with their name with !cclist
-  * Reload [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json) and [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json) file while using the bot with !fetchdb
-* Commands explaination with examples via !midihelp commandname
+    * List all added chord progressions with their name with [!cclist](#cclist)
+  * Reload [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json) and [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json) file while using the bot with [!fetchdb](#fetchdb)
+* Commands explaination with examples via [!midihelp](#midihelp) commandname
 * Channel Points reward mode enabled via REWARDS_MODE flag and configurable on [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json)
   * Set the name of your channe points reward and the command to launch (e.g. "Twitch Midi - Loop": "!sendloop" )
   * Commands only work for the streamer and mods
