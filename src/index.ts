@@ -25,7 +25,8 @@ import { setupConfiguration } from './handlers/configurator-input-handler';
         TARGET_CHANNEL,
         TARGET_MIDI_NAME,
         TARGET_MIDI_CHANNEL,
-        REWARDS_MODE
+        REWARDS_MODE,
+        VIP_REWARDS_MODE
     } = await getLoadedEnvVariables(setupConfiguration);
     const parsedTargetMIDIChannel = validateMIDIChannel(TARGET_MIDI_CHANNEL);
     try {
@@ -35,12 +36,20 @@ import { setupConfiguration } from './handlers/configurator-input-handler';
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [TARGET_CHANNEL] });
 
         await chatClient.connect();
-        await JZZ.requestMIDIAccess().catch(() => console.log('First WebMIDI connection'));
+        await JZZ.requestMIDIAccess();
 
-        console.log('Bot ready! - Rewards/Channel Points mode: ' + REWARDS_MODE);
-        // Chat code
         const isRewardsMode = getBooleanByString(REWARDS_MODE);
-        chatClient.onMessage(onMessageHandlerClosure(chatClient, TARGET_MIDI_NAME, parsedTargetMIDIChannel, isRewardsMode));
+        const isVipRewardsMode = getBooleanByString(VIP_REWARDS_MODE);
+
+        console.log('Bot ready!');
+        console.log('Rewards/Channel Points mode: ' + REWARDS_MODE);
+        if (isRewardsMode) {
+            console.log('   VIP can use commands in Rewards Mode: ' + VIP_REWARDS_MODE);
+        }
+        console.log('Use !midion in your chat to enable this tool and have fun!\nWhenever you want to disable it, use !midioff');
+
+        // Chat code
+        chatClient.onMessage(onMessageHandlerClosure(chatClient, TARGET_MIDI_NAME, parsedTargetMIDIChannel, isRewardsMode, isVipRewardsMode));
 
         // Rewards code
         if (isRewardsMode) {

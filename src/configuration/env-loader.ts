@@ -13,7 +13,8 @@ async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvObject>)
             TARGET_CHANNEL: undefined,
             TARGET_MIDI_NAME: undefined,
             TARGET_MIDI_CHANNEL: undefined,
-            REWARDS_MODE: undefined
+            REWARDS_MODE: undefined,
+            VIP_REWARDS_MODE: undefined
         };
         const loadedVariables = Object.fromEntries(Object.entries(variablesToLoad).map(([key]) => [key, process.env[key]])) as EnvObject;
         areVariablesValid(loadedVariables);

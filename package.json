@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -19,7 +19,6 @@
     "bundle": "npm run ncc && npm run package && npm run zip"
   },
   "keywords": [
-    "webmidi",
     "midi",
     "twitch",
     "chatbot",

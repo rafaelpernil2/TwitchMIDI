@@ -9,4 +9,5 @@ export interface EnvObject extends Record<string, string> {
     TARGET_MIDI_NAME: string;
     TARGET_MIDI_CHANNEL: string;
     REWARDS_MODE: string;
+    VIP_REWARDS_MODE: string;
 }

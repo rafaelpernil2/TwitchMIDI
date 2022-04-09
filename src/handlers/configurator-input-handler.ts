@@ -146,6 +146,10 @@ export async function setupConfiguration(): Promise<EnvObject> {
     const rewardsModeFlag = (await _makeQuestion(rl, '*********** Do you want to use Rewards/Channel Points mode instead of chat? (Y/n)\n')) || 'Y';
     const REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
 
+    const vipRewardsModeFlag =
+        (await _makeQuestion(rl, '*********** For Rewards Mode, do you want VIP members to use commands freely and not need to redeem rewards? (Y/n)\n')) || 'Y';
+    const VIP_REWARDS_MODE = String(getBooleanByString(vipRewardsModeFlag));
+
     console.log(
         chalk.greenBright(`
     STEP 4 - MIDI 
@@ -181,7 +185,8 @@ export async function setupConfiguration(): Promise<EnvObject> {
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'TARGET_CHANNEL=' + TARGET_CHANNEL + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'TARGET_MIDI_NAME=' + TARGET_MIDI_NAME + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'TARGET_MIDI_CHANNEL=' + TARGET_MIDI_CHANNEL + '\n');
-    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REWARDS_MODE=' + String(REWARDS_MODE) + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REWARDS_MODE=' + REWARDS_MODE + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'VIP_REWARDS_MODE=' + VIP_REWARDS_MODE + '\n');
 
     rl.close();
     server.close();
@@ -212,7 +217,8 @@ export async function setupConfiguration(): Promise<EnvObject> {
         TARGET_CHANNEL,
         TARGET_MIDI_NAME,
         TARGET_MIDI_CHANNEL,
-        REWARDS_MODE
+        REWARDS_MODE,
+        VIP_REWARDS_MODE
     };
 }
 
