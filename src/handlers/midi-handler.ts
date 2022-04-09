@@ -26,7 +26,7 @@ let volume: number;
 _initVariables();
 
 /**
- * Initializes WebMIDI connectivity and allows the bot to work
+ * Initializes MIDI connectivity and allows the bot to work
  * @param targetMIDIName The Virtual MIDI device name set in .env
  */
 export async function initMidi(targetMIDIName: string): Promise<void> {
@@ -34,21 +34,21 @@ export async function initMidi(targetMIDIName: string): Promise<void> {
         const midi = await JZZ.default();
         _initVariables();
         output = midi.openMidiOut(targetMIDIName);
-        console.log('WebMidi enabled!');
+        console.log('MIDI connection stablished!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
     }
 }
 
 /**
- * Disables WebMIDI connectivity and stops all MIDI
+ * Disables MIDI connectivity and stops all MIDI
  */
 export async function disableMidi(targetMIDIChannel: number): Promise<void> {
     try {
         fullStop(targetMIDIChannel);
         await output?.close();
         output = undefined;
-        console.log('MIDI disabled!');
+        console.log('MIDI disconnected!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
     }

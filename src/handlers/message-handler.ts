@@ -22,7 +22,7 @@ import {
     syncMidi
 } from './midi-handler';
 
-export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false): MessageHandler => {
+export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false, vipRewardsMode = false): MessageHandler => {
     const onMessageMap: Record<CommandType, CommandHandler> = {
         [COMMANDS.MIDI_HELP]: (channel, user, message) => {
             const commandToTest = firstMessageValue(message);
@@ -39,21 +39,19 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         },
         [COMMANDS.MIDI_ON]: async (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
-            if (isMod || isBroadcaster) {
-                await initMidi(targetMidiName);
-                chatClient.say(channel, 'MIDI magic enabled!');
-            } else {
-                chatClient.say(channel, 'Meeeec, you do not have enough permissions');
+            if (!isMod && !isBroadcaster) {
+                return;
             }
+            await initMidi(targetMidiName);
+            chatClient.say(channel, 'TwitchMIDI enabled! - Tool developed by Rafael Pernil (@rafaelpernil2)');
         },
         [COMMANDS.MIDI_OFF]: async (channel, user, message, userInfo) => {
             const { isMod, isBroadcaster } = userInfo;
-            if (isMod || isBroadcaster) {
-                await disableMidi(targetMidiChannel);
-                chatClient.say(channel, 'MIDI magic disabled!');
-            } else {
-                chatClient.say(channel, 'Meeeec, you do not have enough permissions');
+            if (!isMod && !isBroadcaster) {
+                return;
             }
+            await disableMidi(targetMidiChannel);
+            chatClient.say(channel, 'TwitchMIDI disabled! - Tool developed by Rafael Pernil (@rafaelpernil2)');
         },
         [COMMANDS.MIDI_VOLUME]: (channel, user, message) => {
             const volume = setVolume(message);
@@ -148,7 +146,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
                 rewardsMode &&
                 !msg?.userInfo.isBroadcaster &&
                 !msg?.userInfo.isMod &&
-                !msg?.userInfo.isVip &&
+                (!msg?.userInfo.isVip || !vipRewardsMode) &&
                 !SAFE_COMMANDS[commandMessage] &&
                 !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]
             ) {
