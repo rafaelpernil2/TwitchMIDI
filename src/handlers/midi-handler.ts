@@ -23,6 +23,7 @@ let loopActiveId: string;
 let chordProgressionActive: boolean;
 let tick: number;
 let volume: number;
+let isSyncing = false;
 _initVariables();
 
 /**
@@ -117,6 +118,9 @@ export async function sendMIDIChord(message: string, channels: number, { loopMod
         loopActiveId = GLOBAL.EMPTY_MESSAGE;
     }
 
+    // Reset sync flag
+    isSyncing = false;
+
     // Lookup previously saved chord progressions
     const chordProgression = _getChordProgression(message);
     const processedChordProgression = _processChordProgression(chordProgression);
@@ -127,6 +131,11 @@ export async function sendMIDIChord(message: string, channels: number, { loopMod
     // Blocking section
     chordProgressionActive = true;
     for (const [noteList, timeout] of processedChordProgression) {
+        // Skip iteration if tempo or sync changes
+        if (isSyncing) {
+            chordProgressionActive = false;
+            return;
+        }
         await _triggerNoteList(noteList, timeout, channels);
     }
     chordProgressionActive = false;
@@ -210,14 +219,11 @@ export function stopMIDILoop(): void {
 /**
  * Syncrhonizes the MIDI clock and the beat. Useful when the instruments are out-of-sync
  */
-export function syncMidi(targetMidiChannel: number): void {
+export function syncMidi(targetMIDIChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    tick = 0;
-    output.stop();
-    output.allNotesOff(targetMidiChannel);
-    output.start();
+    _midiClock(targetMIDIChannel, output, calculateClockTickTimeNs(tempo));
 }
 
 /**
@@ -294,11 +300,7 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
  */
 async function _isBarStart(): Promise<void> {
     return new Promise((resolve) => {
-        const listener = () => {
-            resolve();
-            barEventEmitter.removeListener(BAR_LOOP_CHANGE_EVENT, listener);
-        };
-        barEventEmitter.on(BAR_LOOP_CHANGE_EVENT, listener);
+        barEventEmitter.once(BAR_LOOP_CHANGE_EVENT, resolve);
     });
 }
 
@@ -317,9 +319,13 @@ function _midiClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['open
         tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
     };
     // First tick
+    isSyncing = true;
     timer.clearInterval();
-    syncMidi(targetMIDIChannel);
+    tick = 0;
+    output.stop();
+    output.allNotesOff(targetMIDIChannel);
     sendTick();
+    output.start();
     // Next ticks
     timer.setInterval(sendTick, '', String(clockTickTimeNs) + 'n');
 }
@@ -350,7 +356,7 @@ function _processChordProgression(chordProgression: string): Array<[noteList: st
     return chordProgressionList.map((chord, index) => {
         try {
             // If it is the last, reduce the note length to make sure the loop executes properly
-            const multiplier = index !== lastChordIndex ? 1 : 0.9;
+            const multiplier = index !== lastChordIndex ? 1 : 0.8;
             return [inlineChord(parseChord(chord)), Math.floor(calculateTimeout(chord, tempo) * multiplier)];
         } catch (error) {
             throw new Error(ERROR_MSG.INVALID_CHORD(chord));
