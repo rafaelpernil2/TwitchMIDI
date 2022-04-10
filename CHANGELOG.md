@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.0.6] - 2022-04-10
+### Added
+- Command collision prevention, now a queue is created and chord progressions and loops are executed in order
+### Fixed
+- !midioff variable reset - Now !loop starts the MIDI clock again after !midioff-!midion sequence
+
 ## [1.0.5] - 2022-04-10
 ### Changed
 - Now when queing a loop or chord progression, if the MIDI clock was stopped, it starts so that you don't need to always call !settempo to start the beat

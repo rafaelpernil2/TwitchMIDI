@@ -13,14 +13,23 @@ import { CCCommand } from '../types/midi-types';
 import { NanoTimerProperties } from '../custom-typing/nanotimer';
 
 // Constants
-const timer = new NanoTimer();
+
 const BAR_LOOP_CHANGE_EVENT = 'barLoopChange';
 const barEventEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
+const queueMap: Record<'sendloop' | 'sendchord', Record<number, string | null>> = {
+    sendloop: {},
+    sendchord: {}
+} as const;
+
+const activeIndexMap: Record<'sendloop' | 'sendchord', number> = {
+    sendloop: 0,
+    sendchord: 0
+} as const;
 
 // Closure variables
+let timer = new NanoTimer();
 let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
 let tempo: number;
-let loopActiveId: string;
 let chordProgressionActive: boolean;
 let tick: number;
 let volume: number;
@@ -50,6 +59,7 @@ export async function disableMidi(targetMIDIChannel: number): Promise<void> {
         fullStop(targetMIDIChannel);
         await output?.close();
         output = undefined;
+        timer = new NanoTimer();
         console.log('MIDI disconnected!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
@@ -111,14 +121,9 @@ export function sendMIDINote(message: string, channels: number): void {
  * Parses and sends a chord progression with chords separated by space or with an alias
  * @param message Command arguments (chords or alias)
  * @param channels Target MIDI channel for the virtual MIDI device
- * @param { loopMode } options If active, it does not reset the loopActiveId variable
+ * @param type 'sendloop' or 'sendchord'
  */
-export async function sendMIDIChord(message: string, channels: number, { loopMode = false } = {}): Promise<void> {
-    // Reset on new non-looped chord progression
-    if (!loopMode) {
-        loopActiveId = GLOBAL.EMPTY_MESSAGE;
-    }
-
+export async function sendMIDIChord(message: string, channels: number, type: 'sendloop' | 'sendchord' = 'sendchord', position?: number): Promise<void> {
     // If the MIDI clock has not started yet, start it to make the chord progression sound
     if ((timer as NanoTimerProperties).intervalTime == null) {
         syncMidi(channels);
@@ -131,20 +136,30 @@ export async function sendMIDIChord(message: string, channels: number, { loopMod
     const chordProgression = _getChordProgression(message);
     const processedChordProgression = _processChordProgression(chordProgression);
 
+    // Reset on new non-looped chord progression
+    let queuePosition = position ?? 0;
+    if (type === 'sendchord') {
+        queueMap.sendloop = {};
+        activeIndexMap.sendloop = 0;
+        queuePosition = _queueChordLoop(chordProgression, type);
+    }
+
     // We wait until the bar starts
-    await _isBarStart();
+    await _isCommandTurn(queuePosition, type);
 
     // Blocking section
     chordProgressionActive = true;
     for (const [noteList, timeout] of processedChordProgression) {
         // Skip iteration if tempo or sync changes
         if (isSyncing) {
-            chordProgressionActive = false;
-            return;
+            continue;
         }
         await _triggerNoteList(noteList, timeout, channels);
     }
     chordProgressionActive = false;
+
+    // Check if there is a next loop to activate
+    _getNextInQueue(type);
 }
 
 /**
@@ -153,16 +168,16 @@ export async function sendMIDIChord(message: string, channels: number, { loopMod
  * @param targetMidiChannel Target MIDI channel for the virtual MIDI device
  */
 export async function sendMIDILoop(message: string, targetMidiChannel: number): Promise<void> {
-    // Save chordProgression as loopActiveId
     const chordProgression = _getChordProgression(message);
     // Process chord progression to check errors
     _processChordProgression(chordProgression);
+    // Queue chord progression petition
+    const position = _queueChordLoop(chordProgression, 'sendloop');
 
-    loopActiveId = chordProgression;
-
-    while (loopActiveId === chordProgression) {
-        await sendMIDIChord(message, targetMidiChannel, { loopMode: true });
-    }
+    do {
+        // Execute at least once to wait for your turn in the queue
+        await sendMIDIChord(message, targetMidiChannel, 'sendloop', position);
+    } while (position === activeIndexMap.sendloop);
 }
 
 /**
@@ -219,7 +234,10 @@ export async function fetchDBs(): Promise<void> {
  * Stops the MIDI loop on the next beat
  */
 export function stopMIDILoop(): void {
-    loopActiveId = GLOBAL.EMPTY_MESSAGE;
+    activeIndexMap.sendloop = 0;
+    activeIndexMap.sendchord = 0;
+    queueMap.sendloop = {};
+    queueMap.sendchord = {};
 }
 
 /**
@@ -239,7 +257,10 @@ export function fullStop(targetMidiChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    loopActiveId = GLOBAL.EMPTY_MESSAGE;
+    activeIndexMap.sendloop = 0;
+    activeIndexMap.sendchord = 0;
+    queueMap.sendloop = {};
+    queueMap.sendchord = {};
     tick = 0;
     output.stop();
     output.allNotesOff(targetMidiChannel);
@@ -259,6 +280,43 @@ export function setVolume(message: string): number {
     // Convert to range 0-127
     volume = Math.floor(value * 1.27);
     return value;
+}
+
+/**
+ * Adds chord progression or loop to queue
+ * @param chordProgression 
+ * @param type 
+ * @returns 
+ */
+function _queueChordLoop(chordProgression: string, type: 'sendchord' | 'sendloop'): number {
+    const position = _getLastQueuePosition(queueMap[type]) + 1;
+    queueMap[type][position] = chordProgression;
+    return position;
+}
+
+/**
+ * Gets the last position in queue
+ * @param queue
+ * @returns
+ */
+function _getLastQueuePosition(queue: Record<number, unknown>): number {
+    const keyList = Object.keys(queue).map(Number);
+    const processedKeyList = keyList.length === 0 ? [-1] : keyList;
+    return Math.max(...processedKeyList);
+}
+
+/**
+ * Moves to the next in queue
+ * @param type
+ */
+function _getNextInQueue(type: 'sendchord' | 'sendloop'): void {
+    // Keep playing same loop if there's nothing new in queue
+    if (type === 'sendloop' && queueMap[type]?.[activeIndexMap[type] + 1] == null) {
+        return;
+    }
+
+    delete queueMap[type][activeIndexMap[type]];
+    activeIndexMap[type]++;
 }
 
 /**
@@ -300,19 +358,28 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
 }
 
 /**
- * Resolves once the bar is starting
+ * Resolves once the bar is starting and the turn is reached
  * It uses Node.js Event Emitters for notifying
- * @return An empty promise
+ * @param position 
+ * @param type 
+ * @returns An empty promise
  */
-async function _isBarStart(): Promise<void> {
+async function _isCommandTurn(position: number, type: 'sendloop' | 'sendchord'): Promise<void> {
     return new Promise((resolve) => {
-        barEventEmitter.once(BAR_LOOP_CHANGE_EVENT, resolve);
+        const onBarStart = () => {
+            if (position === activeIndexMap[type]) {
+                resolve();
+                barEventEmitter.removeListener(BAR_LOOP_CHANGE_EVENT, onBarStart);
+            }
+        };
+        barEventEmitter.on(BAR_LOOP_CHANGE_EVENT, onBarStart);
     });
 }
 
 /**
  * MIDI Clock: Sends ticks synced with tempo at 24ppq following MIDI spec
  * Formula: ((1_000_000_000 ns/s) * 60 seconds/minute / beats/minute(BPM) / 24ppq (pulses per quarter))
+ * @param targetMIDIChannel Target MIDI channel
  * @param output VirtualMIDI device
  * @param clockTickTimeNs Clock time in nanoseconds
  */
@@ -339,13 +406,9 @@ function _midiClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['open
 /**
  * Looks up a chord progression/loop or returns the original message if not found
  * @param message Command arguments (alias or chord progression)
- * @param loopMode In case of loop, it returns the current value, this avoids unnecessary queries
- * @return Chord progression
+ * @returns Chord progression
  */
-function _getChordProgression(message: string, loopMode = false): string {
-    if (loopMode) {
-        return loopActiveId;
-    }
+function _getChordProgression(message: string): string {
     const aliasToLookup = message.toLowerCase();
     return ALIASES_DB.select(CHORD_PROGRESSIONS, aliasToLookup) ?? message;
 }
@@ -411,7 +474,8 @@ function _processCCCommandList(ccCommandList: string[], precission = 256): Array
  */
 function _initVariables() {
     tempo = CONFIG.DEFAULT_TEMPO;
-    loopActiveId = GLOBAL.EMPTY_MESSAGE;
+    activeIndexMap.sendloop = 0;
+    activeIndexMap.sendchord = 0;
     chordProgressionActive = false;
     tick = 0;
     volume = CONFIG.DEFAULT_VOLUME;
