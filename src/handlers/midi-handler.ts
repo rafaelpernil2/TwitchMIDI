@@ -10,6 +10,7 @@ import { parseChord, parseNote, calculateTimeout, calculateClockTickTimeNs, vali
 import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from '../configuration/constants';
 import { firstMessageValue, splitMessageArguments } from '../utils/message-utils';
 import { CCCommand } from '../types/midi-types';
+import { NanoTimerProperties } from '../custom-typing/nanotimer';
 
 // Constants
 const timer = new NanoTimer();
@@ -118,6 +119,11 @@ export async function sendMIDIChord(message: string, channels: number, { loopMod
         loopActiveId = GLOBAL.EMPTY_MESSAGE;
     }
 
+    // If the MIDI clock has not started yet, start it to make the chord progression sound
+    if ((timer as NanoTimerProperties).intervalTime == null) {
+        syncMidi(channels);
+    }
+
     // Reset sync flag
     isSyncing = false;
 
@@ -125,7 +131,7 @@ export async function sendMIDIChord(message: string, channels: number, { loopMod
     const chordProgression = _getChordProgression(message);
     const processedChordProgression = _processChordProgression(chordProgression);
 
-    // Here we play the chords
+    // We wait until the bar starts
     await _isBarStart();
 
     // Blocking section
