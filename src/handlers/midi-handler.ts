@@ -284,9 +284,9 @@ export function setVolume(message: string): number {
 
 /**
  * Adds chord progression or loop to queue
- * @param chordProgression 
- * @param type 
- * @returns 
+ * @param chordProgression
+ * @param type
+ * @returns
  */
 function _queueChordLoop(chordProgression: string, type: 'sendchord' | 'sendloop'): number {
     const position = _getLastQueuePosition(queueMap[type]) + 1;
@@ -360,8 +360,8 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
 /**
  * Resolves once the bar is starting and the turn is reached
  * It uses Node.js Event Emitters for notifying
- * @param position 
- * @param type 
+ * @param position
+ * @param type
  * @returns An empty promise
  */
 async function _isCommandTurn(position: number, type: 'sendloop' | 'sendchord'): Promise<void> {
