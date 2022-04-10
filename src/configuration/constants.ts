@@ -40,7 +40,7 @@ export const CONFIG = {
     REWARDS_PATH: './config/rewards.json',
     DOT_ENV_PATH: '.env',
     DEFAULT_OCTAVE: '5',
-    DEFAULT_VOLUME: 100,
+    DEFAULT_VOLUME: 64,
     DEFAULT_TEMPO: 120,
     LOCAL_SERVER_HOST: 'localhost',
     LOCAL_SERVER_PORT: 8000,
