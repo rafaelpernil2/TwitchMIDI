@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.0.7] - 2022-04-11
+### Fixed
+- !fullstopmidi and !stoploop queue reset
+
 ## [1.0.6] - 2022-04-10
 ### Added
 - Command collision prevention, now a queue is created and chord progressions and loops are executed in order
@@ -46,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.0.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.6...v1.0.7
+[1.0.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.2...v1.0.3
