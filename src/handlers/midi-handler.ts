@@ -124,6 +124,7 @@ export function sendMIDINote(message: string, channels: number): void {
  * @param type 'sendloop' or 'sendchord'
  */
 export async function sendMIDIChord(message: string, channels: number, type: 'sendloop' | 'sendchord' = 'sendchord', position?: number): Promise<void> {
+    _initializeIndexes();
     // If the MIDI clock has not started yet, start it to make the chord progression sound
     if ((timer as NanoTimerProperties).intervalTime == null) {
         syncMidi(channels);
@@ -234,8 +235,8 @@ export async function fetchDBs(): Promise<void> {
  * Stops the MIDI loop on the next beat
  */
 export function stopMIDILoop(): void {
-    activeIndexMap.sendloop = 0;
-    activeIndexMap.sendchord = 0;
+    activeIndexMap.sendloop = -1;
+    activeIndexMap.sendchord = -1;
     queueMap.sendloop = {};
     queueMap.sendchord = {};
 }
@@ -257,14 +258,15 @@ export function fullStop(targetMidiChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    activeIndexMap.sendloop = 0;
-    activeIndexMap.sendchord = 0;
+    activeIndexMap.sendloop = -1;
+    activeIndexMap.sendchord = -1;
     queueMap.sendloop = {};
     queueMap.sendchord = {};
     tick = 0;
     output.stop();
     output.allNotesOff(targetMidiChannel);
     timer.clearInterval();
+    timer = new NanoTimer();
 }
 
 /**
@@ -280,6 +282,14 @@ export function setVolume(message: string): number {
     // Convert to range 0-127
     volume = Math.floor(value * 1.27);
     return value;
+}
+
+/**
+ * Intializes the queue indexes
+ */
+function _initializeIndexes(): void {
+    activeIndexMap.sendloop = activeIndexMap.sendloop === -1 ? 0 : activeIndexMap.sendloop;
+    activeIndexMap.sendchord = activeIndexMap.sendchord === -1 ? 0 : activeIndexMap.sendchord;
 }
 
 /**
@@ -474,8 +484,8 @@ function _processCCCommandList(ccCommandList: string[], precission = 256): Array
  */
 function _initVariables() {
     tempo = CONFIG.DEFAULT_TEMPO;
-    activeIndexMap.sendloop = 0;
-    activeIndexMap.sendchord = 0;
+    activeIndexMap.sendloop = -1;
+    activeIndexMap.sendchord = -1;
     chordProgressionActive = false;
     tick = 0;
     volume = CONFIG.DEFAULT_VOLUME;
