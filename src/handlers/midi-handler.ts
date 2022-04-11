@@ -26,6 +26,11 @@ const activeIndexMap: Record<'sendloop' | 'sendchord', number> = {
     sendchord: 0
 } as const;
 
+const uniqueIdMap: Record<'sendloop' | 'sendchord', number> = {
+    sendloop: -1,
+    sendchord: -1
+} as const;
+
 // Closure variables
 let timer = new NanoTimer();
 let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
@@ -137,11 +142,14 @@ export async function sendMIDIChord(message: string, channels: number, type: 'se
     const chordProgression = _getChordProgression(message);
     const processedChordProgression = _processChordProgression(chordProgression);
 
-    // Reset on new non-looped chord progression
+    // Stop loops and queue petition
     let queuePosition = position ?? 0;
     if (type === 'sendchord') {
         queueMap.sendloop = {};
-        activeIndexMap.sendloop = 0;
+        // Skip duplicate chord requests
+        if (chordProgression === queueMap.sendchord[_getLatestIndex('sendchord')]) {
+            return;
+        }
         queuePosition = _queueChordLoop(chordProgression, type);
     }
 
@@ -157,10 +165,9 @@ export async function sendMIDIChord(message: string, channels: number, type: 'se
         }
         await _triggerNoteList(noteList, timeout, channels);
     }
-    chordProgressionActive = false;
-
     // Check if there is a next loop to activate
     _getNextInQueue(type);
+    chordProgressionActive = false;
 }
 
 /**
@@ -172,6 +179,11 @@ export async function sendMIDILoop(message: string, targetMidiChannel: number): 
     const chordProgression = _getChordProgression(message);
     // Process chord progression to check errors
     _processChordProgression(chordProgression);
+
+    // Ignore duplicate requests
+    if (chordProgression === queueMap.sendloop[_getLatestIndex('sendloop')]) {
+        return;
+    }
     // Queue chord progression petition
     const position = _queueChordLoop(chordProgression, 'sendloop');
 
@@ -299,20 +311,44 @@ function _initializeIndexes(): void {
  * @returns
  */
 function _queueChordLoop(chordProgression: string, type: 'sendchord' | 'sendloop'): number {
-    const position = _getLastQueuePosition(queueMap[type]) + 1;
+    const position = _getNextQueuePosition(type);
     queueMap[type][position] = chordProgression;
     return position;
 }
 
 /**
  * Gets the last position in queue
- * @param queue
+ * @param type
  * @returns
  */
-function _getLastQueuePosition(queue: Record<number, unknown>): number {
-    const keyList = Object.keys(queue).map(Number);
-    const processedKeyList = keyList.length === 0 ? [-1] : keyList;
-    return Math.max(...processedKeyList);
+function _getLatestIndex(type: 'sendchord' | 'sendloop'): number {
+    return uniqueIdMap[type];
+}
+
+/**
+ * Gets the next position in queue
+ * @param type
+ * @returns
+ */
+function _getNextQueuePosition(type: 'sendchord' | 'sendloop'): number {
+    uniqueIdMap[type]++;
+    return uniqueIdMap[type];
+}
+
+/**
+ * Gets the next position in queue
+ * @param queue
+ * @param position
+ * @returns
+ */
+function _getNextPosition(type: 'sendloop' | 'sendchord', position: number): number {
+    const keyList = Object.keys(queueMap[type]).map(Number);
+    const nextPosition = keyList.find((queuePosition) => queuePosition > position);
+    // If there is no element in queue or no next element, return new index
+    if (keyList.length === 0 || nextPosition == null) {
+        return uniqueIdMap[type] + 1;
+    }
+    return nextPosition;
 }
 
 /**
@@ -320,13 +356,15 @@ function _getLastQueuePosition(queue: Record<number, unknown>): number {
  * @param type
  */
 function _getNextInQueue(type: 'sendchord' | 'sendloop'): void {
-    // Keep playing same loop if there's nothing new in queue
-    if (type === 'sendloop' && queueMap[type]?.[activeIndexMap[type] + 1] == null) {
+    const nextPosition = _getNextPosition(type, activeIndexMap[type]);
+
+    // Keep playing same loop if there's nothing new in queue, and the data is still present
+    if (type === 'sendloop' && queueMap[type][activeIndexMap[type]] != null && queueMap[type]?.[nextPosition] == null) {
         return;
     }
 
     delete queueMap[type][activeIndexMap[type]];
-    activeIndexMap[type]++;
+    activeIndexMap[type] = nextPosition;
 }
 
 /**
