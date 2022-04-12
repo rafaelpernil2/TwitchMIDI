@@ -25,7 +25,7 @@ export const CONFIG = {
 export const ERROR_MSG = {
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
-    INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO})`,
+    INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO}, decimal point is . )`,
     CHORD_PROGRESSION_NOT_FOUND: 'Chord progression/loop not found',
     CHORD_PROGRESSION_BAD_INSERTION: 'Chord progression/loop could not be inserted',
     INVALID_CHORD: (chord: string) => 'There is at least one invalid chord or the alias was not found: ' + chord,
