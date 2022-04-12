@@ -1,4 +1,4 @@
-import { JSONDatabase } from '../database/jsondb/provider';
+import { JSONDatabase } from '../database/jsondb/implementation';
 import { AliasesType, COMMANDS_KEY, RewardsType } from '../database/jsondb/types';
 import { CommandType } from '../twitch/chat/types';
 import EventEmitter from 'events';
@@ -44,6 +44,7 @@ export const CONFIG = {
     DEFAULT_OCTAVE: '5',
     DEFAULT_VOLUME: 64,
     DEFAULT_TEMPO: 120,
+    DEFAULT_SWEEP_PRECISION: 512,
     LOCAL_SERVER_HOST: 'localhost',
     LOCAL_SERVER_PORT: 8000,
     REDIRECT_URI: 'http://localhost:8000',

@@ -1,6 +1,6 @@
 import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { ALIAS_MAP, COMMANDS, COMMAND_DESCRIPTIONS, GLOBAL, SAFE_COMMANDS } from '../../configuration/constants';
+import { ALIAS_MAP, COMMANDS, COMMAND_DESCRIPTIONS, SAFE_COMMANDS } from '../../configuration/constants';
 import { CommandHandler, CommandType, MessageHandler } from './types';
 import { firstMessageValue, getCommand, getCommandContent, isValidCommand } from './utils';
 import {
@@ -21,6 +21,7 @@ import {
     stoploop,
     syncmidi
 } from '../../midi/handler';
+import { removeDuplicates } from '../../utils/generic';
 
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: string, targetMidiChannel: number, rewardsMode = false, vipRewardsMode = false): MessageHandler => {
     const onMessageMap: Record<CommandType, CommandHandler> = {
@@ -67,10 +68,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
         },
         [COMMANDS.SEND_CC]: (channel, user, message) => {
             const ccMessageList = sendcc(message, targetMidiChannel);
-            const [first, ...restOfControllers] = [...new Set(ccMessageList.map(([controller]) => controller))] as number[];
-            const controllerListString = restOfControllers.reduce((acc, curr) => `${acc}, ${GLOBAL.CC_CONTROLLER}${curr}`, `${GLOBAL.CC_CONTROLLER}${first}`);
-
-            chatClient.say(channel, `Control Change (${controllerListString}) message(s) sent! `);
+            const controllerList = removeDuplicates(ccMessageList.map(([controller]) => controller));
+            chatClient.say(channel, `Control Change (${controllerList.join()}) message(s) sent! `);
         },
         [COMMANDS.GET_CC_LIST]: (channel) => {
             const [first, ...restOfCommands] = cclist();

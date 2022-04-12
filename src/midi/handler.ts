@@ -1,26 +1,25 @@
-import NanoTimer from 'nanotimer';
-import { inlineChord } from 'harmonics';
 import { setTimeoutPromise } from '../utils/promise';
 import * as JZZ from 'jzz';
 import { JZZTypes } from '../custom-typing/jzz';
-import { CC_COMMANDS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
+import { CHORD_PROGRESSIONS } from '../database/jsondb/types';
 import { ResponseStatus } from '../database/interface';
-import { parseChord, parseNote, calculateTimeout, calculateClockTickTimeNs, validateControllerMessage, sweep } from './utils';
-import { ALIASES_DB, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, REWARDS_DB } from '../configuration/constants';
+import { ALIASES_DB, CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from '../configuration/constants';
 import { firstMessageValue, splitMessageArguments } from '../twitch/chat/utils';
-import { CCCommand } from './types';
-import { NanoTimerProperties } from '../custom-typing/nanotimer';
-import { clearQueue, next, isMyTurn, queue, clearQueueList, clearAllQueues, currentTurnMap, isQueueEmpty, rollbackClearQueue } from './queue';
+import { clearQueue, forwardQueue, waitForMyTurn, queue, clearQueueList, clearAllQueues, currentTurnMap, isQueueEmpty, rollbackClearQueue } from './queue';
+import { SharedVariable } from '../shared-variable/implementation';
+import { initClockData, isClockActive, isSyncing, startClock, stopClock } from './clock';
+import { getCCCommandList, processCCCommandList, parseNote, calculateTimeout, getChordProgression, processChordProgression } from './utils';
+
+// MIDI variable
+let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
 
 // Closure variables
-let timer = new NanoTimer();
-let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
 let tempo: number;
-let chordProgressionActive: boolean;
-let tick: number;
 let volume: number;
-let isSyncing = false;
-let activeMode: 'sendchord' | 'sendloop';
+
+export const currentChordMode = new SharedVariable<'sendchord' | 'sendloop'>();
+export const isChordInProgress = new SharedVariable<boolean>(false);
+
 _initVariables();
 
 /**
@@ -44,9 +43,9 @@ export async function midion(targetMIDIName: string): Promise<void> {
 export async function midioff(targetMIDIChannel: number): Promise<void> {
     try {
         fullstopmidi(targetMIDIChannel);
+        await setTimeoutPromise(3_000_000_000);
         await output?.close();
         output = undefined;
-        timer = new NanoTimer();
         console.log('MIDI disconnected!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
@@ -65,7 +64,7 @@ export function miditempo(targetMIDIChannel: number, message: string): number {
     tempo = parseInt(firstMessageValue(message));
 
     // Generates a MIDI clock
-    _midiClock(targetMIDIChannel, output, calculateClockTickTimeNs(tempo));
+    startClock(targetMIDIChannel, output, tempo);
 
     return tempo;
 }
@@ -74,21 +73,21 @@ export function miditempo(targetMIDIChannel: number, message: string): number {
  * Sends a particular CC Message, a list of CC messages separated by comma or a set of commands using an alias
  * @param message Command arguments (cc message or alias)
  * @param channels Target MIDI channel for the virtual MIDI device
- * @return A list of the messages sent
+ * @return A list of the messages sent without duplicates
  */
 export function sendcc(message: string, channels: number): Array<[key: number, value: number, time: number]> {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
 
-    const ccCommandList = _getCCCommandList(message);
-    const processedCommandList = _processCCCommandList(ccCommandList);
+    const rawCCCommandList = getCCCommandList(message);
+    const ccCommandList = processCCCommandList(rawCCCommandList);
 
-    for (const [controller, value, time] of processedCommandList) {
+    for (const [controller, value, time] of ccCommandList) {
         output.wait(time).control(channels, controller, value);
     }
 
-    return ccCommandList.map(validateControllerMessage);
+    return rawCCCommandList;
 }
 
 /**
@@ -118,17 +117,15 @@ export async function sendchord(message: string, channels: number): Promise<void
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     // Lookup previously saved chord progressions
-    const chordProgression = _getChordProgression(message);
-    // Validate data
-    _processChordProgression(chordProgression);
+    const rawChordProgression = getChordProgression(message);
 
     // If a chord progression is requested, we clear the loop queue
     if (isQueueEmpty('sendchord')) {
         clearQueue('sendloop');
     }
-    const myTurn = queue(chordProgression, 'sendchord');
+    const myTurn = queue(rawChordProgression, 'sendchord');
 
-    await _triggerChordList(chordProgression, channels, 'sendchord', myTurn);
+    await _triggerChordList(rawChordProgression, channels, 'sendchord', myTurn);
 
     // Once the chord queue is empty, we go back to the loop queue
     if (isQueueEmpty('sendchord')) {
@@ -145,9 +142,7 @@ export async function sendloop(message: string, targetMidiChannel: number): Prom
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    const chordProgression = _getChordProgression(message);
-    // Validate data
-    _processChordProgression(chordProgression);
+    const chordProgression = getChordProgression(message);
 
     // Queue chord progression petition
     const turn = queue(chordProgression, 'sendloop');
@@ -222,7 +217,7 @@ export function syncmidi(targetMIDIChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    _midiClock(targetMIDIChannel, output, calculateClockTickTimeNs(tempo));
+    startClock(targetMIDIChannel, output, tempo);
 }
 
 /**
@@ -232,12 +227,10 @@ export function fullstopmidi(targetMidiChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    clearAllQueues();
-    tick = 0;
     output.stop();
     output.allNotesOff(targetMidiChannel);
-    timer.clearInterval();
-    timer = new NanoTimer();
+    stopClock();
+    clearAllQueues();
 }
 
 /**
@@ -255,36 +248,33 @@ export function midivolume(message: string): number {
     return value;
 }
 
-async function _triggerChordList(chordProgression: string, channels: number, type: 'sendloop' | 'sendchord', myTurn: number): Promise<void> {
+async function _triggerChordList(rawChordProgression: string, channels: number, type: 'sendloop' | 'sendchord', myTurn: number): Promise<void> {
     // If the MIDI clock has not started yet, start it to make the chord progression sound
-    if (!_isClockActive()) {
+    if (!isClockActive()) {
         syncmidi(channels);
     }
     // Reset sync flag
-    isSyncing = false;
+    isSyncing.set(false);
 
-    const processedChordProgression = _processChordProgression(chordProgression);
+    const chordProgression = processChordProgression(rawChordProgression, tempo);
 
     // We wait until the bar starts and is your turn
-    await isMyTurn(myTurn, type);
-    activeMode = type;
+    await waitForMyTurn(myTurn, type);
 
     // Blocking section
-    chordProgressionActive = true;
-    for (const [noteList, timeout] of processedChordProgression) {
+    isChordInProgress.set(true);
+    // Set which mode is active now
+    currentChordMode.set(type);
+    for (const [noteList, timeout] of chordProgression) {
         // Skip iteration if tempo or sync changes
-        if (isSyncing) {
+        if (isSyncing.get()) {
             continue;
         }
         await _triggerNoteList(noteList, timeout, channels);
     }
-    // Check if there is a next loop to activate
-    next(type);
-    chordProgressionActive = false;
-}
-
-function _isClockActive(): boolean {
-    return (timer as NanoTimerProperties).intervalTime != null;
+    // Move to next in queue
+    forwardQueue(type);
+    isChordInProgress.set(false);
 }
 
 /**
@@ -326,118 +316,13 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
 }
 
 /**
- * MIDI Clock: Sends ticks synced with tempo at 24ppq following MIDI spec
- * Formula: ((1_000_000_000 ns/s) * 60 seconds/minute / beats/minute(BPM) / 24ppq (pulses per quarter))
- * @param targetMIDIChannel Target MIDI channel
- * @param output VirtualMIDI device
- * @param clockTickTimeNs Clock time in nanoseconds
- */
-function _midiClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, clockTickTimeNs: number): void {
-    _resetClock(targetMIDIChannel, output);
-
-    // First tick
-    _sendFirstTick(output);
-
-    // Next ticks
-    timer.setInterval(_sendTick(output), '', String(clockTickTimeNs) + 'n');
-}
-
-function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
-    return () => {
-        if (tick === 0 && !chordProgressionActive) {
-            EVENT_EMITTER.emit(EVENT.BAR_LOOP_CHANGE_EVENT, activeMode);
-        }
-        output.clock();
-        tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
-    };
-}
-
-function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>) {
-    isSyncing = true;
-    timer.clearInterval();
-    tick = 0;
-    output.stop();
-    output.allNotesOff(targetMIDIChannel);
-}
-
-function _sendFirstTick(output: ReturnType<JZZTypes['openMidiOut']>): void {
-    _sendTick(output)();
-    output.start();
-}
-
-/**
- * Looks up a chord progression/loop or returns the original message if not found
- * @param message Command arguments (alias or chord progression)
- * @returns Chord progression
- */
-function _getChordProgression(message: string): string {
-    const aliasToLookup = message.toLowerCase();
-    return ALIASES_DB.select(CHORD_PROGRESSIONS, aliasToLookup) ?? message;
-}
-
-/**
- * Processes a chord progression string to be played in a 4/4 beat
- * @param chordProgression Chord progression separated by spaces
- * @return List of notes to play with their respective release times
- */
-function _processChordProgression(chordProgression: string): Array<[noteList: string[], timeout: number]> {
-    const chordProgressionList = splitMessageArguments(chordProgression);
-
-    const lastChordIndex = chordProgressionList.length - 1;
-    return chordProgressionList.map((chord, index) => {
-        try {
-            // If it is the last, reduce the note length to make sure the loop executes properly
-            const multiplier = index !== lastChordIndex ? 1 : 0.8;
-            return [inlineChord(parseChord(chord)), Math.floor(calculateTimeout(chord, tempo) * multiplier)];
-        } catch (error) {
-            throw new Error(ERROR_MSG.INVALID_CHORD(chord));
-        }
-    });
-}
-
-/**
- * Retrieves a set of CC commands saved for an alias or splits the one sent
- * @param message Alias or CC commands
- * @return List of commands to send
- */
-function _getCCCommandList(message: string): string[] {
-    const aliasToLookup = message.toLowerCase();
-    return ALIASES_DB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
-}
-
-/**
- * Processes a set of CC commands to be sent with their respective delays and calculating intermediary values (sweep)
- * @param ccCommandList List of CC commands
- * @param precission The amoutn of steps for sweeps
- * @return List of processed CC commands
- */
-function _processCCCommandList(ccCommandList: string[], precission = 256): Array<CCCommand> {
-    if (ccCommandList.length < 1) {
-        throw new Error(ERROR_MSG.BAD_CC_MESSAGE);
-    }
-    // First command
-    let result: CCCommand[] = [validateControllerMessage(ccCommandList[0])];
-    // Next commands
-    for (let preIndex = 0, postIndex = 1; preIndex < ccCommandList.length - 1, postIndex < ccCommandList.length; preIndex++, postIndex++) {
-        const [preController, preValue, preTime] = validateControllerMessage(ccCommandList[preIndex]);
-        const [postController, postValue, postTime] = validateControllerMessage(ccCommandList[postIndex]);
-        // If there's a sweep
-        if (preController === postController && postTime - preTime !== 0) {
-            result = result.concat(sweep(preValue, postValue, preTime, postTime, precission).map(([value, time]) => [postController, value, time]));
-        } else {
-            result = result.concat([[postController, postValue, postTime]]);
-        }
-    }
-    return result;
-}
-
-/**
  * Initializes the common variables
  */
 function _initVariables() {
+    initClockData();
+    // clearAllQueues();
+    isChordInProgress.set(false);
+    currentChordMode.set(undefined);
     tempo = CONFIG.DEFAULT_TEMPO;
-    clearAllQueues();
-    chordProgressionActive = false;
-    tick = 0;
     volume = CONFIG.DEFAULT_VOLUME;
 }

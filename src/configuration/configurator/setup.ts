@@ -4,7 +4,7 @@ import EventEmitter from 'events';
 import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise';
 import { promises as fs } from 'fs';
 import { EnvObject } from '../env/types';
-import { getBooleanByString } from '../../utils/data';
+import { getBooleanByString } from '../../utils/generic';
 import { AccessToken } from '@twurple/auth/lib';
 import { CONFIG } from '../constants';
 import chalk from 'chalk';

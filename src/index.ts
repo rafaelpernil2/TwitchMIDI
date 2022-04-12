@@ -9,10 +9,11 @@ import { onMessageHandlerClosure } from './twitch/chat/handler';
 import { ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
-import { getBooleanByString, validateMIDIChannel } from './utils/data';
+import { getBooleanByString } from './utils/generic';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { getCommand } from './twitch/chat/utils';
 import { setupConfiguration } from './configuration/configurator/setup';
+import { validateMIDIChannel } from './midi/utils';
 
 (async () => {
     const {
