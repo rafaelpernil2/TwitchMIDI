@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.1.3] - 2022-04-12
+### Changed
+- Renamed package.json name from "twitch-midi-bot" to "twitch-midi" | This is not a breaking change because this project is not published as a package
+
 ## [1.1.2] - 2022-04-12
 ### Changed
 - More refactors to simplify code, now the MIDI clock is separate and all the utils are better categorized
@@ -81,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.1.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.8...v1.1.0
