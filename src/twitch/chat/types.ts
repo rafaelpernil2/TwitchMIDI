@@ -1,5 +1,5 @@
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { COMMANDS } from '../configuration/constants';
+import { COMMANDS } from '../../configuration/constants';
 
 export type CommandType = typeof COMMANDS[keyof typeof COMMANDS];
 

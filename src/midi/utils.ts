@@ -1,6 +1,6 @@
 import { CONFIG, ALIASES_DB, ERROR_MSG, GLOBAL, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { CC_CONTROLLERS } from '../types/jsondb-types';
-import { removeParenthesisPart, getParenthesisValue } from './message-utils';
+import { CC_CONTROLLERS } from '../database/jsondb/types';
+import { removeParenthesisPart, getParenthesisValue } from '../twitch/chat/utils';
 
 export function parseChord(chord: string): string {
     const parsedChord = removeParenthesisPart(chord);

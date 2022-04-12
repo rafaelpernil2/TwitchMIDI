@@ -1,5 +1,5 @@
-import { COMMAND_VALUES, GLOBAL } from '../configuration/constants';
-import { CommandType } from '../types/message-types';
+import { COMMAND_VALUES, GLOBAL } from '../../configuration/constants';
+import { CommandType } from './types';
 
 export function isValidCommand(message: string): message is CommandType {
     return COMMAND_VALUES[message] != null;

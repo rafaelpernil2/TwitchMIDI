@@ -1,6 +1,7 @@
-import { JSONDatabase } from '../providers/jsondb-provider';
-import { AliasesType, COMMANDS_KEY, RewardsType } from '../types/jsondb-types';
-import { CommandType } from '../types/message-types';
+import { JSONDatabase } from '../database/jsondb/provider';
+import { AliasesType, COMMANDS_KEY, RewardsType } from '../database/jsondb/types';
+import { CommandType } from '../twitch/chat/types';
+import EventEmitter from 'events';
 
 export const ERROR_MSG = {
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
@@ -15,7 +16,8 @@ export const ERROR_MSG = {
     INVALID_SWEEP_RANGE: 'Invalid sweep range',
     TWITCH_API: 'Could not connect to Twitch',
     INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
-    BAD_SETUP_PROCESS: 'Bad setup, try again'
+    BAD_SETUP_PROCESS: 'Bad setup, try again',
+    DUPLICATE_REQUEST: 'This request is already queued, wait until the previous request is fulfilled'
 };
 
 export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };
@@ -110,6 +112,12 @@ export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boole
 
 export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
 export const REWARDS_DB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH);
+
+export const EVENT_EMITTER = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
+
+export const EVENT = {
+    BAR_LOOP_CHANGE_EVENT: 'barLoopChange'
+};
 
 export const ALIAS_MAP: Record<string, CommandType> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
 

@@ -1,6 +1,6 @@
 import { AccessToken, RefreshingAuthProvider } from '@twurple/auth';
 import { promises as fs } from 'fs';
-import { CONFIG } from '../configuration/constants';
+import { CONFIG } from '../../configuration/constants';
 export async function getAuthProvider(
     clientId: string,
     clientSecret: string,
