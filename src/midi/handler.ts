@@ -145,12 +145,12 @@ export async function sendloop(message: string, targetMidiChannel: number): Prom
     const chordProgression = getChordProgression(message);
 
     // Queue chord progression petition
-    const turn = queue(chordProgression, 'sendloop');
+    const myTurn = queue(chordProgression, 'sendloop');
 
     do {
         // Execute at least once to wait for your turn in the queue
-        await _triggerChordList(chordProgression, targetMidiChannel, 'sendloop', turn);
-    } while (turn === currentTurnMap.sendloop);
+        await _triggerChordList(chordProgression, targetMidiChannel, 'sendloop', myTurn);
+    } while (myTurn === currentTurnMap.sendloop);
 }
 
 /**
@@ -320,7 +320,6 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
  */
 function _initVariables() {
     initClockData();
-    // clearAllQueues();
     isChordInProgress.set(false);
     currentChordMode.set(undefined);
     tempo = CONFIG.DEFAULT_TEMPO;
