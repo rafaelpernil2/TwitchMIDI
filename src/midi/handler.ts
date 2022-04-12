@@ -119,7 +119,8 @@ export async function sendchord(message: string, channels: number): Promise<void
     }
     // Lookup previously saved chord progressions
     const chordProgression = _getChordProgression(message);
-    const processedChordProgression = _processChordProgression(chordProgression);
+    // Validate data
+    _processChordProgression(chordProgression);
 
     // If a chord progression is requested, we clear the loop queue
     if (isQueueEmpty('sendchord')) {
@@ -127,14 +128,13 @@ export async function sendchord(message: string, channels: number): Promise<void
     }
     const myTurn = queue(chordProgression, 'sendchord');
 
-    await _triggerChordList(processedChordProgression, channels, 'sendchord', myTurn);
+    await _triggerChordList(chordProgression, channels, 'sendchord', myTurn);
 
     // Once the chord queue is empty, we go back to the loop queue
     if (isQueueEmpty('sendchord')) {
         rollbackClearQueue('sendloop');
     }
 }
-
 
 /**
  * Parses and sends a chord progression as a loop with chords separated by space or with an alias
@@ -146,14 +146,15 @@ export async function sendloop(message: string, targetMidiChannel: number): Prom
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     const chordProgression = _getChordProgression(message);
-    const processedChordProgression = _processChordProgression(chordProgression);
+    // Validate data
+    _processChordProgression(chordProgression);
 
     // Queue chord progression petition
     const turn = queue(chordProgression, 'sendloop');
 
     do {
         // Execute at least once to wait for your turn in the queue
-        await _triggerChordList(processedChordProgression, targetMidiChannel, 'sendloop', turn);
+        await _triggerChordList(chordProgression, targetMidiChannel, 'sendloop', turn);
     } while (turn === currentTurnMap.sendloop);
 }
 
@@ -254,18 +255,15 @@ export function midivolume(message: string): number {
     return value;
 }
 
-async function _triggerChordList(
-    processedChordProgression: Array<[noteList: string[], timeout: number]>,
-    channels: number,
-    type: 'sendloop' | 'sendchord',
-    myTurn: number
-): Promise<void> {
+async function _triggerChordList(chordProgression: string, channels: number, type: 'sendloop' | 'sendchord', myTurn: number): Promise<void> {
     // If the MIDI clock has not started yet, start it to make the chord progression sound
     if (!_isClockActive()) {
         syncmidi(channels);
     }
     // Reset sync flag
     isSyncing = false;
+
+    const processedChordProgression = _processChordProgression(chordProgression);
 
     // We wait until the bar starts and is your turn
     await isMyTurn(myTurn, type);
