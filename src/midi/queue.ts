@@ -1,6 +1,6 @@
 import { COMMANDS, ERROR_MSG, EVENT, EVENT_EMITTER } from '../configuration/constants';
 import { CommandType } from '../twitch/chat/types';
-import { isEmptyObject } from '../utils/data';
+import { isEmptyObject } from '../utils/generic';
 
 const queueMap: Record<CommandType, Record<number, string | null>> = {
     midihelp: {},
@@ -89,12 +89,10 @@ const uniqueIdMap: Record<CommandType, number> = {
  * @param type
  * @returns An empty promise
  */
-export async function isMyTurn(turn: number, type: CommandType): Promise<void> {
+export async function waitForMyTurn(turn: number, type: CommandType): Promise<void> {
     return new Promise((resolve) => {
-        const onCommandTurn = (activeMode: 'sendloop' | 'sendchord') => {
-            // Either it's a sendchord request on a sendchord context or a sendloop request with no sendchord petitions queued
-            const isChordQueueFree = (activeMode === 'sendchord' && type === 'sendchord') || (type === 'sendloop' ? isQueueEmpty('sendchord') : true);
-            if (turn === currentTurnMap[type] && isChordQueueFree) {
+        const onCommandTurn = (currentChordMode: CommandType) => {
+            if (isMyTurn(turn, type) && isCollisionFree(currentChordMode, type)) {
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
             }
@@ -145,7 +143,7 @@ export function getLastInQueue(type: CommandType): string | null {
  * @returns
  */
 export function getNewQueueTurn(type: CommandType): number {
-    uniqueIdMap[type] = forwardQueue(uniqueIdMap[type]);
+    uniqueIdMap[type] = nextTurn(uniqueIdMap[type]);
     return uniqueIdMap[type];
 }
 
@@ -155,7 +153,7 @@ export function getNewQueueTurn(type: CommandType): number {
  * @param turn
  * @returns
  */
-export function forwardQueue(turn: number): number {
+export function nextTurn(turn: number): number {
     return turn + 1;
 }
 
@@ -163,16 +161,16 @@ export function forwardQueue(turn: number): number {
  * Moves to the next in queue
  * @param type
  */
-export function next(type: CommandType): void {
-    const nextTurn = forwardQueue(currentTurnMap[type]);
+export function forwardQueue(type: CommandType): void {
+    const turn = nextTurn(currentTurnMap[type]);
 
     // Keep playing same loop if it's looping alone
-    if (isLoopingAlone(type, nextTurn)) {
+    if (isLoopingAlone(type, turn)) {
         return;
     }
 
     delete queueMap[type][currentTurnMap[type]];
-    currentTurnMap[type] = nextTurn;
+    currentTurnMap[type] = turn;
 }
 
 /**
@@ -191,6 +189,15 @@ export function isQueueEmpty(type: CommandType): boolean {
 export function clearQueue(type: CommandType): void {
     queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
     queueMap[type] = {};
+}
+
+/**
+ * Clears all queues
+ */
+export function clearAllQueues(): void {
+    for (const type of Object.values(COMMANDS)) {
+        clearQueue(type);
+    }
 }
 
 /**
@@ -223,20 +230,35 @@ export function rollbackClearQueueList(...typeList: CommandType[]): void {
 }
 
 /**
- * Clears all queues
- */
-export function clearAllQueues(): void {
-    for (const type of Object.values(COMMANDS)) {
-        clearQueue(type);
-    }
-}
-
-/**
  * Checks if there's only one looping request and it should keep going
  * @param type
  * @param nextTurn
  * @returns
  */
-export function isLoopingAlone(type: CommandType, nextTurn: number): boolean {
+function isLoopingAlone(type: CommandType, nextTurn: number): boolean {
     return type === 'sendloop' && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
+}
+
+/**
+ * Checks if it's your turn
+ * @param turn Queue position
+ * @param type Type of queue
+ * @returns boolean
+ */
+function isMyTurn(turn: number, type: CommandType): boolean {
+    return turn === currentTurnMap[type];
+}
+
+/**
+ * Collision prevention algorithm that separates 'sendchord' and 'sendloop' queues
+ * @param currentChordMode The chord mode playing right now
+ * @param type Queue type
+ * @returns If next petition can be started
+ */
+function isCollisionFree(currentChordMode: CommandType, type: CommandType): boolean {
+    // If a chord progression wants to start, check if the current chord mode is 'sendchord'.
+    // Since 'sendchord' has priority, this will stay this way until the 'sendchord' queue is empty
+    // If a loop wants to start, check if the chord queue still has requests and wait until it's empty ("wait" is done by calling this method each bar)
+    // In any other case, with normal queues, move on!
+    return (currentChordMode === 'sendchord' && type === 'sendchord') || type !== 'sendloop' || isQueueEmpty('sendchord');
 }

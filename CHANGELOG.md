@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.1.2] - 2022-04-12
+### Changed
+- More refactors to simplify code, now the MIDI clock is separate and all the utils are better categorized
+- Documented lots of methods
+- Simplified CC message handling code
+- Improved error handling and validation
+- Increased sweep precision from 256 to 512 steps
+### Added
+- Shared variables to send information between exported modules
+### Fixed
+- !midioff bugs, now flushes chord progressions/loops and waits a bit for everything to be clean
+
+
 ## [1.1.1] - 2022-04-12
 ### Fixed
 - !fullstopmidi queue reset again
@@ -68,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.1.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.8...v1.1.0
 [1.0.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.7...v1.0.8

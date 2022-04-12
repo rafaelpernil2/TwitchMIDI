@@ -1,7 +1,7 @@
 import NanoTimer from 'nanotimer';
 import https from 'https';
 import http from 'http';
-import { isJsonString } from './data';
+import { isJsonString } from './generic';
 
 export async function setTimeoutPromise(timeout: number) {
     const timer = new NanoTimer();
