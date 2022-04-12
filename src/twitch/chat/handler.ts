@@ -16,7 +16,7 @@ import {
     sendchord,
     sendloop,
     sendnote,
-    miditempo,
+    settempo,
     midivolume,
     stoploop,
     syncmidi
@@ -59,8 +59,11 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMidiName: 
             chatClient.say(channel, 'Volume set to ' + String(volume) + '%');
         },
         [COMMANDS.SET_TEMPO]: (channel, user, message) => {
-            const tempo = miditempo(targetMidiChannel, message);
+            const tempo = settempo(targetMidiChannel, message);
             chatClient.say(channel, 'Tempo set to ' + String(tempo));
+            if (Math.floor(tempo) === 69) {
+                chatClient.say(channel, 'Nice! (～￣▽￣)～');
+            }
         },
         [COMMANDS.SEND_NOTE]: (channel, user, message) => {
             chatClient.say(channel, 'Note sent! ');

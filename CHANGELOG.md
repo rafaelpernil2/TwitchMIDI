@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.1.6] - 2022-04-12
+### Added
+- Easter egg (try !settempo 69)
+### Changed
+- Tempo value now can have decimals
+- Reorganized clock instructions for perfect stability and precision
+- Changed Math.floor to Math.round in timeout and sweep calculations to be more precise
+
 ## [1.1.5] - 2022-04-12
 ### Added
 - Tempo validation, it must be between 35 and 400
@@ -96,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.1.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.4...v1.1.5
 [1.1.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.3...v1.1.4
 [1.1.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.2...v1.1.3

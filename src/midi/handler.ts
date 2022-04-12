@@ -57,11 +57,11 @@ export async function midioff(targetMIDIChannel: number): Promise<void> {
  * @param message Command arguments (tempo)
  * @return Parsed tempo value
  */
-export function miditempo(targetMIDIChannel: number, message: string): number {
+export function settempo(targetMIDIChannel: number, message: string): number {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    const newTempo = parseInt(firstMessageValue(message));
+    const newTempo = Number(firstMessageValue(message));
     if (isNaN(newTempo) || newTempo < CONFIG.MIN_TEMPO || newTempo > CONFIG.MAX_TEMPO) {
         throw new Error(ERROR_MSG.INVALID_TEMPO);
     }
@@ -312,7 +312,7 @@ function _triggerNoteListDelay(noteList: number | string | string[], release: nu
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
-    const releaseTime = Math.floor(release / 1_000_000);
+    const releaseTime = Math.round(release / 1_000_000);
     for (const note of parsedNoteList) {
         output.note(channels, note, volume, releaseTime);
     }

@@ -24,11 +24,6 @@ export function startClock(targetMIDIChannel: number, output: ReturnType<JZZType
     const sendTick = _sendTick(output);
     _resetClock(targetMIDIChannel, output);
 
-    // First tick
-    sendTick();
-    output.start();
-
-    // Next ticks
     timer.setInterval(sendTick, '', tickTime);
 }
 
@@ -76,14 +71,27 @@ function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['ope
  * @returns
  */
 function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
+    // We store in closure variables the event emitter and event for speed and consistency
+    const emitter = EVENT_EMITTER;
+    const event = EVENT.BAR_LOOP_CHANGE_EVENT;
+    let isFirst = true;
     return () => {
-        const newTick = (tick + 1) % 96; // 24ppq * 4 quarter notes
-        // If is bar start and it's not executing blocking section
-        if (tick === 0 && !isChordInProgress.get()) {
-            // Notify and send the current active mode
-            EVENT_EMITTER.emit(EVENT.BAR_LOOP_CHANGE_EVENT, currentChordMode.get());
-        }
+        // Constant time operations to ensure time stability
+        const isInProgress = isChordInProgress.get();
+        const chordMode = currentChordMode.get();
+        tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
+        // This way, the next condition always take the exact amout of time
+
         output.clock();
-        tick = newTick;
+        // If is bar start and it's not executing blocking section
+        if (tick === 1 && !isInProgress) {
+            // Notify and send the current active mode
+            emitter.emit(event, chordMode);
+        }
+
+        if (isFirst) {
+            output.start();
+            isFirst = false;
+        }
     };
 }

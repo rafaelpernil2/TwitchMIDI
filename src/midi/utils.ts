@@ -109,7 +109,7 @@ export function processChordProgression(chordProgression: string, tempo: number)
         try {
             // If it is the last, reduce the note length to make sure the loop executes properly
             const multiplier = index !== lastChordIndex ? 1 : 0.8;
-            return [inlineChord(parseChord(chord)), Math.floor(calculateTimeout(chord, tempo) * multiplier)];
+            return [inlineChord(parseChord(chord)), Math.round(calculateTimeout(chord, tempo) * multiplier)];
         } catch (error) {
             throw new Error(ERROR_MSG.INVALID_CHORD(chord));
         }
@@ -250,7 +250,7 @@ function _parseCCCommandList(ccCommandList: string[]): CCCommand[] {
  * @returns Length in nanoseconds
  */
 export function calculateTimeout(chordNoteToken: string, tempo: number): number {
-    return Math.floor((60_000_000_000 * _getQuarterMultiplier(chordNoteToken)) / tempo);
+    return Math.round((60_000_000_000 * _getQuarterMultiplier(chordNoteToken)) / tempo);
 }
 
 /**
@@ -260,7 +260,7 @@ export function calculateTimeout(chordNoteToken: string, tempo: number): number 
  */
 export function calculateClockTickTimeNs(tempo: number): number {
     // ns per second * (60/tempo) = time for each hit / 24ppq => MIDI Clock
-    return Math.floor(60_000_000_000 / (tempo * 24));
+    return Math.round(60_000_000_000 / (tempo * 24));
 }
 
 /**
@@ -278,8 +278,8 @@ export function sweep(startValue: number, endValue: number, startTime: number, e
     const valueStepSize = Math.abs(endValue - startValue) / precision;
     const result: Array<[value: number, time: number]> = [];
     for (let index = 1; index <= precision; index++) {
-        const value = Math.floor(startValue + valueStepSize * index * direction);
-        const time = Math.floor(startTime + timeStepSize * index);
+        const value = Math.round(startValue + valueStepSize * index * direction);
+        const time = Math.round(startTime + timeStepSize * index);
         result.push([value, time]);
     }
     return result;
