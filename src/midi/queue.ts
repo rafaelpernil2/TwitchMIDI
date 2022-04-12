@@ -177,8 +177,8 @@ export function next(type: CommandType): void {
 
 /**
  * Checks if queue is empty
- * @param type 
- * @returns 
+ * @param type
+ * @returns
  */
 export function isQueueEmpty(type: CommandType): boolean {
     return isEmptyObject(queueMap[type]);
@@ -186,7 +186,7 @@ export function isQueueEmpty(type: CommandType): boolean {
 
 /**
  * Removes petitions from a queue by type
- * @param type 
+ * @param type
  */
 export function clearQueue(type: CommandType): void {
     queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
@@ -195,7 +195,7 @@ export function clearQueue(type: CommandType): void {
 
 /**
  * Removes petitions from a list of queues
- * @param typeList 
+ * @param typeList
  */
 export function clearQueueList(...typeList: CommandType[]): void {
     for (const type of typeList) {
@@ -205,7 +205,7 @@ export function clearQueueList(...typeList: CommandType[]): void {
 
 /**
  * Restores the previous values cleared in a queue by type
- * @param type 
+ * @param type
  */
 export function rollbackClearQueue(type: CommandType): void {
     const backup = JSON.parse(JSON.stringify(queueCommitMap[type])) as Record<number, string | null>;
@@ -214,7 +214,7 @@ export function rollbackClearQueue(type: CommandType): void {
 
 /**
  * Restores the previous values cleared in a list of queues by type
- * @param typeList 
+ * @param typeList
  */
 export function rollbackClearQueueList(...typeList: CommandType[]): void {
     for (const type of typeList) {
@@ -233,9 +233,9 @@ export function clearAllQueues(): void {
 
 /**
  * Checks if there's only one looping request and it should keep going
- * @param type 
- * @param nextTurn 
- * @returns 
+ * @param type
+ * @param nextTurn
+ * @returns
  */
 export function isLoopingAlone(type: CommandType, nextTurn: number): boolean {
     return type === 'sendloop' && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
