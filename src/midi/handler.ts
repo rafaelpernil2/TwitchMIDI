@@ -10,7 +10,7 @@ import { ALIASES_DB, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, REWARDS_DB
 import { firstMessageValue, splitMessageArguments } from '../twitch/chat/utils';
 import { CCCommand } from './types';
 import { NanoTimerProperties } from '../custom-typing/nanotimer';
-import { clearQueue, next, isMyTurn, queue, clearQueueList, clearAllQueues, currentTurnMap, isQueueEmpty, rollbackClearQueue, resetAllQueues } from './queue';
+import { clearQueue, next, isMyTurn, queue, clearQueueList, clearAllQueues, currentTurnMap, isQueueEmpty, rollbackClearQueue } from './queue';
 
 // Closure variables
 let timer = new NanoTimer();
@@ -232,7 +232,7 @@ export function fullstopmidi(targetMidiChannel: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    resetAllQueues();
+    clearAllQueues();
     tick = 0;
     output.stop();
     output.allNotesOff(targetMidiChannel);

@@ -240,18 +240,3 @@ export function clearAllQueues(): void {
 export function isLoopingAlone(type: CommandType, nextTurn: number): boolean {
     return type === 'sendloop' && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
 }
-
-/**
- * Resets all queues
- */
-export function resetAllQueues(): void {
-    for (const type of Object.values(COMMANDS)) {
-        _resetQueue(type);
-    }
-}
-
-function _resetQueue(type: CommandType): void {
-    queueMap[type] = {};
-    currentTurnMap[type] = 0;
-    uniqueIdMap[type] = -1;
-}
