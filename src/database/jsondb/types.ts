@@ -1,4 +1,4 @@
-import { CommandType } from './message-types';
+import { CommandType } from '../../twitch/chat/types';
 
 export interface AliasesType {
     chordProgressions: Record<string, string>;

@@ -2,17 +2,17 @@
 import 'dotenv/config';
 import * as JZZ from 'jzz';
 
-import { getLoadedEnvVariables } from './configuration/env-loader';
-import { getAuthProvider } from './providers/auth-provider';
+import { getLoadedEnvVariables } from './configuration/env/loader';
+import { getAuthProvider } from './twitch/auth/provider';
 import { ChatClient } from '@twurple/chat';
-import { onMessageHandlerClosure } from './handlers/message-handler';
+import { onMessageHandlerClosure } from './twitch/chat/handler';
 import { ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
-import { getBooleanByString, validateMIDIChannel } from './utils/data-utils';
-import { REWARD_TITLE_COMMAND } from './types/jsondb-types';
-import { getCommand } from './utils/message-utils';
-import { setupConfiguration } from './handlers/configurator-input-handler';
+import { getBooleanByString, validateMIDIChannel } from './utils/data';
+import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
+import { getCommand } from './twitch/chat/utils';
+import { setupConfiguration } from './configuration/configurator/setup';
 
 (async () => {
     const {

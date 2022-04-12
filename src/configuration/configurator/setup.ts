@@ -1,12 +1,12 @@
 import readline from 'readline';
 import http from 'http';
 import EventEmitter from 'events';
-import { httpsRequestPromise, setTimeoutPromise } from '../utils/promise-utils';
+import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise';
 import { promises as fs } from 'fs';
-import { EnvObject } from '../types/env-object-type';
-import { getBooleanByString } from '../utils/data-utils';
+import { EnvObject } from '../env/types';
+import { getBooleanByString } from '../../utils/data';
 import { AccessToken } from '@twurple/auth/lib';
-import { CONFIG } from '../configuration/constants';
+import { CONFIG } from '../constants';
 import chalk from 'chalk';
 
 const localHTTPServerEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready

@@ -1,5 +1,5 @@
-import { EnvObject } from '../types/env-object-type';
-import { ERROR_MSG, GLOBAL } from './constants';
+import { EnvObject } from './types';
+import { ERROR_MSG, GLOBAL } from '../constants';
 
 async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvObject>): Promise<EnvObject> {
     function getVariables() {

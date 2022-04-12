@@ -1,4 +1,4 @@
-import { Database, ResponseStatus } from '../types/databse-interface';
+import { Database, ResponseStatus } from '../interface';
 import { promises as fs, readFileSync } from 'fs';
 
 export class JSONDatabase<T> implements Database<T> {

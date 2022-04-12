@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.1.0] - 2022-04-12
+### Added
+- Loop queue resumes after chord queue is done
+### Changed
+- Big refactor of whole project
+- Improved and simplified queue code
+### Fixed
+- No more queue collisions
+
 ## [1.0.8] - 2022-04-11
 ### Fixed
 - !sendloop and !sendchord duplicate requests are now ignored
@@ -55,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.0.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.0.5...v1.0.6
