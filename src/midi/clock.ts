@@ -20,14 +20,16 @@ let tick = 0;
  * @param clockTickTimeNs Clock time in nanoseconds
  */
 export function startClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, tempo: number): void {
+    const tickTime = `${calculateClockTickTimeNs(tempo)}n`;
+    const sendTick = _sendTick(output);
     _resetClock(targetMIDIChannel, output);
 
     // First tick
-    _sendFirstTick(output);
+    sendTick();
+    output.start();
 
     // Next ticks
-    const tickTime = calculateClockTickTimeNs(tempo);
-    timer.setInterval(_sendTick(output), '', `${tickTime}n`);
+    timer.setInterval(sendTick, '', tickTime);
 }
 
 /**
@@ -69,28 +71,19 @@ function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['ope
 }
 
 /**
- * Sends the first tick of the MIDI clock
- * @param output VirtualMIDI device
- * @returns
- */
-function _sendFirstTick(output: ReturnType<JZZTypes['openMidiOut']>): void {
-    _sendTick(output)();
-    output.start();
-}
-
-/**
  * MIDI clock tick
  * @param output VirtualMIDI device
  * @returns
  */
 function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
     return () => {
+        const newTick = (tick + 1) % 96; // 24ppq * 4 quarter notes
         // If is bar start and it's not executing blocking section
         if (tick === 0 && !isChordInProgress.get()) {
             // Notify and send the current active mode
             EVENT_EMITTER.emit(EVENT.BAR_LOOP_CHANGE_EVENT, currentChordMode.get());
         }
         output.clock();
-        tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
+        tick = newTick;
     };
 }

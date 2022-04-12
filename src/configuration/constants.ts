@@ -3,9 +3,29 @@ import { AliasesType, COMMANDS_KEY, RewardsType } from '../database/jsondb/types
 import { CommandType } from '../twitch/chat/types';
 import EventEmitter from 'events';
 
+export const CONFIG = {
+    ALIASES_DB_PATH: './config/aliases.json',
+    TOKENS_TEMPLATE_PATH: './config/tokens.template.json',
+    BOT_TOKENS_PATH: './config/bot-tokens.json',
+    BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
+    REWARDS_PATH: './config/rewards.json',
+    DOT_ENV_PATH: '.env',
+    DEFAULT_OCTAVE: '5',
+    DEFAULT_VOLUME: 64,
+    MIN_TEMPO: 35,
+    MAX_TEMPO: 400,
+    DEFAULT_TEMPO: 120,
+    DEFAULT_SWEEP_PRECISION: 512,
+    LOCAL_SERVER_HOST: 'localhost',
+    LOCAL_SERVER_PORT: 8000,
+    REDIRECT_URI: 'http://localhost:8000',
+    TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/'
+};
+
 export const ERROR_MSG = {
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
+    INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO})`,
     CHORD_PROGRESSION_NOT_FOUND: 'Chord progression/loop not found',
     CHORD_PROGRESSION_BAD_INSERTION: 'Chord progression/loop could not be inserted',
     INVALID_CHORD: (chord: string) => 'There is at least one invalid chord or the alias was not found: ' + chord,
@@ -33,23 +53,6 @@ export const GLOBAL = {
     CLOSE_PARENTHESIS_SEPARATOR: ')',
     CC_CONTROLLER: 'CC#'
 } as const;
-
-export const CONFIG = {
-    ALIASES_DB_PATH: './config/aliases.json',
-    TOKENS_TEMPLATE_PATH: './config/tokens.template.json',
-    BOT_TOKENS_PATH: './config/bot-tokens.json',
-    BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
-    REWARDS_PATH: './config/rewards.json',
-    DOT_ENV_PATH: '.env',
-    DEFAULT_OCTAVE: '5',
-    DEFAULT_VOLUME: 64,
-    DEFAULT_TEMPO: 120,
-    DEFAULT_SWEEP_PRECISION: 512,
-    LOCAL_SERVER_HOST: 'localhost',
-    LOCAL_SERVER_PORT: 8000,
-    REDIRECT_URI: 'http://localhost:8000',
-    TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/'
-};
 
 export const COMMANDS = {
     MIDI_HELP: 'midihelp',
