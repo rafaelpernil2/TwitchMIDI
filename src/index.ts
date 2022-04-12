@@ -1,5 +1,6 @@
 // This NEEDS to be executed first
 import 'dotenv/config';
+
 import * as JZZ from 'jzz';
 
 import { getLoadedEnvVariables } from './configuration/env/loader';

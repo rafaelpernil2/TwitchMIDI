@@ -61,8 +61,11 @@ export function miditempo(targetMIDIChannel: number, message: string): number {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    tempo = parseInt(firstMessageValue(message));
-
+    const newTempo = parseInt(firstMessageValue(message));
+    if (isNaN(newTempo) || newTempo < CONFIG.MIN_TEMPO || newTempo > CONFIG.MAX_TEMPO) {
+        throw new Error(ERROR_MSG.INVALID_TEMPO);
+    }
+    tempo = newTempo;
     // Generates a MIDI clock
     startClock(targetMIDIChannel, output, tempo);
 
