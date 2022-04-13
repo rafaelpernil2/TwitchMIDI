@@ -14,7 +14,6 @@ export async function httpsRequestPromise<T>(options: https.RequestOptions): Pro
     return new Promise<{ statusCode: number; headers: http.IncomingHttpHeaders; body: T | string }>((resolve, reject) => {
         const req = https.request(options, (res) => {
             let body = '';
-
             res.on('data', (chunk) => (body += String(chunk)));
             res.on('error', reject);
             res.on('end', () => {
@@ -26,11 +25,7 @@ export async function httpsRequestPromise<T>(options: https.RequestOptions): Pro
                 }
             });
         });
-
-        req.on('error', (error) => {
-            reject(error);
-        });
-
+        req.on('error', (error) => reject(error));
         req.end();
     });
 }

@@ -1,10 +1,11 @@
-import { CommandType } from '../../twitch/chat/types';
+import { Command } from '../../configuration/constants';
+import { UserRoles } from '../../twitch/chat/types';
 
 export interface AliasesType {
     chordProgressions: Record<string, string>;
     ccCommands: Record<string, string[]>;
     ccControllers: Record<string, number>;
-    commands: Record<string, CommandType>;
+    commands: Record<string, Command>;
 }
 
 export const CHORD_PROGRESSIONS = 'chordProgressions';
@@ -17,3 +18,15 @@ export interface RewardsType {
 }
 
 export const REWARD_TITLE_COMMAND = 'rewardTitleCommandMap';
+
+export interface PermissionsType {
+    permissionsMap: Record<Command, PermissionsTable>;
+}
+
+export interface PermissionsTable {
+    requirements: Array<keyof UserRoles>;
+    whitelist: string[];
+    blacklist: string[];
+}
+
+export const PERMISSIONS_MAP = 'permissionsMap';

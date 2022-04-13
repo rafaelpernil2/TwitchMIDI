@@ -1,6 +1,5 @@
 import { JSONDatabase } from '../database/jsondb/implementation';
-import { AliasesType, COMMANDS_KEY, RewardsType } from '../database/jsondb/types';
-import { CommandType } from '../twitch/chat/types';
+import { AliasesType, COMMANDS_KEY, PermissionsType, RewardsType } from '../database/jsondb/types';
 import EventEmitter from 'events';
 
 export const CONFIG = {
@@ -9,17 +8,19 @@ export const CONFIG = {
     BOT_TOKENS_PATH: './config/bot-tokens.json',
     BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
     REWARDS_PATH: './config/rewards.json',
+    PERMISSIONS_DB: './config/permissions.json',
     DOT_ENV_PATH: '.env',
     DEFAULT_OCTAVE: '5',
     DEFAULT_VOLUME: 64,
     MIN_TEMPO: 35,
     MAX_TEMPO: 400,
     DEFAULT_TEMPO: 120,
-    DEFAULT_SWEEP_PRECISION: 512,
+    DEFAULT_SWEEP_PRECISION: 256,
     LOCAL_SERVER_HOST: 'localhost',
     LOCAL_SERVER_PORT: 8000,
     REDIRECT_URI: 'http://localhost:8000',
-    TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/'
+    TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/',
+    FULL_ACCESS_USER_ROLES: { isBroadcaster: true, isMod: false, isSubscriber: true, isVip: false, isFounder: false }
 };
 
 export const ERROR_MSG = {
@@ -32,7 +33,7 @@ export const ERROR_MSG = {
     MIDI_DISCONNECTION_ERROR: 'MIDI could not be disconnected',
     MIDI_CONNECTION_ERROR: 'MIDI could not be connected',
     BAD_CC_MESSAGE: 'Bad Control Change message, please review your values. Controller/value must be between 0 and 127 (inclusive)',
-    INSUFFICIENT_PERMISSIONS: "You don't have enough permissions to use this command, ask me or a mod to launch this command or subscribe to this channel",
+    BAD_PERMISSIONS: "You don't have enough permissions to use this command. Sorry!",
     INVALID_SWEEP_RANGE: 'Invalid sweep range',
     TWITCH_API: 'Could not connect to Twitch',
     INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
@@ -54,27 +55,27 @@ export const GLOBAL = {
     CC_CONTROLLER: 'CC#'
 } as const;
 
-export const COMMANDS = {
-    MIDI_HELP: 'midihelp',
-    MIDI_ON: 'midion',
-    MIDI_OFF: 'midioff',
-    ADD_CHORD_ALIAS: 'addchord',
-    REMOVE_CHORD_ALIAS: 'removechord',
-    GET_CHORD_LIST: 'chordlist',
-    SEND_NOTE: 'sendnote',
-    SEND_CHORD: 'sendchord',
-    SEND_LOOP: 'sendloop',
-    SEND_CC: 'sendcc',
-    GET_CC_LIST: 'cclist',
-    MIDI_VOLUME: 'midivolume',
-    STOP_LOOP: 'stoploop',
-    FULL_STOP: 'fullstopmidi',
-    SET_TEMPO: 'settempo',
-    SYNC: 'syncmidi',
-    FETCH_DB: 'fetchdb'
-} as const;
+export enum Command {
+    midihelp = 'midihelp',
+    midion = 'midion',
+    midioff = 'midioff',
+    addchord = 'addchord',
+    removechord = 'removechord',
+    chordlist = 'chordlist',
+    sendnote = 'sendnote',
+    sendchord = 'sendchord',
+    sendloop = 'sendloop',
+    sendcc = 'sendcc',
+    cclist = 'cclist',
+    midivolume = 'midivolume',
+    stoploop = 'stoploop',
+    fullstopmidi = 'fullstopmidi',
+    settempo = 'settempo',
+    syncmidi = 'syncmidi',
+    fetchdb = 'fetchdb'
+}
 
-export const COMMAND_DESCRIPTIONS: Record<typeof COMMANDS[keyof typeof COMMANDS], string> = {
+export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], string> = {
     midihelp: 'Shows all commands available and info about each command. Syntax: command (e.g "sendloop")',
     midion: 'Turns on the bot',
     midioff: 'Turns off the bot',
@@ -94,7 +95,7 @@ export const COMMAND_DESCRIPTIONS: Record<typeof COMMANDS[keyof typeof COMMANDS]
     fetchdb: 'Refreshes aliases configuration'
 } as const;
 
-export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boolean> = {
+export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean> = {
     midihelp: true,
     midion: false,
     midioff: false,
@@ -116,6 +117,7 @@ export const SAFE_COMMANDS: Record<typeof COMMANDS[keyof typeof COMMANDS], boole
 
 export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
 export const REWARDS_DB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH);
+export const PERMISSIONS_DB = new JSONDatabase<PermissionsType>(CONFIG.PERMISSIONS_DB);
 
 export const EVENT_EMITTER = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 
@@ -123,6 +125,6 @@ export const EVENT = {
     BAR_LOOP_CHANGE_EVENT: 'barLoopChange'
 };
 
-export const ALIAS_MAP: Record<string, CommandType> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
+export const ALIAS_MAP: Record<string, Command> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
 
-export const COMMAND_VALUES = Object.fromEntries([...Object.entries(ALIAS_MAP), ...Object.entries(COMMANDS).map(([, v]) => [v, 1])]) as Record<string, string>;
+export const COMMAND_VALUES = Object.fromEntries([...Object.entries(ALIAS_MAP), ...Object.entries(Command).map(([, v]) => [v, 1])]) as Record<string, string>;

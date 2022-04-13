@@ -84,6 +84,17 @@ export function parseNote(note: string): string {
 }
 
 /**
+ * Parses a message and generates a list of notes
+ * @param message Command arguments (list of notes)
+ * @param tempo Tempo
+ * @returns List of [note,timeout] tuples
+ */
+export function parseNoteList(message: string, tempo: number): Array<[note: string, timeout: number]> {
+    const noteList = splitMessageArguments(message);
+    return noteList.map<[note: string, timeout: number]>((note) => [parseNote(note), calculateTimeout(note, tempo)]);
+}
+
+/**
  * Looks up a chord progression/loop or returns the original message if not found
  * @param message Command arguments (alias or chord progression)
  * @returns Chord progression
@@ -272,7 +283,7 @@ export function calculateClockTickTimeNs(tempo: number): number {
  * @param precision How many values to create
  * @returns List of interpolated values
  */
-export function sweep(startValue: number, endValue: number, startTime: number, endTime: number, precision = 256): Array<[value: number, time: number]> {
+export function sweep(startValue: number, endValue: number, startTime: number, endTime: number, precision = CONFIG.DEFAULT_SWEEP_PRECISION): Array<[value: number, time: number]> {
     const direction = startValue <= endValue ? 1 : -1;
     const timeStepSize = Math.abs(endTime - startTime) / precision;
     const valueStepSize = Math.abs(endValue - startValue) / precision;

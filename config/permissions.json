@@ -1,0 +1,107 @@
+{
+    "permissionsMap": {
+        "midihelp": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midion": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midioff": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "addchord": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "removechord": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "chordlist": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "sendnote": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "sendchord": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "sendloop": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "sendcc": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "cclist": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midivolume": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "stoploop": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod",
+                "isVip"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "fullstopmidi": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "settempo": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "syncmidi": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod",
+                "isVip"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "fetchdb": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        }
+    }
+}
