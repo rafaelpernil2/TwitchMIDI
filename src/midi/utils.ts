@@ -84,6 +84,17 @@ export function parseNote(note: string): string {
 }
 
 /**
+ * Parses a message and generates a list of notes
+ * @param message Command arguments (list of notes)
+ * @param tempo Tempo
+ * @returns List of [note,timeout] tuples
+ */
+export function parseNoteList(message: string, tempo: number): Array<[note: string, timeout: number]> {
+    const noteList = splitMessageArguments(message);
+    return noteList.map<[note: string, timeout: number]>((note) => [parseNote(note), calculateTimeout(note, tempo)]);
+}
+
+/**
  * Looks up a chord progression/loop or returns the original message if not found
  * @param message Command arguments (alias or chord progression)
  * @returns Chord progression

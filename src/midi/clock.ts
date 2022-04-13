@@ -59,8 +59,7 @@ export function stopClock(): void {
  */
 function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>) {
     isSyncing.set(true);
-    timer.clearInterval();
-    tick = 0;
+    initClockData();
     output.stop();
     output.allNotesOff(targetMIDIChannel);
 }

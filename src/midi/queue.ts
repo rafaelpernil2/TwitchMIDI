@@ -1,86 +1,10 @@
-import { COMMANDS, ERROR_MSG, EVENT, EVENT_EMITTER } from '../configuration/constants';
-import { CommandType } from '../twitch/chat/types';
+import { Command, ERROR_MSG, EVENT, EVENT_EMITTER } from '../configuration/constants';
 import { isEmptyObject } from '../utils/generic';
 
-const queueMap: Record<CommandType, Record<number, string | null>> = {
-    midihelp: {},
-    midion: {},
-    midioff: {},
-    addchord: {},
-    removechord: {},
-    chordlist: {},
-    sendnote: {},
-    sendchord: {},
-    sendloop: {},
-    sendcc: {},
-    cclist: {},
-    midivolume: {},
-    stoploop: {},
-    fullstopmidi: {},
-    settempo: {},
-    syncmidi: {},
-    fetchdb: {}
-} as const;
-
-const queueCommitMap: Record<CommandType, Record<number, string | null>> = {
-    midihelp: {},
-    midion: {},
-    midioff: {},
-    addchord: {},
-    removechord: {},
-    chordlist: {},
-    sendnote: {},
-    sendchord: {},
-    sendloop: {},
-    sendcc: {},
-    cclist: {},
-    midivolume: {},
-    stoploop: {},
-    fullstopmidi: {},
-    settempo: {},
-    syncmidi: {},
-    fetchdb: {}
-} as const;
-
-export const currentTurnMap: Record<CommandType, number> = {
-    midihelp: 0,
-    midion: 0,
-    midioff: 0,
-    addchord: 0,
-    removechord: 0,
-    chordlist: 0,
-    sendnote: 0,
-    sendchord: 0,
-    sendloop: 0,
-    sendcc: 0,
-    cclist: 0,
-    midivolume: 0,
-    stoploop: 0,
-    fullstopmidi: 0,
-    settempo: 0,
-    syncmidi: 0,
-    fetchdb: 0
-} as const;
-
-const uniqueIdMap: Record<CommandType, number> = {
-    midihelp: -1,
-    midion: -1,
-    midioff: -1,
-    addchord: -1,
-    removechord: -1,
-    chordlist: -1,
-    sendnote: -1,
-    sendchord: -1,
-    sendloop: -1,
-    sendcc: -1,
-    cclist: -1,
-    midivolume: -1,
-    stoploop: -1,
-    fullstopmidi: -1,
-    settempo: -1,
-    syncmidi: -1,
-    fetchdb: -1
-} as const;
+const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
+const queueCommitMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
+const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
+export const currentTurnMap = Object.fromEntries(Object.values(Command).map((key) => [key, 0])) as Record<Command, number>;
 
 /**
  * Resolves once the bar is starting and your turn is reached
@@ -89,9 +13,9 @@ const uniqueIdMap: Record<CommandType, number> = {
  * @param type
  * @returns An empty promise
  */
-export async function waitForMyTurn(turn: number, type: CommandType): Promise<void> {
+export async function waitForMyTurn(turn: number, type: Command): Promise<void> {
     return new Promise((resolve) => {
-        const onCommandTurn = (currentChordMode: CommandType) => {
+        const onCommandTurn = (currentChordMode: Command) => {
             if (isMyTurn(turn, type) && isCollisionFree(currentChordMode, type)) {
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
@@ -102,19 +26,19 @@ export async function waitForMyTurn(turn: number, type: CommandType): Promise<vo
 }
 
 /**
- * Adds chord progression or loop to queue
- * @param chordProgression
+ * Adds request to queue
+ * @param request
  * @param type
  * @returns
  */
-export function queue(chordProgression: string, type: CommandType): number {
+export function queue(request: string, type: Command): number {
     // Throw error on duplicate requests
-    if (chordProgression === getLastInQueue(type)) {
+    if (request === getLastInQueue(type)) {
         throw new Error(ERROR_MSG.DUPLICATE_REQUEST);
     }
 
     const turn = getNewQueueTurn(type);
-    queueMap[type][turn] = chordProgression;
+    queueMap[type][turn] = request;
 
     return turn;
 }
@@ -124,7 +48,7 @@ export function queue(chordProgression: string, type: CommandType): number {
  * @param type
  * @returns
  */
-export function getLastIndex(type: CommandType): number {
+export function getLastIndex(type: Command): number {
     return uniqueIdMap[type];
 }
 
@@ -133,7 +57,7 @@ export function getLastIndex(type: CommandType): number {
  * @param type
  * @returns
  */
-export function getLastInQueue(type: CommandType): string | null {
+export function getLastInQueue(type: Command): string | null {
     return queueMap[type]?.[getLastIndex(type)];
 }
 
@@ -142,7 +66,7 @@ export function getLastInQueue(type: CommandType): string | null {
  * @param type
  * @returns
  */
-export function getNewQueueTurn(type: CommandType): number {
+export function getNewQueueTurn(type: Command): number {
     uniqueIdMap[type] = nextTurn(uniqueIdMap[type]);
     return uniqueIdMap[type];
 }
@@ -161,7 +85,7 @@ export function nextTurn(turn: number): number {
  * Moves to the next in queue
  * @param type
  */
-export function forwardQueue(type: CommandType): void {
+export function forwardQueue(type: Command): void {
     const turn = nextTurn(currentTurnMap[type]);
 
     // Keep playing same loop if it's looping alone
@@ -178,7 +102,7 @@ export function forwardQueue(type: CommandType): void {
  * @param type
  * @returns
  */
-export function isQueueEmpty(type: CommandType): boolean {
+export function isQueueEmpty(type: Command): boolean {
     return isEmptyObject(queueMap[type]);
 }
 
@@ -186,7 +110,7 @@ export function isQueueEmpty(type: CommandType): boolean {
  * Removes petitions from a queue by type
  * @param type
  */
-export function clearQueue(type: CommandType): void {
+export function clearQueue(type: Command): void {
     queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
     queueMap[type] = {};
 }
@@ -195,7 +119,7 @@ export function clearQueue(type: CommandType): void {
  * Clears all queues
  */
 export function clearAllQueues(): void {
-    for (const type of Object.values(COMMANDS)) {
+    for (const type of Object.values(Command)) {
         clearQueue(type);
     }
 }
@@ -204,7 +128,7 @@ export function clearAllQueues(): void {
  * Removes petitions from a list of queues
  * @param typeList
  */
-export function clearQueueList(...typeList: CommandType[]): void {
+export function clearQueueList(...typeList: Command[]): void {
     for (const type of typeList) {
         clearQueue(type);
     }
@@ -214,7 +138,7 @@ export function clearQueueList(...typeList: CommandType[]): void {
  * Restores the previous values cleared in a queue by type
  * @param type
  */
-export function rollbackClearQueue(type: CommandType): void {
+export function rollbackClearQueue(type: Command): void {
     const backup = JSON.parse(JSON.stringify(queueCommitMap[type])) as Record<number, string | null>;
     queueMap[type] = { ...backup, ...queueMap[type] };
 }
@@ -223,7 +147,7 @@ export function rollbackClearQueue(type: CommandType): void {
  * Restores the previous values cleared in a list of queues by type
  * @param typeList
  */
-export function rollbackClearQueueList(...typeList: CommandType[]): void {
+export function rollbackClearQueueList(...typeList: Command[]): void {
     for (const type of typeList) {
         rollbackClearQueue(type);
     }
@@ -235,8 +159,8 @@ export function rollbackClearQueueList(...typeList: CommandType[]): void {
  * @param nextTurn
  * @returns
  */
-function isLoopingAlone(type: CommandType, nextTurn: number): boolean {
-    return type === 'sendloop' && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
+function isLoopingAlone(type: Command, nextTurn: number): boolean {
+    return type === Command.sendloop && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
 }
 
 /**
@@ -245,20 +169,20 @@ function isLoopingAlone(type: CommandType, nextTurn: number): boolean {
  * @param type Type of queue
  * @returns boolean
  */
-function isMyTurn(turn: number, type: CommandType): boolean {
+function isMyTurn(turn: number, type: Command): boolean {
     return turn === currentTurnMap[type];
 }
 
 /**
- * Collision prevention algorithm that separates 'sendchord' and 'sendloop' queues
+ * Collision prevention algorithm that separates sendchord and sendloop queues
  * @param currentChordMode The chord mode playing right now
  * @param type Queue type
  * @returns If next petition can be started
  */
-function isCollisionFree(currentChordMode: CommandType, type: CommandType): boolean {
-    // If a chord progression wants to start, check if the current chord mode is 'sendchord'.
-    // Since 'sendchord' has priority, this will stay this way until the 'sendchord' queue is empty
+function isCollisionFree(currentChordMode: Command, type: Command): boolean {
+    // If a chord progression wants to start, check if the current chord mode is sendchord.
+    // Since sendchord has priority, this will stay this way until the sendchord queue is empty
     // If a loop wants to start, check if the chord queue still has requests and wait until it's empty ("wait" is done by calling this method each bar)
     // In any other case, with normal queues, move on!
-    return (currentChordMode === 'sendchord' && type === 'sendchord') || type !== 'sendloop' || isQueueEmpty('sendchord');
+    return (currentChordMode === Command.sendchord && type === Command.sendchord) || type !== Command.sendloop || isQueueEmpty(Command.sendchord);
 }

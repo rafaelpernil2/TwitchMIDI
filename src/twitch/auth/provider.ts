@@ -8,18 +8,11 @@ export async function getAuthProvider(
     refreshToken: string,
     kind: 'BOT' | 'BROADCASTER'
 ): Promise<RefreshingAuthProvider> {
-    const tokenData: AccessToken = {
-        ...(JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken),
-        accessToken,
-        refreshToken
-    };
+    const template = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;
+    const tokenData: AccessToken = { ...template, accessToken, refreshToken };
     const tokensPath = kind === 'BOT' ? CONFIG.BOT_TOKENS_PATH : CONFIG.BROADCASTER_TOKENS_PATH;
     return new RefreshingAuthProvider(
-        {
-            clientId,
-            clientSecret,
-            onRefresh: async (newTokenData) => await fs.writeFile(tokensPath, JSON.stringify(newTokenData, null, 4), { encoding: 'utf-8' })
-        },
+        { clientId, clientSecret, onRefresh: async (newTokenData) => await fs.writeFile(tokensPath, JSON.stringify(newTokenData, null, 4), { encoding: 'utf-8' }) },
         tokenData
     );
 }
