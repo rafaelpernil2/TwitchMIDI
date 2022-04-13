@@ -3,4 +3,4 @@ languages:
 - typescript
 exclude:
 - .*/configuration/.*
-- .*/**/*utils\.*
+- .*utils
