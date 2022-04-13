@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fine-grained command access control with role check, whitelist and blackist
 ### Changed
 - Major refactor to reduce code duplicity and spread features in different files/folders
+- Reduced sweep precision to 256 again to reduce load, the outcome is pretty much the same
 
 ## [1.1.6] - 2022-04-12
 ### Added

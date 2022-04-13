@@ -15,7 +15,8 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMIDIName: 
         }
         try {
             // Try to get the function directly or look up by alias
-            const commandHandler = CommandHandlers[(ALIAS_MAP[commandMessage] ?? commandMessage) as keyof typeof CommandHandlers] as CommandHandlerType;
+            const parsedCommand = ALIAS_MAP[commandMessage] ?? commandMessage;
+            const commandHandler = CommandHandlers[parsedCommand] as CommandHandlerType;
 
             // If rewards mode enabled and the input is a command and the user is not streamer or mod or vip, only allow safe commands
             if (commandHandler == null || isUnauthorizedCommand(commandMessage, msg, rewardsMode, vipRewardsMode)) {
@@ -25,7 +26,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMIDIName: 
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
             const twitch: TwitchParams = { channel, chatClient, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
             // Checks if the user has enough permissions
-            canAccessCommand(commandMessage, twitch);
+            canAccessCommand(parsedCommand, twitch);
             await commandHandler(getCommandContent(message), { targetMIDIChannel, targetMIDIName }, twitch);
         } catch (error) {
             chatClient.say(channel, String(error));

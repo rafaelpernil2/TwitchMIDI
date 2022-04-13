@@ -283,7 +283,7 @@ export function calculateClockTickTimeNs(tempo: number): number {
  * @param precision How many values to create
  * @returns List of interpolated values
  */
-export function sweep(startValue: number, endValue: number, startTime: number, endTime: number, precision = 256): Array<[value: number, time: number]> {
+export function sweep(startValue: number, endValue: number, startTime: number, endTime: number, precision = CONFIG.DEFAULT_SWEEP_PRECISION): Array<[value: number, time: number]> {
     const direction = startValue <= endValue ? 1 : -1;
     const timeStepSize = Math.abs(endTime - startTime) / precision;
     const valueStepSize = Math.abs(endValue - startValue) / precision;
