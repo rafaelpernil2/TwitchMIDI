@@ -4,3 +4,5 @@ languages:
 exclude:
 - .*/configuration/.*
 - .*/utils/.*
+- .*/twitch/chat/utils\.ts
+- .*/midi/utils\.ts
