@@ -144,16 +144,6 @@ export function rollbackClearQueue(type: Command): void {
 }
 
 /**
- * Restores the previous values cleared in a list of queues by type
- * @param typeList
- */
-export function rollbackClearQueueList(...typeList: Command[]): void {
-    for (const type of typeList) {
-        rollbackClearQueue(type);
-    }
-}
-
-/**
  * Checks if there's only one looping request and it should keep going
  * @param type
  * @param nextTurn

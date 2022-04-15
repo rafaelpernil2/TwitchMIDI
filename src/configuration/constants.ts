@@ -24,6 +24,8 @@ export const CONFIG = {
 };
 
 export const ERROR_MSG = {
+    BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
+    BAD_ENV_VARIABLE: (key: string) => `This app cannot be executed, make sure you set a valid value for ${key} inside the .env file`,
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
     INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO}, decimal point is . )`,

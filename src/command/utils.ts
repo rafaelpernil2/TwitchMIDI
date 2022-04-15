@@ -1,8 +1,75 @@
 import { inlineChord } from 'harmonics';
-import { CONFIG, ALIASES_DB, ERROR_MSG, GLOBAL, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
-import { removeParenthesisPart, getParenthesisValue, splitMessageArguments } from '../twitch/chat/utils';
+import { ALIASES_DB, Command, COMMAND_VALUES, CONFIG, ERROR_MSG, GLOBAL, TOGGLE_MIDI_VALUES } from '../configuration/constants';
+import { CHORD_PROGRESSIONS, CC_COMMANDS, CC_CONTROLLERS } from '../database/jsondb/types';
 import { CCCommand } from './types';
+
+/**
+ *  MESSAGE METHODS
+ */
+
+/**
+ * Checks if a command is in the list of defined commands and aliases
+ * @param message
+ * @returns
+ */
+export function isValidCommand(message: string): message is Command {
+    return COMMAND_VALUES[message] != null;
+}
+
+/**
+ * Obtains a command from chat message
+ * @param message
+ * @returns
+ */
+export function getCommand(message: string): Command | undefined {
+    const command = message.slice(1).split(GLOBAL.SPACE_SEPARATOR)[0].toLowerCase();
+    return message.startsWith(GLOBAL.EXCLAMATION_TOKEN) && isValidCommand(command) ? command : undefined;
+}
+
+/**
+ * Splits message arguments separated by space
+ * @param message
+ * @returns
+ */
+export function splitMessageArguments(message: string): string[] {
+    return message.split(GLOBAL.SPACE_SEPARATOR).filter((value) => value != '');
+}
+
+/**
+ * Retrieves value between parenthesis
+ * @param message
+ * @returns
+ */
+export function getParenthesisValue(message: string): string {
+    return message.substring(message.indexOf(GLOBAL.OPEN_PARENTHESIS_SEPARATOR) + 1, message.indexOf(GLOBAL.CLOSE_PARENTHESIS_SEPARATOR));
+}
+
+/**
+ * Returns command arguments
+ * @param message
+ * @returns
+ */
+export function getArguments(message: string): string {
+    return message.substring(message.indexOf(GLOBAL.SPACE_SEPARATOR) + 1);
+}
+
+/**
+ * Returns the first argument
+ * @param message
+ * @returns
+ */
+export function firstMessageValue(message: string): string {
+    return message.split(GLOBAL.SPACE_SEPARATOR)[0];
+}
+
+/**
+ * Removes the content between parenthesis (if it is at the end of the token)
+ * @param message
+ * @returns
+ */
+export function removeParenthesisPart(message: string): string {
+    return message.split(GLOBAL.OPEN_PARENTHESIS_SEPARATOR)[0];
+}
 
 /**
  *  MIDI METHODS
@@ -186,7 +253,7 @@ export function processCCCommandList(rawCCCommandList: CCCommand[], precision = 
         const pre = rawCCCommandList[preIndex];
         const post = rawCCCommandList[postIndex];
         // If there's a sweep
-        const newCommandMacro = _isSweep(pre, post) ? calculateCCSweep(pre, post, precision) : [post];
+        const newCommandMacro = _isSweep(pre, post) ? _calculateCCSweep(pre, post, precision) : [post];
         ccCommandList = ccCommandList.concat(newCommandMacro);
     }
     return ccCommandList;
@@ -233,7 +300,7 @@ function _isSweep([preController, , preTime]: CCCommand, [postController, , post
  * @param precision How many commands to interpolate and return
  * @returns Command list
  */
-function calculateCCSweep([, preValue, preTime]: CCCommand, [postController, postValue, postTime]: CCCommand, precision: number): CCCommand[] {
+function _calculateCCSweep([, preValue, preTime]: CCCommand, [postController, postValue, postTime]: CCCommand, precision: number): CCCommand[] {
     return sweep(preValue, postValue, preTime, postTime, precision).map<CCCommand>(([value, time]) => [postController, value, time]);
 }
 
@@ -262,16 +329,6 @@ function _parseCCCommandList(ccCommandList: string[]): CCCommand[] {
  */
 export function calculateTimeout(chordNoteToken: string, tempo: number): number {
     return Math.round((60_000_000_000 * _getQuarterMultiplier(chordNoteToken)) / tempo);
-}
-
-/**
- * Calculates the tick interval for implementing a MIDI Clock at 24ppq (pulses per quarter) at a determined tempo
- * @param tempo Tempo to check against
- * @returns Tick interval in nanoseconds
- */
-export function calculateClockTickTimeNs(tempo: number): number {
-    // ns per second * (60/tempo) = time for each hit / 24ppq => MIDI Clock
-    return Math.round(60_000_000_000 / (tempo * 24));
 }
 
 /**

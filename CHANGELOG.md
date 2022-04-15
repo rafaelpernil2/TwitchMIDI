@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.2] - 2022-04-15
+### Changed
+- Code re-ordering/refactors
+- Simplified and unified style in .env variable loading
+- Documented more methods
+### Removed
+- Dead code
+
 ## [1.2.1] - 2022-04-13
 ### Changed
 - Bettercodehub.yaml excluded directories. Same code
@@ -115,6 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.6...v1.2.0
 [1.1.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.1.5...v1.1.6

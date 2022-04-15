@@ -3,6 +3,11 @@ import https from 'https';
 import http from 'http';
 import { isJsonString } from './generic';
 
+/**
+ * Creates a promise that resolves in a determined amount of nanoseconds
+ * @param timeout Timeout in nanoseconds
+ * @returns
+ */
 export async function setTimeoutPromise(timeout: number) {
     const timer = new NanoTimer();
     return new Promise((resolve) => {
@@ -10,6 +15,11 @@ export async function setTimeoutPromise(timeout: number) {
     });
 }
 
+/**
+ * Conversion of https.request to Promise
+ * @param options https.RequestOptions
+ * @returns A promise with statusCode, headers and body
+ */
 export async function httpsRequestPromise<T>(options: https.RequestOptions): Promise<{ statusCode: number; headers: http.IncomingHttpHeaders; body: T | string }> {
     return new Promise<{ statusCode: number; headers: http.IncomingHttpHeaders; body: T | string }>((resolve, reject) => {
         const req = https.request(options, (res) => {
