@@ -2,10 +2,19 @@ import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
 import { ALIAS_MAP, Command, CONFIG, SAFE_COMMANDS } from '../../configuration/constants';
 import { CommandHandlerType, MessageHandler, TwitchParams } from './types';
-import { getCommand, getCommandContent } from './utils';
-import * as CommandHandlers from '../../commands/handler';
-import { canAccessCommand } from '../../commands/guards';
+import { getCommand, getArguments } from '../../command/utils';
+import * as CommandHandlers from '../../command/handler';
+import { canAccessCommand } from '../../command/guards';
 
+/**
+ * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control
+ * @param chatClient Twitch ChatClient
+ * @param targetMIDIName Virtual MIDI device name
+ * @param targetMIDIChannel Virtual MIDI device channel
+ * @param rewardsMode Is rewards mode on?
+ * @param vipRewardsMode Is VIP rewards mode on?
+ * @returns A ChatClient MessageHandler
+ */
 export const onMessageHandlerClosure = (chatClient: ChatClient, targetMIDIName: string, targetMIDIChannel: number, rewardsMode = false, vipRewardsMode = false): MessageHandler => {
     return async (channel: string, user: string, message: string, msg?: TwitchPrivateMessage): Promise<void> => {
         const commandMessage = getCommand(message);
@@ -27,7 +36,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMIDIName: 
             const twitch: TwitchParams = { channel, chatClient, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
             // Checks if the user has enough permissions
             canAccessCommand(parsedCommand, twitch);
-            await commandHandler(getCommandContent(message), { targetMIDIChannel, targetMIDIName }, twitch);
+            await commandHandler(getArguments(message), { targetMIDIChannel, targetMIDIName }, twitch);
         } catch (error) {
             chatClient.say(channel, String(error));
         }
@@ -35,7 +44,15 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, targetMIDIName: 
     };
 };
 
-function isUnauthorizedCommand(commandMessage: Command, msg?: TwitchPrivateMessage, rewardsMode = false, vipRewardsMode = false) {
+/**
+ * Checks rewardsMode/vipRewardsMode to assess if a command can be executed via commands
+ * @param commandMessage Command message
+ * @param msg Twitch data
+ * @param rewardsMode Is rewards mode on?
+ * @param vipRewardsMode Is VIP rewards mode on?
+ * @returns
+ */
+function isUnauthorizedCommand(commandMessage: Command, msg?: TwitchPrivateMessage, rewardsMode = false, vipRewardsMode = false): boolean {
     return (
         rewardsMode &&
         !msg?.userInfo.isBroadcaster &&

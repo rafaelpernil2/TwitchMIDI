@@ -1,13 +1,15 @@
-export interface EnvObject extends Record<string, string> {
-    CLIENT_ID: string;
-    CLIENT_SECRET: string;
-    BOT_ACCESS_TOKEN: string;
-    BOT_REFRESH_TOKEN: string;
-    BROADCASTER_ACCESS_TOKEN: string;
-    BROADCASTER_REFRESH_TOKEN: string;
-    TARGET_CHANNEL: string;
-    TARGET_MIDI_NAME: string;
-    TARGET_MIDI_CHANNEL: string;
-    REWARDS_MODE: string;
-    VIP_REWARDS_MODE: string;
-}
+export const envVariables = [
+    'CLIENT_ID',
+    'CLIENT_SECRET',
+    'BOT_ACCESS_TOKEN',
+    'BOT_REFRESH_TOKEN',
+    'BROADCASTER_ACCESS_TOKEN',
+    'BROADCASTER_REFRESH_TOKEN',
+    'TARGET_CHANNEL',
+    'TARGET_MIDI_NAME',
+    'TARGET_MIDI_CHANNEL',
+    'REWARDS_MODE',
+    'VIP_REWARDS_MODE'
+] as const;
+
+export type EnvObject = Record<typeof envVariables[number], string>;

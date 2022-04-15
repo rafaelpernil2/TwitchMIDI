@@ -12,12 +12,14 @@ import { ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
 import { getBooleanByStringList } from './utils/generic';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
-import { getCommand } from './twitch/chat/utils';
+import { getCommand, validateMIDIChannel } from './command/utils';
 import { setupConfiguration } from './configuration/configurator/setup';
-import { validateMIDIChannel } from './midi/utils';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
 import { EnvObject } from './configuration/env/types';
 
+/**
+ * Initialization code
+ */
 (async () => {
     const env = await getLoadedEnvVariables(setupConfiguration);
     const [isRewardsMode, isVipRewardsMode] = getBooleanByStringList(env.REWARDS_MODE, env.VIP_REWARDS_MODE);
@@ -46,6 +48,13 @@ import { EnvObject } from './configuration/env/types';
     }
 })();
 
+/**
+ * Initializes Rewards mode
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param chatClient Chat client
+ * @param env Environment variables
+ * @param targetMIDIChannel Target MIDI Channel
+ */
 async function initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: EnvObject, targetMIDIChannel: number) {
     console.log('   VIP can use commands in Rewards Mode: ' + env.VIP_REWARDS_MODE);
     const pubSubClient = new PubSubClient();

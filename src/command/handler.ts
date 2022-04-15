@@ -1,10 +1,9 @@
 import { setTimeoutPromise } from '../utils/promise';
 import { CHORD_PROGRESSIONS } from '../database/jsondb/types';
-import { ResponseStatus } from '../database/types';
+import { ResponseStatus } from '../database/interface';
 import { ALIASES_DB, ALIAS_MAP, Command, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, GLOBAL, PERMISSIONS_DB, REWARDS_DB } from '../configuration/constants';
-import { firstMessageValue, isValidCommand } from '../twitch/chat/utils';
-import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue } from '../midi/queue';
-import { getCCCommandList, processCCCommandList, getChordProgression, parseNoteList } from '../midi/utils';
+import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue } from './queue';
+import { isValidCommand, firstMessageValue, getCCCommandList, processCCCommandList, getChordProgression, parseNoteList } from './utils';
 import { CommandParams } from '../twitch/chat/types';
 import { removeDuplicates } from '../utils/generic';
 import {
@@ -16,7 +15,7 @@ import {
     triggerClock,
     volume,
     tempo,
-    triggerNotes,
+    triggerNoteList,
     triggerChordList,
     initVariables
 } from '../midi/handler';
@@ -135,7 +134,7 @@ export function sendnote(...[message, { targetMIDIChannel }, { chatClient, chann
     checkMIDIConnection();
     const noteList = parseNoteList(message, tempo.get());
     for (const [note, timeout] of noteList) {
-        triggerNotes(note, timeout, targetMIDIChannel);
+        triggerNoteList(note, timeout, targetMIDIChannel);
     }
 }
 

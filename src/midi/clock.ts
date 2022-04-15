@@ -4,7 +4,6 @@ import { JZZTypes } from '../custom-typing/jzz';
 import { NanoTimerProperties } from '../custom-typing/nanotimer';
 import { SharedVariable } from '../shared-variable/implementation';
 import { currentChordMode, isChordInProgress } from './handler';
-import { calculateClockTickTimeNs } from './utils';
 
 // Shared variables
 export const isSyncing = new SharedVariable(false);
@@ -20,11 +19,20 @@ let tick = 0;
  * @param clockTickTimeNs Clock time in nanoseconds
  */
 export function startClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, tempo: number): void {
-    const tickTime = `${calculateClockTickTimeNs(tempo)}n`;
+    const tickTime = `${_calculateClockTickTimeNs(tempo)}n`;
     const sendTick = _sendTick(output);
     _resetClock(targetMIDIChannel, output);
 
     timer.setInterval(sendTick, '', tickTime);
+}
+
+/**
+ * Stops the clock
+ */
+export function stopClock(): void {
+    isSyncing.set(true);
+    initClockData();
+    timer = new NanoTimer();
 }
 
 /**
@@ -41,15 +49,6 @@ export function isClockActive(): boolean {
 export function initClockData() {
     timer.clearInterval();
     tick = 0;
-}
-
-/**
- * Stops the clock
- */
-export function stopClock(): void {
-    isSyncing.set(true);
-    initClockData();
-    timer = new NanoTimer();
 }
 
 /**
@@ -93,4 +92,14 @@ function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
             isFirst = false;
         }
     };
+}
+
+/**
+ * Calculates the tick interval for implementing a MIDI Clock at 24ppq (pulses per quarter) at a determined tempo
+ * @param tempo Tempo to check against
+ * @returns Tick interval in nanoseconds
+ */
+function _calculateClockTickTimeNs(tempo: number): number {
+    // ns per second * (60/tempo) = time for each hit / 24ppq => MIDI Clock
+    return Math.round(60_000_000_000 / (tempo * 24));
 }

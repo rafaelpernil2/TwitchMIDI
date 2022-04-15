@@ -1,45 +1,46 @@
-import { EnvObject } from './types';
+import { EnvObject, envVariables } from './types';
 import { ERROR_MSG, GLOBAL } from '../constants';
 
-async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvObject>): Promise<EnvObject> {
-    function getVariables() {
-        const variablesToLoad: Partial<EnvObject> = {
-            CLIENT_ID: undefined,
-            CLIENT_SECRET: undefined,
-            BOT_ACCESS_TOKEN: undefined,
-            BOT_REFRESH_TOKEN: undefined,
-            BROADCASTER_ACCESS_TOKEN: undefined,
-            BROADCASTER_REFRESH_TOKEN: undefined,
-            TARGET_CHANNEL: undefined,
-            TARGET_MIDI_NAME: undefined,
-            TARGET_MIDI_CHANNEL: undefined,
-            REWARDS_MODE: undefined,
-            VIP_REWARDS_MODE: undefined
-        };
-        const loadedVariables = Object.fromEntries(Object.entries(variablesToLoad).map(([key]) => [key, process.env[key]])) as EnvObject;
-        areVariablesValid(loadedVariables);
-        return loadedVariables;
-    }
-
+/**
+ * Loads all variables from process.env (after being loaded by dotenv) and triggers the setup if some variable is missing
+ * @param altSetupProcess Setup process called if some variable is missing
+ * @returns All environment variables ready to go
+ */
+export async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvObject>): Promise<EnvObject> {
     try {
-        return getVariables();
+        return _getVariables();
     } catch (error) {
         const loadedVariables = await altSetupProcess?.();
-        if (loadedVariables == null) {
+        // We validate again, just in case
+        if (loadedVariables == null || !_areVariablesValid(loadedVariables)) {
             throw new Error(ERROR_MSG.BAD_SETUP_PROCESS);
         }
-        areVariablesValid(loadedVariables);
-        // Let's try again
         return loadedVariables;
     }
 }
 
-function areVariablesValid(loadedVariables: Record<string, string | undefined>): loadedVariables is EnvObject {
+/**
+ * Obtains the variables from process.env and validates them
+ * @returns The validated envionment variables
+ */
+function _getVariables(): EnvObject {
+    const loadedVariables = Object.fromEntries(envVariables.map((key) => [key, process.env[key]]));
+    if (!_areVariablesValid(loadedVariables)) {
+        throw new Error(ERROR_MSG.BAD_ENV_VARIABLE_GENERIC);
+    }
+    return loadedVariables;
+}
+
+/**
+ * Checks if all the expected environment variables were loaded correctly
+ * Throws an error for each invalid variable
+ * @param loadedVariables A set of loaded environment variables
+ * @returns
+ */
+function _areVariablesValid(loadedVariables: Record<string, string | undefined>): loadedVariables is EnvObject {
     const invalidVariables = Object.entries(loadedVariables).filter(([, value]) => value == null || value === GLOBAL.EMPTY_MESSAGE);
     for (const [key] of invalidVariables) {
-        throw new Error(`This app cannot be executed, make sure you set a valid value for ${key} inside the .env file`);
+        throw new Error(ERROR_MSG.BAD_ENV_VARIABLE(key));
     }
     return invalidVariables.length === 0;
 }
-
-export { getLoadedEnvVariables };
