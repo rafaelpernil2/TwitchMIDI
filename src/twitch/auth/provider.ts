@@ -2,10 +2,8 @@ import { AccessToken, RefreshingAuthProvider } from '@twurple/auth';
 import { promises as fs } from 'fs';
 import { CONFIG } from '../../configuration/constants';
 export async function getAuthProvider(
-    clientId: string,
-    clientSecret: string,
-    accessToken: string,
-    refreshToken: string,
+    [clientId, clientSecret]: [clientId: string, clientSecret: string],
+    [accessToken, refreshToken]: [accessToken: string, refreshToken: string],
     kind: 'BOT' | 'BROADCASTER'
 ): Promise<RefreshingAuthProvider> {
     const template = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;

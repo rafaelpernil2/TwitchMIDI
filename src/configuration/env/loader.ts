@@ -1,5 +1,6 @@
 import { EnvObject, envVariables } from './types';
 import { ERROR_MSG, GLOBAL } from '../constants';
+import * as VALIDATORS from './validators';
 
 /**
  * Loads all variables from process.env (after being loaded by dotenv) and triggers the setup if some variable is missing
@@ -32,13 +33,15 @@ function _getVariables(): EnvObject {
 }
 
 /**
- * Checks if all the expected environment variables were loaded correctly
+ * Checks if all the expected environment variables were loaded correctly and triggers validation if available
  * Throws an error for each invalid variable
  * @param loadedVariables A set of loaded environment variables
  * @returns
  */
 function _areVariablesValid(loadedVariables: Record<string, string | undefined>): loadedVariables is EnvObject {
-    const invalidVariables = Object.entries(loadedVariables).filter(([, value]) => value == null || value === GLOBAL.EMPTY_MESSAGE);
+    const invalidVariables = Object.entries(loadedVariables).filter(
+        ([key, value]) => value == null || value === GLOBAL.EMPTY_MESSAGE || VALIDATORS?.[key as keyof typeof VALIDATORS]?.(value) === false
+    );
     for (const [key] of invalidVariables) {
         throw new Error(ERROR_MSG.BAD_ENV_VARIABLE(key));
     }

@@ -1,6 +1,7 @@
 import { JSONDatabase } from '../database/jsondb/implementation';
 import { AliasesType, COMMANDS_KEY, PermissionsType, RewardsType } from '../database/jsondb/types';
 import EventEmitter from 'events';
+import { Command } from '../command/types';
 
 export const CONFIG = {
     ALIASES_DB_PATH: './config/aliases.json',
@@ -27,6 +28,8 @@ export const ERROR_MSG = {
     BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
     BAD_ENV_VARIABLE: (key: string) => `This app cannot be executed, make sure you set a valid value for ${key} inside the .env file`,
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
+    BAD_MIDI_CHANNEL: 'Make sure the MIDI channel is between 1 and 16 (both inclusive)',
+    BAD_MIDI_MESSAGE: 'Bad MIDI message, the value must be between 0 and 127 (inclusive)',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
     INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO}, decimal point is . )`,
     CHORD_PROGRESSION_NOT_FOUND: 'Chord progression/loop not found',
@@ -49,33 +52,14 @@ export const GLOBAL = {
     POUND: '#',
     EMPTY_MESSAGE: '',
     COMMA_SEPARATOR: ',',
+    COMMA_JOIN: ', ',
     SLASH_SEPARATOR: '/',
     SPACE_SEPARATOR: ' ',
-    EXCLAMATION_TOKEN: '!',
+    EXCLAMATION_MARK: '!',
     OPEN_PARENTHESIS_SEPARATOR: '(',
     CLOSE_PARENTHESIS_SEPARATOR: ')',
     CC_CONTROLLER: 'CC#'
 } as const;
-
-export enum Command {
-    midihelp = 'midihelp',
-    midion = 'midion',
-    midioff = 'midioff',
-    addchord = 'addchord',
-    removechord = 'removechord',
-    chordlist = 'chordlist',
-    sendnote = 'sendnote',
-    sendchord = 'sendchord',
-    sendloop = 'sendloop',
-    sendcc = 'sendcc',
-    cclist = 'cclist',
-    midivolume = 'midivolume',
-    stoploop = 'stoploop',
-    fullstopmidi = 'fullstopmidi',
-    settempo = 'settempo',
-    syncmidi = 'syncmidi',
-    fetchdb = 'fetchdb'
-}
 
 export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], string> = {
     midihelp: 'Shows all commands available and info about each command. Syntax: command (e.g "sendloop")',

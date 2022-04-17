@@ -1,6 +1,7 @@
-import { Command, ERROR_MSG, PERMISSIONS_DB } from '../configuration/constants';
+import { ERROR_MSG, PERMISSIONS_DB } from '../configuration/constants';
 import { PERMISSIONS_MAP } from '../database/jsondb/types';
 import { TwitchParams, UserRoles } from '../twitch/chat/types';
+import { Command } from './types';
 
 /**
  * Checks that the user has enough permissions to execute the command matching permissions.json
