@@ -1,5 +1,6 @@
-import { Command, ERROR_MSG, EVENT, EVENT_EMITTER } from '../configuration/constants';
+import { ERROR_MSG, EVENT, EVENT_EMITTER } from '../configuration/constants';
 import { isEmptyObject } from '../utils/generic';
+import { Command } from './types';
 
 const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const queueCommitMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;

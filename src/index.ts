@@ -11,23 +11,20 @@ import { ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
 import { getBooleanByStringList } from './utils/generic';
-import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
-import { getCommand, validateMIDIChannel } from './command/utils';
+import { getCommand } from './command/utils';
 import { setupConfiguration } from './configuration/configurator/setup';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
-import { EnvObject } from './configuration/env/types';
+import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
+import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 
 /**
  * Initialization code
  */
 (async () => {
-    const env = await getLoadedEnvVariables(setupConfiguration);
-    const [isRewardsMode, isVipRewardsMode] = getBooleanByStringList(env.REWARDS_MODE, env.VIP_REWARDS_MODE);
+    const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
     try {
-        const parsedTargetMIDIChannel = validateMIDIChannel(env.TARGET_MIDI_CHANNEL);
-
-        const botAuthProvider = await getAuthProvider(env.CLIENT_ID, env.CLIENT_SECRET, env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN, 'BOT');
-        const broadcasterAuthProvider = await getAuthProvider(env.CLIENT_ID, env.CLIENT_SECRET, env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN, 'BROADCASTER');
+        const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
+        const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
@@ -36,12 +33,12 @@ import { EnvObject } from './configuration/env/types';
 
         console.log('Bot ready!\nUse !midion in your chat to enable this tool and have fun!\nWhenever you want to disable it, use !midioff');
         // Chat code
-        chatClient.onMessage(onMessageHandlerClosure(chatClient, env.TARGET_MIDI_NAME, parsedTargetMIDIChannel, isRewardsMode, isVipRewardsMode));
+        chatClient.onMessage(onMessageHandlerClosure(chatClient, env));
 
         // Rewards code
-        console.log('Rewards/Channel Points mode: ' + env.REWARDS_MODE);
-        if (isRewardsMode) {
-            await initializeRewardsMode(broadcasterAuthProvider, chatClient, env, parsedTargetMIDIChannel);
+        console.log('Rewards/Channel Points mode: ' + String(env.REWARDS_MODE));
+        if (env.REWARDS_MODE) {
+            await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
     } catch (error) {
         console.log(ERROR_MSG.TWITCH_API, error);
@@ -55,8 +52,8 @@ import { EnvObject } from './configuration/env/types';
  * @param env Environment variables
  * @param targetMIDIChannel Target MIDI Channel
  */
-async function initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: EnvObject, targetMIDIChannel: number) {
-    console.log('   VIP can use commands in Rewards Mode: ' + env.VIP_REWARDS_MODE);
+async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables) {
+    console.log('   VIP can use commands in Rewards Mode: ' + String(env.VIP_REWARDS_MODE));
     const pubSubClient = new PubSubClient();
     const userId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
     await pubSubClient.onRedemption(userId, async ({ rewardTitle, message: args }: PubSubRedemptionMessage) => {
@@ -68,7 +65,7 @@ async function initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProv
             return;
         }
 
-        const parsedCommand = getCommand(command);
+        const [parsedCommand] = getCommand(command);
 
         // Invalid configuration
         if (parsedCommand == null) {
@@ -76,7 +73,14 @@ async function initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProv
             return;
         }
 
-        const callCommand = onMessageHandlerClosure(chatClient, env.TARGET_MIDI_NAME, targetMIDIChannel);
+        const callCommand = onMessageHandlerClosure(chatClient, { ...env, REWARDS_MODE: false, VIP_REWARDS_MODE: false });
         await callCommand(`${GLOBAL.POUND}${env.TARGET_CHANNEL}`, userId, `${command} ${args}`);
     });
+}
+
+function _parseEnvVariables(env: EnvObject): ParsedEnvVariables {
+    const [REWARDS_MODE, VIP_REWARDS_MODE] = getBooleanByStringList(env.REWARDS_MODE, env.VIP_REWARDS_MODE);
+    const TARGET_MIDI_CHANNEL = Number(env.TARGET_MIDI_CHANNEL) - 1;
+
+    return { ...env, TARGET_MIDI_CHANNEL, REWARDS_MODE, VIP_REWARDS_MODE };
 }

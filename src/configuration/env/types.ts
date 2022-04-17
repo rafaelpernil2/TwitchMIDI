@@ -13,3 +13,9 @@ export const envVariables = [
 ] as const;
 
 export type EnvObject = Record<typeof envVariables[number], string>;
+
+export interface ParsedEnvVariables extends Omit<EnvObject, 'REWARDS_MODE' | 'VIP_REWARDS_MODE' | 'TARGET_MIDI_CHANNEL'> {
+    REWARDS_MODE: boolean;
+    VIP_REWARDS_MODE: boolean;
+    TARGET_MIDI_CHANNEL: number;
+}

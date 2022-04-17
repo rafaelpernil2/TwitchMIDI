@@ -1,10 +1,12 @@
 import { ChatClient } from '@twurple/chat';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
-import { ALIAS_MAP, Command, CONFIG, SAFE_COMMANDS } from '../../configuration/constants';
+import { CONFIG, GLOBAL, SAFE_COMMANDS } from '../../configuration/constants';
 import { CommandHandlerType, MessageHandler, TwitchParams } from './types';
-import { getCommand, getArguments } from '../../command/utils';
+import { getCommand } from '../../command/utils';
 import * as CommandHandlers from '../../command/handler';
 import { canAccessCommand } from '../../command/guards';
+import { Command } from '../../command/types';
+import { ParsedEnvVariables } from '../../configuration/env/types';
 
 /**
  * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control
@@ -15,50 +17,39 @@ import { canAccessCommand } from '../../command/guards';
  * @param vipRewardsMode Is VIP rewards mode on?
  * @returns A ChatClient MessageHandler
  */
-export const onMessageHandlerClosure = (chatClient: ChatClient, targetMIDIName: string, targetMIDIChannel: number, rewardsMode = false, vipRewardsMode = false): MessageHandler => {
+export const onMessageHandlerClosure = (chatClient: ChatClient, { REWARDS_MODE, VIP_REWARDS_MODE, TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }: ParsedEnvVariables): MessageHandler => {
     return async (channel: string, user: string, message: string, msg?: TwitchPrivateMessage): Promise<void> => {
-        const commandMessage = getCommand(message);
+        const [command, args = GLOBAL.EMPTY_MESSAGE] = getCommand(message);
         // Ignore messages that are not commands
-        if (commandMessage == null) {
+        if (command == null) {
             return;
         }
         try {
-            // Try to get the function directly or look up by alias
-            const parsedCommand = ALIAS_MAP[commandMessage] ?? commandMessage;
-            const commandHandler = CommandHandlers[parsedCommand] as CommandHandlerType;
-
+            const commandHandler = CommandHandlers[command] as CommandHandlerType;
             // If rewards mode enabled and the input is a command and the user is not streamer or mod or vip, only allow safe commands
-            if (commandHandler == null || isUnauthorizedCommand(commandMessage, msg, rewardsMode, vipRewardsMode)) {
+            if (commandHandler == null || _isUnauthorizedCommand(command, msg, REWARDS_MODE, VIP_REWARDS_MODE)) {
                 return;
             }
 
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
             const twitch: TwitchParams = { channel, chatClient, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
             // Checks if the user has enough permissions
-            canAccessCommand(parsedCommand, twitch);
-            await commandHandler(getArguments(message), { targetMIDIChannel, targetMIDIName }, twitch);
+            canAccessCommand(command, twitch);
+            await commandHandler(args, { targetMIDIChannel: TARGET_MIDI_CHANNEL, targetMIDIName: TARGET_MIDI_NAME }, twitch);
         } catch (error) {
             chatClient.say(channel, String(error));
         }
-        return;
     };
 };
 
 /**
  * Checks rewardsMode/vipRewardsMode to assess if a command can be executed via commands
- * @param commandMessage Command message
+ * @param command Command message
  * @param msg Twitch data
  * @param rewardsMode Is rewards mode on?
  * @param vipRewardsMode Is VIP rewards mode on?
  * @returns
  */
-function isUnauthorizedCommand(commandMessage: Command, msg?: TwitchPrivateMessage, rewardsMode = false, vipRewardsMode = false): boolean {
-    return (
-        rewardsMode &&
-        !msg?.userInfo.isBroadcaster &&
-        !msg?.userInfo.isMod &&
-        (!msg?.userInfo.isVip || !vipRewardsMode) &&
-        !SAFE_COMMANDS[commandMessage] &&
-        !SAFE_COMMANDS[ALIAS_MAP[commandMessage]]
-    );
+function _isUnauthorizedCommand(command: Command, msg?: TwitchPrivateMessage, rewardsMode = false, vipRewardsMode = false): boolean {
+    return rewardsMode && !msg?.userInfo.isBroadcaster && !msg?.userInfo.isMod && (!msg?.userInfo.isVip || !vipRewardsMode) && !SAFE_COMMANDS[command];
 }

@@ -1,4 +1,4 @@
-import { Command } from '../../configuration/constants';
+import { Command } from '../../command/types';
 import { UserRoles } from '../../twitch/chat/types';
 
 export interface AliasesType {
