@@ -28,6 +28,10 @@ export async function setupConfiguration(): Promise<EnvObject> {
 
     We are going to generate a .env file with all the credentials
     and configurations, but don't worry about specifics, this will be easy.
+
+    Please note that you can modify the .env file manually and this setup
+    will only show up when some setting is wrong. This process aims to help
+    make sure every setting is correct.
     `)
     );
     // Arbitrary delay for usability

@@ -6,12 +6,7 @@ import { ERROR_MSG } from '../constants';
  * @returns If it's valid
  */
 export function TARGET_MIDI_CHANNEL(value: string): boolean {
-    try {
-        _validateMIDIChannel(value);
-    } catch (error) {
-        console.log(String(error));
-        return false;
-    }
+    _validateMIDIChannel(value);
     return true;
 }
 
