@@ -8,25 +8,6 @@ const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key,
 export const currentTurnMap = Object.fromEntries(Object.values(Command).map((key) => [key, 0])) as Record<Command, number>;
 
 /**
- * Resolves once the bar is starting and your turn is reached
- * It uses Node.js Event Emitters for notifying
- * @param turn
- * @param type
- * @returns An empty promise
- */
-export async function waitForMyTurn(turn: number, type: Command): Promise<void> {
-    return new Promise((resolve) => {
-        const onCommandTurn = (currentChordMode: Command) => {
-            if (isMyTurn(turn, type) && isCollisionFree(currentChordMode, type)) {
-                EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
-                resolve();
-            }
-        };
-        EVENT_EMITTER.on(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
-    });
-}
-
-/**
  * Adds request to queue
  * @param request
  * @param type
@@ -42,6 +23,41 @@ export function queue(request: string, type: Command): number {
     queueMap[type][turn] = request;
 
     return turn;
+}
+
+/**
+ * Moves to the next in queue
+ * @param type
+ */
+export function forwardQueue(type: Command): void {
+    const turn = nextTurn(currentTurnMap[type]);
+
+    // Keep playing same loop if it's looping alone
+    if (_isLoopingAlone(type, turn)) {
+        return;
+    }
+
+    delete queueMap[type][currentTurnMap[type]];
+    currentTurnMap[type] = turn;
+}
+
+/**
+ * Resolves once the bar is starting and your turn is reached
+ * It uses Node.js Event Emitters for notifying
+ * @param turn
+ * @param type
+ * @returns An empty promise
+ */
+export async function waitForMyTurn(turn: number, type: Command): Promise<void> {
+    return new Promise((resolve) => {
+        const onCommandTurn = (currentChordMode: Command) => {
+            if (_isMyTurn(turn, type) && _isCollisionFree(currentChordMode, type)) {
+                EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
+                resolve();
+            }
+        };
+        EVENT_EMITTER.on(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
+    });
 }
 
 /**
@@ -80,22 +96,6 @@ export function getNewQueueTurn(type: Command): number {
  */
 export function nextTurn(turn: number): number {
     return turn + 1;
-}
-
-/**
- * Moves to the next in queue
- * @param type
- */
-export function forwardQueue(type: Command): void {
-    const turn = nextTurn(currentTurnMap[type]);
-
-    // Keep playing same loop if it's looping alone
-    if (isLoopingAlone(type, turn)) {
-        return;
-    }
-
-    delete queueMap[type][currentTurnMap[type]];
-    currentTurnMap[type] = turn;
 }
 
 /**
@@ -150,7 +150,7 @@ export function rollbackClearQueue(type: Command): void {
  * @param nextTurn
  * @returns
  */
-function isLoopingAlone(type: Command, nextTurn: number): boolean {
+function _isLoopingAlone(type: Command, nextTurn: number): boolean {
     return type === Command.sendloop && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
 }
 
@@ -160,7 +160,7 @@ function isLoopingAlone(type: Command, nextTurn: number): boolean {
  * @param type Type of queue
  * @returns boolean
  */
-function isMyTurn(turn: number, type: Command): boolean {
+function _isMyTurn(turn: number, type: Command): boolean {
     return turn === currentTurnMap[type];
 }
 
@@ -168,9 +168,9 @@ function isMyTurn(turn: number, type: Command): boolean {
  * Collision prevention algorithm that separates sendchord and sendloop queues
  * @param currentChordMode The chord mode playing right now
  * @param type Queue type
- * @returns If next petition can be started
+ * @returns If next petition can be started without collision
  */
-function isCollisionFree(currentChordMode: Command, type: Command): boolean {
+function _isCollisionFree(currentChordMode: Command, type: Command): boolean {
     // If a chord progression wants to start, check if the current chord mode is sendchord.
     // Since sendchord has priority, this will stay this way until the sendchord queue is empty
     // If a loop wants to start, check if the chord queue still has requests and wait until it's empty ("wait" is done by calling this method each bar)
