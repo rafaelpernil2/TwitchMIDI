@@ -199,7 +199,7 @@ async function _sendMIDINoteListPromise(noteList: number | string | string[], re
 
 /**
  * Parses a message and generates a list of notes
- * @param message Command arguments (list of notes)
+ * @param noteList Command arguments (list of notes)
  * @param tempo Tempo
  * @returns List of [note,timeout] tuples
  */
@@ -209,7 +209,8 @@ function _processNoteList(noteList: Array<[note: string, timeSubDivision: number
 
 /**
  * Processes a chord progression string to be played in a 4/4 beat
- * @param chordProgression Chord progression separated by spaces
+ * @param chordProgressionList Chord progression separated by spaces
+ * @param tempo Tempo
  * @return List of notes to play with their respective release times
  */
 function _processChordProgression(chordProgressionList: Array<[noteList: string[], timeSubDivision: number]>, tempo: number): Array<[noteList: string[], timeout: number]> {
@@ -224,10 +225,9 @@ function _processChordProgression(chordProgressionList: Array<[noteList: string[
 /**
  * Processes a set of CC commands to be sent with their respective delays and calculating intermediary values (sweep)
  * @param rawCCCommandList List of CC commands
- * @param precision The amoutn of steps for sweeps
  * @return List of processed CC commands
  */
-function _processCCCommandList(rawCCCommandList: CCCommand[], precision = CONFIG.DEFAULT_SWEEP_PRECISION): Array<CCCommand> {
+function _processCCCommandList(rawCCCommandList: CCCommand[]): Array<CCCommand> {
     if (rawCCCommandList.length < 1) {
         throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE);
     }
@@ -238,7 +238,7 @@ function _processCCCommandList(rawCCCommandList: CCCommand[], precision = CONFIG
         const pre = rawCCCommandList[preIndex];
         const post = rawCCCommandList[postIndex];
         // If there's a sweep
-        const newCommandMacro = _isSweep(pre, post) ? _calculateCCSweep(pre, post, precision) : [post];
+        const newCommandMacro = _isSweep(pre, post) ? _calculateCCSweep(pre, post) : [post];
         ccCommandList = ccCommandList.concat(newCommandMacro);
     }
     return ccCommandList;
@@ -246,7 +246,7 @@ function _processCCCommandList(rawCCCommandList: CCCommand[], precision = CONFIG
 
 /**
  * Calculates the length of a determined amount of quarter notes in a particular tempo
- * @param chordNoteToken Chord or note from which to extract the quarter note amount
+ * @param timeDivision Quarter note amount
  * @param tempo Tempo to check against
  * @returns Length in nanoseconds
  */
@@ -269,19 +269,16 @@ function _isSweep([preController, , preTime]: CCCommand, [postController, , post
  * Calculates a sweep between two different CC commands with the same controller
  * @param pre First commmand
  * @param post Second command
- * @param precision How many commands to interpolate and return
  * @returns Command list
  */
-function _calculateCCSweep([, preValue, preTime]: CCCommand, [postController, postValue, postTime]: CCCommand, precision: number): CCCommand[] {
-    return _sweep([preValue, preTime], [postValue, postTime], precision).map<CCCommand>(([value, time]) => [postController, value, time]);
+function _calculateCCSweep([, preValue, preTime]: CCCommand, [postController, postValue, postTime]: CCCommand): CCCommand[] {
+    return _sweep([preValue, preTime], [postValue, postTime]).map<CCCommand>(([value, time]) => [postController, value, time]);
 }
 
 /**
  * Calculates a sweep between two different values in a time lapse with a particular precission
- * @param startValue Start value
- * @param endValue End value
- * @param startTime Start time
- * @param endTime End time
+ * @param start [startValue, startTime]
+ * @param end [endValue, endTime]
  * @param precision How many values to create
  * @returns List of interpolated values
  */

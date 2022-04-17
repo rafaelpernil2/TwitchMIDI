@@ -1,6 +1,13 @@
 import { AccessToken, RefreshingAuthProvider } from '@twurple/auth';
 import { promises as fs } from 'fs';
 import { CONFIG } from '../../configuration/constants';
+/**
+ * Generates an authentication provider for Twitch
+ * @param client [clientId, clientSecret]
+ * @param tokens [accessToken, refreshToken]
+ * @param kind 'BOT' | 'BROADCASTER'
+ * @returns
+ */
 export async function getAuthProvider(
     [clientId, clientSecret]: [clientId: string, clientSecret: string],
     [accessToken, refreshToken]: [accessToken: string, refreshToken: string],

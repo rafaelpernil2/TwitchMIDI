@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.8] - 2022-04-17
+### Changed
+- Refactor more methods to compact input parameters
+- Updated JSDocs
+
 ## [1.2.7] - 2022-04-17
 ### Changed
 - Sweep method refactor to compact input parameters
@@ -144,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.7...v1.2.8
 [1.2.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.6...v1.2.7
 [1.2.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.4...v1.2.5
