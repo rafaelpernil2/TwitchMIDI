@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.6] - 2022-04-17
+### Fixed
+- Line jump on first .env initialization error message
+
 ## [1.2.5] - 2022-04-17
 ### Changed
 - Improved environment variable load error handling
@@ -136,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.5...v1.2.6
 [1.2.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.4...v1.2.5
 [1.2.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.3...v1.2.4
 [1.2.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.2...v1.2.3
