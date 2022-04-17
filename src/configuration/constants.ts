@@ -26,7 +26,7 @@ export const CONFIG = {
 
 export const ERROR_MSG = {
     BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
-    INIT_ENV_VARIABLES: `Your .env file is not ready to use. Probably this is your first time running the app, follow the next configuration steps :)`,
+    INIT_ENV_VARIABLES: `Your .env file is not ready to use.\nProbably this is your first time running the app, follow the next configuration steps :)`,
     BAD_ENV_VARIABLE: (keys: string) => `This app cannot be executed, make sure you set a valid value for ${keys} inside the .env file. `,
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
     BAD_MIDI_CHANNEL: 'Make sure "TARGET_MIDI_CHANNEL" is a valid MIDI channel between 1 and 16 (both inclusive)',
