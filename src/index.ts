@@ -77,6 +77,11 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
     });
 }
 
+/**
+ * Parse Env variables and conver types where needed
+ * @param env EnvObject
+ * @returns ParsedEnvVariables
+ */
 function _parseEnvVariables(env: EnvObject): ParsedEnvVariables {
     const [REWARDS_MODE, VIP_REWARDS_MODE] = getBooleanByStringList(env.REWARDS_MODE, env.VIP_REWARDS_MODE);
     const TARGET_MIDI_CHANNEL = Number(env.TARGET_MIDI_CHANNEL) - 1;
