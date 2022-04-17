@@ -50,7 +50,6 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param chatClient Chat client
  * @param env Environment variables
- * @param targetMIDIChannel Target MIDI Channel
  */
 async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables) {
     console.log('   VIP can use commands in Rewards Mode: ' + String(env.VIP_REWARDS_MODE));

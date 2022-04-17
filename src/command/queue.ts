@@ -90,7 +90,6 @@ export function getNewQueueTurn(type: Command): number {
 
 /**
  * Gets the next turn in queue
- * @param queue
  * @param turn
  * @returns
  */

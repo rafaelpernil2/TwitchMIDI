@@ -16,7 +16,7 @@ let tick = 0;
  * Formula: ((1_000_000_000 ns/s) * 60 seconds/minute / beats/minute(BPM) / 24ppq (pulses per quarter))
  * @param targetMIDIChannel Target MIDI channel
  * @param output VirtualMIDI device
- * @param clockTickTimeNs Clock time in nanoseconds
+ * @param tempo Tempo in BPM
  */
 export function startClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, tempo: number): void {
     const tickTime = `${_calculateClockTickTimeNs(tempo)}n`;
