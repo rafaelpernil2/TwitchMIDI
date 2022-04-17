@@ -25,7 +25,7 @@ import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jso
 /**
  * Shows all available commands and explains how to use them
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -41,7 +41,7 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
 /**
  * Initializes MIDI connectivity and allows the bot to work
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -59,7 +59,7 @@ export async function midion(...[, { targetMIDIName }, { chatClient, channel }]:
 /**
  * Disables MIDI connectivity and stops all MIDI
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -78,7 +78,7 @@ export async function midioff(...[, { targetMIDIChannel }, { chatClient, channel
 /**
  * Saves a chord progresion with an alias to be used later
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -95,7 +95,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
 /**
  * Removes a chord progression saved with an alias
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -112,7 +112,7 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
 /**
  * Obtains the list of chord progressions saved and returns it
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -127,7 +127,7 @@ export function chordlist(...[, , { chatClient, channel }]: CommandParams): void
 /**
  * Sends a set of MIDI notes separated by spaces
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -142,7 +142,7 @@ export function sendnote(...[message, { targetMIDIChannel }, { chatClient, chann
 /**
  * Parses and sends a chord progression with chords separated by space or with an alias
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -169,7 +169,7 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
 /**
  * Parses and sends a chord progression as a loop with chords separated by space or with an alias
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -189,7 +189,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
 /**
  * Sends a particular CC Message, a list of CC messages separated by comma or a set of commands using an alias
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -206,7 +206,7 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
 /**
  * Obtains the list of Control Change (CC) actions saved and returns it
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -218,7 +218,7 @@ export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
 /**
  * Sets the MIDI velocity (volume) for the chord progression/loop/note
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -235,7 +235,7 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
 /**
  * Stops the MIDI loop on the next beat
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -248,7 +248,7 @@ export function stoploop(...[, , { chatClient, channel }]: CommandParams): void 
 /**
  * Stops sound, MIDI clock and MIDI loop
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -260,7 +260,7 @@ export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel 
 /**
  * Sets a partitular tempo and starts playing
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -282,7 +282,7 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
 /**
  * Syncrhonizes the MIDI clock and the beat. Useful when the instruments are out-of-sync
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
@@ -294,7 +294,7 @@ export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: 
 /**
  * Fetches data from the alias and rewards database, refreshing the copy in memory
  * @param [message, // Command arguments
- *         common: {targetMIDIName, targetMIDIChannel}, // Configuration parameters
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
