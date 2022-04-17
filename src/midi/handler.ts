@@ -273,7 +273,7 @@ function _isSweep([preController, , preTime]: CCCommand, [postController, , post
  * @returns Command list
  */
 function _calculateCCSweep([, preValue, preTime]: CCCommand, [postController, postValue, postTime]: CCCommand, precision: number): CCCommand[] {
-    return _sweep(preValue, postValue, preTime, postTime, precision).map<CCCommand>(([value, time]) => [postController, value, time]);
+    return _sweep([preValue, preTime], [postValue, postTime], precision).map<CCCommand>(([value, time]) => [postController, value, time]);
 }
 
 /**
@@ -285,7 +285,11 @@ function _calculateCCSweep([, preValue, preTime]: CCCommand, [postController, po
  * @param precision How many values to create
  * @returns List of interpolated values
  */
-function _sweep(startValue: number, endValue: number, startTime: number, endTime: number, precision = CONFIG.DEFAULT_SWEEP_PRECISION): Array<[value: number, time: number]> {
+function _sweep(
+    [startValue, startTime]: [startValue: number, startTime: number],
+    [endValue, endTime]: [endValue: number, endTime: number],
+    precision = CONFIG.DEFAULT_SWEEP_PRECISION
+): Array<[value: number, time: number]> {
     const direction = startValue <= endValue ? 1 : -1;
     const timeStepSize = Math.abs(endTime - startTime) / precision;
     const valueStepSize = Math.abs(endValue - startValue) / precision;
