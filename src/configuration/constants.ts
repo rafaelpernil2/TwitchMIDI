@@ -26,9 +26,10 @@ export const CONFIG = {
 
 export const ERROR_MSG = {
     BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
-    BAD_ENV_VARIABLE: (key: string) => `This app cannot be executed, make sure you set a valid value for ${key} inside the .env file`,
+    INIT_ENV_VARIABLES: `Your .env file is not ready to use. Probably this is your first time running the app, follow the next configuration steps :)`,
+    BAD_ENV_VARIABLE: (keys: string) => `This app cannot be executed, make sure you set a valid value for ${keys} inside the .env file. `,
     BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
-    BAD_MIDI_CHANNEL: 'Make sure the MIDI channel is between 1 and 16 (both inclusive)',
+    BAD_MIDI_CHANNEL: 'Make sure "TARGET_MIDI_CHANNEL" is a valid MIDI channel between 1 and 16 (both inclusive)',
     BAD_MIDI_MESSAGE: 'Bad MIDI message, the value must be between 0 and 127 (inclusive)',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
     INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO}, decimal point is . )`,
@@ -40,7 +41,7 @@ export const ERROR_MSG = {
     BAD_CC_MESSAGE: 'Bad Control Change message, please review your values. Controller/value must be between 0 and 127 (inclusive)',
     BAD_PERMISSIONS: "You don't have enough permissions to use this command. Sorry!",
     INVALID_SWEEP_RANGE: 'Invalid sweep range',
-    TWITCH_API: 'Could not connect to Twitch',
+    INIT: 'There was an initialization error. Please, restart the app (Ctrl+C or close the terminal window)',
     INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
     BAD_SETUP_PROCESS: 'Bad setup, try again',
     DUPLICATE_REQUEST: 'This request is already queued, wait until the previous request is fulfilled'

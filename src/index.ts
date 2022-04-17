@@ -21,8 +21,8 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
  * Initialization code
  */
 (async () => {
-    const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
     try {
+        const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
         const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
@@ -41,7 +41,7 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
     } catch (error) {
-        console.log(ERROR_MSG.TWITCH_API, error);
+        console.log(String(error) + '\n' + ERROR_MSG.INIT);
     }
 })();
 
