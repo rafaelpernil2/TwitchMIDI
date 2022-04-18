@@ -45,7 +45,7 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 * Run TwitchMIDI-yourplatform (e.g TwitchMIDI-win.exe)
 * Follow the configuration steps to link this bot to your account. You will see something like this:
 
-[![](https://feranern.sirv.com/Images/TwitchMIDI_initConfig.png)](#)
+[![](https://feranern.sirv.com/Images/TwitchMIDI_initConfig.png)](#twitchmidi)
 
 * Done. Have fun!
 
