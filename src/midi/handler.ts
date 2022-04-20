@@ -13,35 +13,28 @@ import { CCCommand, Command } from '../command/types';
 let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
 
 // Closure variables
-export const tempo = new SharedVariable<number>(CONFIG.DEFAULT_TEMPO);
-export const volume = new SharedVariable<number>(CONFIG.DEFAULT_VOLUME);
+let globalTempo = CONFIG.DEFAULT_TEMPO;
+let globalVolume = CONFIG.DEFAULT_VOLUME;
 export const currentChordMode = new SharedVariable<Command.sendchord | Command.sendloop | undefined>(undefined);
 export const isChordInProgress = new SharedVariable<boolean>(false);
-
-/**
- * Initializes the common variables
- */
-export function initVariables(): void {
-    initClockData();
-    isChordInProgress.set(false);
-    currentChordMode.set(undefined);
-    tempo.set(CONFIG.DEFAULT_TEMPO);
-    volume.set(CONFIG.DEFAULT_VOLUME);
-}
 
 /**
  * Connects to the virtual MIDI device
  * @param targetMIDIName Virtual MIDI device name
  */
 export async function connectMIDI(targetMIDIName: string): Promise<void> {
+    _initVariables();
     const midi = await JZZ.default();
     output = midi.openMidiOut(targetMIDIName);
 }
 
 /**
  * Disconnects the virtual MIDI device
+ * @param targetMIDIChannel Virtual MIDI device channel
  */
-export async function disconnectMIDI(): Promise<void> {
+export async function disconnectMIDI(targetMIDIChannel: number): Promise<void> {
+    stopAllMidi(targetMIDIChannel);
+    await setTimeoutPromise(3_000_000_000);
     await output?.close();
     output = undefined;
 }
@@ -56,12 +49,24 @@ export function checkMIDIConnection(): void {
 }
 
 /**
+ * Sets the MIDI volume
+ * @param value Number between 0 and 100
+ */
+export function setMIDIVolume(value: number): void {
+    if (isNaN(value) || value < 0 || value > 100) {
+        throw new Error(ERROR_MSG.INVALID_VOLUME);
+    }
+    // Convert to range 0-127
+    globalVolume = Math.round(value * 1.27);
+}
+
+/**
  * Triggers a list of notes
  * @param rawNoteList List of notes
  * @param targetMIDIChannel Virtual device MIDI channel
  */
 export function triggerNoteList(rawNoteList: Array<[note: string, timeSubDivision: number]>, targetMIDIChannel: number) {
-    const noteList = _processNoteList(rawNoteList, tempo.get());
+    const noteList = _processNoteList(rawNoteList, globalTempo);
     for (const [note, timeout] of noteList) {
         _sendMIDINoteList(note, timeout, targetMIDIChannel);
     }
@@ -85,7 +90,7 @@ export async function triggerChordList(
     // Reset sync flag
     isSyncing.set(false);
 
-    const chordProgression = _processChordProgression(rawChordProgression, tempo.get());
+    const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
     // We wait until the bar starts and is your turn
     await waitForMyTurn(myTurn, type);
 
@@ -123,13 +128,16 @@ export function triggerCCCommandList(rawCCCommandList: CCCommand[], targetMIDICh
 /**
  * Starts/resets the clock with the given tempo
  * @param targetMIDIChannel Virtual MIDI device channel
- * @param tempo Tempo in BPM
+ * @param newTempo Tempo in BPM
  */
-export function triggerClock(targetMIDIChannel: number, tempo: number): void {
+export function triggerClock(targetMIDIChannel: number, newTempo?: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
-    startClock(targetMIDIChannel, output, tempo);
+    if (newTempo != null) {
+        globalTempo = newTempo;
+    }
+    startClock(targetMIDIChannel, output, globalTempo);
 }
 
 /**
@@ -141,7 +149,7 @@ export function autoStartClock(targetMIDIChannel: number): void {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
     if (!isClockActive()) {
-        startClock(targetMIDIChannel, output, tempo.get());
+        startClock(targetMIDIChannel, output, globalTempo);
     }
 }
 
@@ -160,6 +168,17 @@ export function stopAllMidi(targetMIDIChannel: number): void {
 }
 
 /**
+ * Initializes the common variables
+ */
+function _initVariables(): void {
+    initClockData();
+    isChordInProgress.set(false);
+    currentChordMode.set(undefined);
+    globalTempo = CONFIG.DEFAULT_TEMPO;
+    globalVolume = CONFIG.DEFAULT_VOLUME;
+}
+
+/**
  * Sends a list of notes to the virtual MIDI device with a programmed delayed trigger for NoteOff
  * It differs from _triggerNoteList because this method returns instantly instead of waiting for the message to be sent
  * @param noteList Single note or list of notes
@@ -173,7 +192,7 @@ function _sendMIDINoteList(noteList: number | string | string[], release: number
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
     const releaseTime = Math.round(release / 1_000_000);
     for (const note of parsedNoteList) {
-        output.note(channels, note, volume.get(), releaseTime);
+        output.note(channels, note, globalVolume, releaseTime);
     }
 }
 
@@ -189,11 +208,11 @@ async function _sendMIDINoteListPromise(noteList: number | string | string[], re
     }
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
     for (const note of parsedNoteList) {
-        output.noteOn(channels, note, volume.get());
+        output.noteOn(channels, note, globalVolume);
     }
     await setTimeoutPromise(release);
     for (const note of parsedNoteList) {
-        output.noteOff(channels, note, volume.get());
+        output.noteOff(channels, note, globalVolume);
     }
 }
 

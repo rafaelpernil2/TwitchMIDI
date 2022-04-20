@@ -1,4 +1,3 @@
-import { setTimeoutPromise } from '../utils/promise';
 import { ResponseStatus } from '../database/interface';
 import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
 import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue } from './queue';
@@ -12,11 +11,9 @@ import {
     triggerCCCommandList,
     stopAllMidi,
     triggerClock,
-    volume,
-    tempo,
     triggerChordList,
-    initVariables,
-    triggerNoteList
+    triggerNoteList,
+    setMIDIVolume
 } from '../midi/handler';
 import { CCCommand, Command } from './types';
 import { inlineChord } from 'harmonics';
@@ -47,7 +44,6 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
  */
 export async function midion(...[, { targetMIDIName }, { chatClient, channel }]: CommandParams): Promise<void> {
     try {
-        initVariables();
         await connectMIDI(targetMIDIName);
         console.log('MIDI connection stablished!');
     } catch (error) {
@@ -65,9 +61,7 @@ export async function midion(...[, { targetMIDIName }, { chatClient, channel }]:
  */
 export async function midioff(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
     try {
-        stopAllMidi(targetMIDIChannel);
-        await setTimeoutPromise(3_000_000_000);
-        await disconnectMIDI();
+        await disconnectMIDI(targetMIDIChannel);
         console.log('MIDI disconnected!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
@@ -224,11 +218,8 @@ export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
  */
 export function midivolume(...[message, , { chatClient, channel }]: CommandParams): void {
     const value = parseInt(splitCommandArguments(message)[0]);
-    if (isNaN(value) || value < 0 || value > 100) {
-        throw new Error(ERROR_MSG.INVALID_VOLUME);
-    }
     // Convert to range 0-127
-    volume.set(Math.floor(value * 1.27));
+    setMIDIVolume(value);
     chatClient.say(channel, 'Volume set to ' + String(value) + '%');
 }
 
@@ -241,7 +232,6 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
  */
 export function stoploop(...[, , { chatClient, channel }]: CommandParams): void {
     clearQueueList(Command.sendchord, Command.sendloop);
-
     chatClient.say(channel, 'Dequeuing loop.. Done! ');
 }
 
@@ -271,7 +261,6 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
     }
     // Generates a MIDI clock
     triggerClock(targetMIDIChannel, newTempo);
-    tempo.set(newTempo);
 
     chatClient.say(channel, 'Tempo set to ' + String(newTempo));
     if (Math.floor(newTempo) === 69) {
@@ -287,7 +276,7 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
  *         ]
  */
 export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
-    triggerClock(targetMIDIChannel, tempo.get());
+    triggerClock(targetMIDIChannel);
     chatClient.say(channel, "Let's fix this mess... Done!");
 }
 
