@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.13] - 2022-04-22
+### Fixed
+- !addchord now trims spaces before and after in the alias and chord progression before adding
+
 ## [1.2.12] - 2022-04-22
 ### Removed
 - GZip compression to binaries
@@ -170,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.13]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.12...v1.2.13
 [1.2.12]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.11...v1.2.12
 [1.2.11]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.10...v1.2.11
 [1.2.10]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.9...v1.2.10
