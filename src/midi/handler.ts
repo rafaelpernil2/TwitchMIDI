@@ -86,7 +86,7 @@ export async function triggerChordList(
     myTurn: number
 ): Promise<void> {
     // If the MIDI clock has not started yet, start it to make the chord progression sound
-    autoStartClock(targetMIDIChannel);
+    _autoStartClock(targetMIDIChannel);
     // Reset sync flag
     isSyncing.set(false);
 
@@ -138,19 +138,6 @@ export function triggerClock(targetMIDIChannel: number, newTempo?: number): void
         globalTempo = newTempo;
     }
     startClock(targetMIDIChannel, output, globalTempo);
-}
-
-/**
- * Checks if the clock is active and if not, it starts it
- * @param targetMIDIChannel Virtual MIDI device channel
- */
-export function autoStartClock(targetMIDIChannel: number): void {
-    if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
-    }
-    if (!isClockActive()) {
-        startClock(targetMIDIChannel, output, globalTempo);
-    }
 }
 
 /**
@@ -315,4 +302,17 @@ function _sweep(
         result.push([value, time]);
     }
     return result;
+}
+
+/**
+ * Checks if the clock is active and if not, it starts it
+ * @param targetMIDIChannel Virtual MIDI device channel
+ */
+function _autoStartClock(targetMIDIChannel: number): void {
+    if (output == null) {
+        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+    }
+    if (!isClockActive()) {
+        startClock(targetMIDIChannel, output, globalTempo);
+    }
 }
