@@ -15,11 +15,11 @@ export const currentTurnMap = Object.fromEntries(Object.values(Command).map((key
  */
 export function queue(request: string, type: Command): number {
     // Throw error on duplicate requests
-    if (request === getLastInQueue(type)) {
+    if (request === _getLastInQueue(type)) {
         throw new Error(ERROR_MSG.DUPLICATE_REQUEST);
     }
 
-    const turn = getNewQueueTurn(type);
+    const turn = _getNewQueueTurn(type);
     queueMap[type][turn] = request;
 
     return turn;
@@ -30,7 +30,7 @@ export function queue(request: string, type: Command): number {
  * @param type
  */
 export function forwardQueue(type: Command): void {
-    const turn = nextTurn(currentTurnMap[type]);
+    const turn = _nextTurn(currentTurnMap[type]);
 
     // Keep playing same loop if it's looping alone
     if (_isLoopingAlone(type, turn)) {
@@ -58,43 +58,6 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
         };
         EVENT_EMITTER.on(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
     });
-}
-
-/**
- * Gets the last turn in queue
- * @param type
- * @returns
- */
-export function getLastIndex(type: Command): number {
-    return uniqueIdMap[type];
-}
-
-/**
- * Returns the last item in the queue
- * @param type
- * @returns
- */
-export function getLastInQueue(type: Command): string | null {
-    return queueMap[type]?.[getLastIndex(type)];
-}
-
-/**
- * Calculates the new turn for enqueuing
- * @param type
- * @returns
- */
-export function getNewQueueTurn(type: Command): number {
-    uniqueIdMap[type] = nextTurn(uniqueIdMap[type]);
-    return uniqueIdMap[type];
-}
-
-/**
- * Gets the next turn in queue
- * @param turn
- * @returns
- */
-export function nextTurn(turn: number): number {
-    return turn + 1;
 }
 
 /**
@@ -141,6 +104,43 @@ export function clearQueueList(...typeList: Command[]): void {
 export function rollbackClearQueue(type: Command): void {
     const backup = JSON.parse(JSON.stringify(queueCommitMap[type])) as Record<number, string | null>;
     queueMap[type] = { ...backup, ...queueMap[type] };
+}
+
+/**
+ * Gets the last turn in queue
+ * @param type
+ * @returns
+ */
+function _getLastIndex(type: Command): number {
+    return uniqueIdMap[type];
+}
+
+/**
+ * Returns the last item in the queue
+ * @param type
+ * @returns
+ */
+function _getLastInQueue(type: Command): string | null {
+    return queueMap[type]?.[_getLastIndex(type)];
+}
+
+/**
+ * Calculates the new turn for enqueuing
+ * @param type
+ * @returns
+ */
+function _getNewQueueTurn(type: Command): number {
+    uniqueIdMap[type] = _nextTurn(uniqueIdMap[type]);
+    return uniqueIdMap[type];
+}
+
+/**
+ * Gets the next turn in queue
+ * @param turn
+ * @returns
+ */
+function _nextTurn(turn: number): number {
+    return turn + 1;
 }
 
 /**
