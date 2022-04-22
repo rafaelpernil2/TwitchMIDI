@@ -254,8 +254,7 @@ function _processCCCommandList(rawCCCommandList: CCCommand[]): Array<CCCommand> 
     let ccCommandList: CCCommand[] = [rawCCCommandList[0]];
     // Next commands
     for (let preIndex = 0, postIndex = 1; preIndex < rawCCCommandList.length - 1, postIndex < rawCCCommandList.length; preIndex++, postIndex++) {
-        const pre = rawCCCommandList[preIndex];
-        const post = rawCCCommandList[postIndex];
+        const [pre, post] = [rawCCCommandList[preIndex], rawCCCommandList[postIndex]];
         // If there's a sweep
         const newCommandMacro = _isSweep(pre, post) ? _calculateCCSweep(pre, post) : [post];
         ccCommandList = ccCommandList.concat(newCommandMacro);

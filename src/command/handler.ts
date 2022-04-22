@@ -332,7 +332,9 @@ function _getCCCommandList(message: string): CCCommand[] {
     if (ccCommandList.length < 1) {
         throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE);
     }
-    return ccCommandList.map(_parseCCCommandList);
+
+    const rawCCCommandList = ccCommandList.map(_parseCCCommand);
+    return _parseCCCommandList(rawCCCommandList);
 }
 
 /**
@@ -411,21 +413,32 @@ function _parseChordProgression(chordProgression: string): Array<[noteList: stri
  * @param ccCommand CC command to parse
  * @returns Parsed command
  */
-function _parseCCCommandList(ccCommand: string): [controller: number, value: number, time: number] {
-    const [rawController, rawValue] = ccCommand.toLowerCase().split(GLOBAL.SPACE_SEPARATOR);
+function _parseCCCommand(ccCommand: string): [controller: number, value: number, time: number] {
+    const [rawController, rawValue] = ccCommand.toLowerCase().trim().split(GLOBAL.SPACE_SEPARATOR);
     // Controller
     const parsedController = ALIASES_DB.select(CC_CONTROLLERS, rawController) ?? rawController.replace(GLOBAL.CC_CONTROLLER, '');
     const controller = _parseMIDIValue(parsedController);
 
     // Value
-    const [ccValue, rawTimeDivision] = _splitTokenTime(rawValue);
+    const [ccValue, time] = _splitTokenTime(rawValue);
     const parsedValue = TOGGLE_MIDI_VALUES[ccValue] ?? ccValue; // Parse toggle values (on/off)
     const value = _parseMIDIValue(parsedValue);
 
-    // Time
-    const time = Number(rawTimeDivision || '0'); // Time to add in ms
-
     return [controller, value, time];
+}
+
+/**
+ * Parses a list of CC commands adding the missing delays for non-sweep commands
+ * @param rawCCCommandList List of CC commands
+ * @return List of processed CC commands
+ */
+function _parseCCCommandList(rawCCCommandList: CCCommand[]): CCCommand[] {
+    let lastDelay = 0;
+    return rawCCCommandList.map((command) => {
+        const [controller, value, time] = command;
+        lastDelay = lastDelay < time ? time : lastDelay;
+        return [controller, value, lastDelay];
+    });
 }
 
 /**
