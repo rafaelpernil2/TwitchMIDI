@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [1.2.11] - 2022-04-20
+## [1.2.12] - 2022-04-22
+### Removed
+- GZip compression to binaries
+
+## [1.2.11] - 2022-04-22
 ### Added
 - GZip compression to binaries, now they take up less space
 ### Changed
@@ -166,6 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.12]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.11...v1.2.12
 [1.2.11]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.10...v1.2.11
 [1.2.10]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.9...v1.2.10
 [1.2.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.8...v1.2.9
