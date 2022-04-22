@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.11] - 2022-04-20
+### Added
+- GZip compression to binaries, now they take up less space
+### Changed
+- Improved !sendcc command parsing and simplified code further
+### Fixed
+- Bugs when mixing CC commands with delay and without delay
+- CC command list request with spaces between commands now works
+
 ## [1.2.10] - 2022-04-20
 ### Changed
 - Re-organized midioff, midivolume and triggerClock to remove unnecessary exports and simplify code
@@ -157,6 +166,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.11]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.10...v1.2.11
 [1.2.10]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.9...v1.2.10
 [1.2.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.8...v1.2.9
 [1.2.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.7...v1.2.8
