@@ -6,7 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [1.2.14] - 2022-04-20
+## [1.2.15] - 2022-04-22
+### Changed
+- Documented more methods and added missing return types
+- Removed unused files
+
+## [1.2.14] - 2022-04-22
 ### Changed
 - Minor refactors
 
@@ -178,6 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.15]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.14...v1.2.15
 [1.2.14]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.13...v1.2.14
 [1.2.13]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.12...v1.2.13
 [1.2.12]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.11...v1.2.12

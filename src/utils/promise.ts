@@ -8,7 +8,7 @@ import { isJsonString } from './generic';
  * @param timeout Timeout in nanoseconds
  * @returns
  */
-export async function setTimeoutPromise(timeout: number) {
+export async function setTimeoutPromise(timeout: number): Promise<void> {
     const timer = new NanoTimer();
     return new Promise((resolve) => {
         timer.setTimeout(resolve, '', String(timeout) + 'n');

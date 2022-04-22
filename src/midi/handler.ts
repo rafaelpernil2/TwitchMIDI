@@ -65,7 +65,7 @@ export function setMIDIVolume(value: number): void {
  * @param rawNoteList List of notes
  * @param targetMIDIChannel Virtual device MIDI channel
  */
-export function triggerNoteList(rawNoteList: Array<[note: string, timeSubDivision: number]>, targetMIDIChannel: number) {
+export function triggerNoteList(rawNoteList: Array<[note: string, timeSubDivision: number]>, targetMIDIChannel: number): void {
     const noteList = _processNoteList(rawNoteList, globalTempo);
     for (const [note, timeout] of noteList) {
         _sendMIDINoteList(note, timeout, targetMIDIChannel);
@@ -172,7 +172,7 @@ function _initVariables(): void {
  * @param release Time between NoteOn and NoteOff
  * @param channels Target MIDI channel for the virtual MIDI device
  */
-function _sendMIDINoteList(noteList: number | string | string[], release: number, channels: number) {
+function _sendMIDINoteList(noteList: number | string | string[], release: number, channels: number): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }
@@ -189,7 +189,7 @@ function _sendMIDINoteList(noteList: number | string | string[], release: number
  * @param release Time between NoteOn and NoteOff
  * @param channels Target MIDI channel for the virtual MIDI device
  */
-async function _sendMIDINoteListPromise(noteList: number | string | string[], release: number, channels: number) {
+async function _sendMIDINoteListPromise(noteList: number | string | string[], release: number, channels: number): Promise<void> {
     if (output == null) {
         throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
     }

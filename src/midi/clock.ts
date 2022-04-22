@@ -46,7 +46,7 @@ export function isClockActive(): boolean {
 /**
  * Initializes clock data
  */
-export function initClockData() {
+export function initClockData(): void {
     timer.clearInterval();
     tick = 0;
 }
@@ -56,7 +56,7 @@ export function initClockData() {
  * @param targetMIDIChannel Target MIDI channel for the virtual MIDI device
  * @param output VirtualMIDI device
  */
-function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>) {
+function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>): void {
     isSyncing.set(true);
     initClockData();
     output.stop();

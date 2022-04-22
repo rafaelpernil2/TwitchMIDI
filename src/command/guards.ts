@@ -9,7 +9,7 @@ import { Command } from './types';
  * @param command
  * @param twitch
  */
-export function canAccessCommand(command: Command, twitch: TwitchParams) {
+export function checkCommandAccess(command: Command, twitch: TwitchParams): void {
     const permissionTable = PERMISSIONS_DB.select(PERMISSIONS_MAP, command);
     if (permissionTable == null) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS);
@@ -27,7 +27,7 @@ export function canAccessCommand(command: Command, twitch: TwitchParams) {
  * @param userRoles Roles of user
  * @returns
  */
-function _checkRequirements(requirements: Array<keyof UserRoles>, userRoles: UserRoles) {
+function _checkRequirements(requirements: Array<keyof UserRoles>, userRoles: UserRoles): void {
     // If no data, that means everyone is allowed
     if (requirements == null || requirements.length === 0) {
         return;
@@ -45,7 +45,7 @@ function _checkRequirements(requirements: Array<keyof UserRoles>, userRoles: Use
  * @param user Twitch username
  * @returns
  */
-function _checkBlacklist(blacklist: string[], user: string) {
+function _checkBlacklist(blacklist: string[], user: string): void {
     // If no data, that means everyone is allowed
     if (blacklist == null || blacklist.length === 0) {
         return;
@@ -63,7 +63,7 @@ function _checkBlacklist(blacklist: string[], user: string) {
  * @param user Twitch username
  * @returns
  */
-function _checkWhitelist(whitelist: string[], user: string) {
+function _checkWhitelist(whitelist: string[], user: string): void {
     // If no data, that means everyone is allowed
     if (whitelist == null || whitelist.length === 0) {
         return;

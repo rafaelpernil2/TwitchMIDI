@@ -4,7 +4,7 @@ import { CONFIG, GLOBAL, SAFE_COMMANDS } from '../../configuration/constants';
 import { CommandHandlerType, MessageHandler, TwitchParams } from './types';
 import { getCommand } from '../../command/utils';
 import * as CommandHandlers from '../../command/handler';
-import { canAccessCommand } from '../../command/guards';
+import { checkCommandAccess } from '../../command/guards';
 import { Command } from '../../command/types';
 import { ParsedEnvVariables } from '../../configuration/env/types';
 
@@ -31,7 +31,7 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, { REWARDS_MODE, 
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
             const twitch: TwitchParams = { channel, chatClient, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
             // Checks if the user has enough permissions
-            canAccessCommand(command, twitch);
+            checkCommandAccess(command, twitch);
             await commandHandler(args, { targetMIDIChannel: TARGET_MIDI_CHANNEL, targetMIDIName: TARGET_MIDI_NAME }, twitch);
         } catch (error) {
             chatClient.say(channel, String(error));

@@ -51,7 +51,7 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
  * @param chatClient Chat client
  * @param env Environment variables
  */
-async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables) {
+async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables): Promise<void> {
     console.log('   VIP can use commands in Rewards Mode: ' + String(env.VIP_REWARDS_MODE));
     const pubSubClient = new PubSubClient();
     const userId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
