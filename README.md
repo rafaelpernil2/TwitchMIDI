@@ -1,5 +1,7 @@
 # TwitchMIDI
 
+[![Twitch MIDI Demo](https://feranern.sirv.com/Images/twitchmidishort.gif)](https://www.youtube.com/watch?v=3JK5JukHRn0)
+
 A full-featured configurable Twitch bot to connect with your MIDI equipment while streaming. Allow your viewers to be part of your musical creations!
 
 ## Table of Contents
