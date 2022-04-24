@@ -281,24 +281,31 @@ function _calculateCCSweep([, preValue, preTime]: CCCommand, [postController, po
 }
 
 /**
- * Calculates a sweep between two different values in a time lapse with a particular precission
+ * Calculates a sweep between two different values in a time lapse with a particular frequency
  * @param start [startValue, startTime]
  * @param end [endValue, endTime]
- * @param precision How many values to create
+ * @param frequency How many values to create at max per second
  * @returns List of interpolated values
  */
 function _sweep(
     [startValue, startTime]: [startValue: number, startTime: number],
     [endValue, endTime]: [endValue: number, endTime: number],
-    precision = CONFIG.DEFAULT_SWEEP_PRECISION
+    frequency = CONFIG.DEFAULT_SWEEP_FREQUENCY
 ): Array<[value: number, time: number]> {
+    if (startTime > endTime) {
+        throw new Error(ERROR_MSG.BAD_SWEEP_DELAY);
+    }
+    const stepCount = ((endTime - startTime) / 1000) * frequency;
+
     const direction = startValue <= endValue ? 1 : -1;
-    const timeStepSize = Math.abs(endTime - startTime) / precision;
-    const valueStepSize = Math.abs(endValue - startValue) / precision;
+    const [timeStepSize, valueStepSize] = [Math.abs(endTime - startTime) / stepCount, Math.abs(endValue - startValue) / stepCount];
     const result: Array<[value: number, time: number]> = [];
-    for (let index = 1; index <= precision; index++) {
-        const value = Math.round(startValue + valueStepSize * index * direction);
-        const time = Math.round(startTime + timeStepSize * index);
+    for (let step = 1; step <= stepCount; step++) {
+        const [value, time] = [Math.round(startValue + valueStepSize * step * direction), Math.round(startTime + timeStepSize * step)];
+        // Skip if value stays the same and wait for a change
+        if (result?.[result.length - 1]?.[0] === value) {
+            continue;
+        }
         result.push([value, time]);
     }
     return result;
