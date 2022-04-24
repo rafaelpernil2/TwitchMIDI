@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [1.2.16] - 2022-04-22
+## [1.2.16] - 2022-04-24
 ### Fixed
 - Sweep CC messages overload, now duplicate messages are avoided
 
