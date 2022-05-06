@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.17] - 2022-05-06
+### Fixed
+- Reproducibility of bundles, now deletes previous assets before bundling
+- MacOS compatibility, it had issues with paths
+
+### Changed
+- Updated package-lock.json to Node 16+ version
+- Updated GitHub Actions pipelines
+
 ## [1.2.16] - 2022-04-24
 ### Fixed
 - Sweep CC messages overload, now duplicate messages are avoided
@@ -190,6 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.17]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.16...v1.2.17
 [1.2.16]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.15...v1.2.16
 [1.2.15]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.14...v1.2.15
 [1.2.14]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.13...v1.2.14
