@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [TwitchMIDI]
 
 ## [1.2.17] - 2022-05-06
+### Added
+- MacOS execution notes in README. If not launched properly, it has issues with paths
+
 ### Fixed
 - Reproducibility of bundles, now deletes previous assets before bundling
-- MacOS compatibility, it had issues with paths
 
 ### Changed
 - Updated package-lock.json to Node 16+ version (lockfileVersion 2)
