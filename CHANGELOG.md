@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reproducibility of bundles, now deletes previous assets before bundling
 
 ### Changed
+- Upgraded "pkg" from 5.5.2 to 5.6.0
 - Updated package-lock.json to Node 16+ version (lockfileVersion 2)
 - Updated GitHub Actions pipelines
 
