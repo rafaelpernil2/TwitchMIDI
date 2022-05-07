@@ -57,8 +57,8 @@ export function forwardQueue(type: Command): void {
  */
 export async function waitForMyTurn(turn: number, type: Command): Promise<void> {
     return new Promise((resolve) => {
-        const onCommandTurn = (currentChordMode: Command) => {
-            if (_isMyTurn(turn, type) && _isCollisionFree(currentChordMode, type)) {
+        const onCommandTurn = () => {
+            if (_isMyTurn(turn, type) && _isCollisionFree(type)) {
                 _setRequestPlayingNow(type, queueMap[type][turn] ?? GLOBAL.EMPTY_MESSAGE);
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
@@ -100,6 +100,8 @@ export function isQueueEmpty(type: Command): boolean {
 export function clearQueue(type: Command, { backup = false } = {}): void {
     if (backup) {
         queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
+    } else {
+        queueCommitMap[type] = {};
     }
     queueMap[type] = {};
 }
@@ -196,16 +198,12 @@ function _isMyTurn(turn: number, type: Command): boolean {
 
 /**
  * Collision prevention algorithm that separates sendchord and sendloop queues
- * @param currentChordMode The chord mode playing right now
  * @param type Queue type
  * @returns If next petition can be started without collision
  */
-function _isCollisionFree(currentChordMode: Command, type: Command): boolean {
-    // If a chord progression wants to start, check if the current chord mode is sendchord.
-    // Since sendchord has priority, this will stay this way until the sendchord queue is empty
-    // If a loop wants to start, check if the chord queue still has requests and wait until it's empty ("wait" is done by calling this method each bar)
-    // In any other case, with normal queues, move on!
-    return (currentChordMode === Command.sendchord && type === Command.sendchord) || type !== Command.sendloop || isQueueEmpty(Command.sendchord);
+function _isCollisionFree(type: Command): boolean {
+    // In any case, the queue for the type must not be empty, otherwise, if it has "sendloop" type, it has to wait until "sendchord" queue is empty
+    return !isQueueEmpty(type) && (type !== Command.sendloop || isQueueEmpty(Command.sendchord));
 }
 
 /**
