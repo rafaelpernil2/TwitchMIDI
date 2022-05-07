@@ -1,4 +1,4 @@
-import { ERROR_MSG, EVENT, EVENT_EMITTER } from '../configuration/constants';
+import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants';
 import { isEmptyObject } from '../utils/generic';
 import { Command } from './types';
 
@@ -6,6 +6,8 @@ const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}
 const queueCommitMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
 export const currentTurnMap = Object.fromEntries(Object.values(Command).map((key) => [key, 0])) as Record<Command, number>;
+
+let requestPlayingNow: { type: Command; request: string } | null;
 
 /**
  * Adds request to queue
@@ -39,6 +41,11 @@ export function forwardQueue(type: Command): void {
 
     delete queueMap[type][currentTurnMap[type]];
     currentTurnMap[type] = turn;
+
+    // If there's no chord progression or loop next, let's clear requestPlayingNow
+    if (isQueueEmpty(Command.sendchord) && isQueueEmpty(Command.sendloop)) {
+        requestPlayingNow = null;
+    }
 }
 
 /**
@@ -52,12 +59,29 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
     return new Promise((resolve) => {
         const onCommandTurn = (currentChordMode: Command) => {
             if (_isMyTurn(turn, type) && _isCollisionFree(currentChordMode, type)) {
+                _setRequestPlayingNow(type, queueMap[type][turn] ?? GLOBAL.EMPTY_MESSAGE);
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
             }
         };
         EVENT_EMITTER.on(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
     });
+}
+
+/**
+ * Returns the current request being played
+ * @returns Request information
+ */
+export function getCurrentRequestPlaying(): { type: Command; request: string } | null {
+    return requestPlayingNow;
+}
+
+/**
+ * Returns the current queue for chord progressions and loops
+ * @returns Current queue
+ */
+export function getRequestQueue(): [type: Command, request: string][] {
+    return [..._processQueue(Command.sendchord), ..._processQueue(Command.sendloop)];
 }
 
 /**
@@ -73,18 +97,21 @@ export function isQueueEmpty(type: Command): boolean {
  * Removes petitions from a queue by type
  * @param type
  */
-export function clearQueue(type: Command): void {
-    queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
+export function clearQueue(type: Command, { backup = false } = {}): void {
+    if (backup) {
+        queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
+    }
     queueMap[type] = {};
 }
 
 /**
  * Clears all queues
  */
-export function clearAllQueues(): void {
+export function clearAllQueues({ backup = false } = {}): void {
     for (const type of Object.values(Command)) {
-        clearQueue(type);
+        clearQueue(type, { backup });
     }
+    requestPlayingNow = null;
 }
 
 /**
@@ -94,6 +121,10 @@ export function clearAllQueues(): void {
 export function clearQueueList(...typeList: Command[]): void {
     for (const type of typeList) {
         clearQueue(type);
+    }
+    // If it includes both sendchord and sendloop, reset requestPlayingNow
+    if (typeList.includes(Command.sendchord) && typeList.includes(Command.sendloop)) {
+        requestPlayingNow = null;
     }
 }
 
@@ -175,4 +206,33 @@ function _isCollisionFree(currentChordMode: Command, type: Command): boolean {
     // If a loop wants to start, check if the chord queue still has requests and wait until it's empty ("wait" is done by calling this method each bar)
     // In any other case, with normal queues, move on!
     return (currentChordMode === Command.sendchord && type === Command.sendchord) || type !== Command.sendloop || isQueueEmpty(Command.sendchord);
+}
+
+/**
+ * Sets the request playing now and emits an event
+ * @param type Command type
+ * @param request Request content
+ */
+function _setRequestPlayingNow(type: Command, request: string): void {
+    // If it keeps playing the same, do nothing
+    if (request === GLOBAL.EMPTY_MESSAGE || (requestPlayingNow?.request === request && requestPlayingNow?.type === type)) {
+        return;
+    }
+    requestPlayingNow = { request, type };
+    EVENT_EMITTER.emit(EVENT.PLAYING_NOW, type, request);
+}
+
+/**
+ * Processes the queue for a particular command and returns a list of requests
+ * @param type Command type
+ * @returns List of requests
+ */
+function _processQueue(type: Command): [type: Command, request: string][] {
+    const queue: Array<string | null> = [];
+    Object.entries({ ...queueCommitMap[type], ...queueMap[type] }).map(([key, value]) => (queue[Number(key)] = value));
+
+    return queue
+        .slice(currentTurnMap[type])
+        .filter((request) => request !== GLOBAL.EMPTY_MESSAGE)
+        .map((request) => [type, request ?? GLOBAL.EMPTY_MESSAGE]);
 }

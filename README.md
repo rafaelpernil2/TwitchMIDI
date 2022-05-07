@@ -22,6 +22,8 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
       - [!sendchord](#sendchord)
       - [!sendloop](#sendloop)
       - [!sendcc](#sendcc)
+      - [!midicurrentrequest](#midicurrentrequest)
+      - [!midirequestqueue](#midirequestqueue)
       - [!cclist](#cclist)
       - [!midivolume](#midivolume)
       - [!stoploop](#stoploop)
@@ -75,6 +77,8 @@ So far, this first version does all that, keep reading the features for more det
   * Trigger individual notes or build a chord via [!sendnote](#sendnote)
   * Trigger chord progressions with specific length per chord via [!sendchord](#sendchord)
   * Loop chord progressions via [!sendloop](#sendloop)
+  * See the current chord progression via [!midicurrentrequest](#midicurrentrequest)
+  * Check the chord progression request queue via [!midirequestqueue](#midirequestqueue)
   * Change MIDI velocity via [!midivolume](#midivolume)
   * Send CC (Control Change) messages and sweeps between values via [!sendcc](#sendcc)
   * Clock-Loop synchronizer to correct sync issues via [!syncmidi](#syncmidi)
@@ -167,6 +171,14 @@ So far, this first version does all that, keep reading the features for more det
 &nbsp;&nbsp;&nbsp;&nbsp;Syntax:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````controller value,controller2 value2(delay_in_ms) // (e.g. "43 100,43 60", "cutoff sweep", "cutoff 100,cutoff 10(10000)")````
+
+
+#### !midicurrentrequest
+&nbsp;&nbsp;&nbsp;&nbsp;Shows the current request being played.
+
+
+#### !midirequestqueue
+&nbsp;&nbsp;&nbsp;&nbsp;Shows the request queue for chord progressions and loops.
 
 
 #### !cclist

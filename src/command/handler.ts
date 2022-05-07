@@ -1,6 +1,6 @@
 import { ResponseStatus } from '../database/interface';
-import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue } from './queue';
+import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
+import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue, getCurrentRequestPlaying, getRequestQueue } from './queue';
 import { isValidCommand, deAliasCommand, splitCommandArguments } from './utils';
 import { CommandParams } from '../twitch/chat/types';
 import { removeDuplicates } from '../utils/generic';
@@ -18,6 +18,7 @@ import {
 import { CCCommand, Command } from './types';
 import { inlineChord } from 'harmonics';
 import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
+import { ChatClient } from '@twurple/chat/lib/ChatClient';
 
 /**
  * Shows all available commands and explains how to use them
@@ -45,6 +46,7 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
 export async function midion(...[, { targetMIDIName }, { chatClient, channel }]: CommandParams): Promise<void> {
     try {
         await connectMIDI(targetMIDIName);
+        EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         console.log('MIDI connection stablished!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
@@ -62,6 +64,7 @@ export async function midion(...[, { targetMIDIName }, { chatClient, channel }]:
 export async function midioff(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
     try {
         await disconnectMIDI(targetMIDIChannel);
+        EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         console.log('MIDI disconnected!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
@@ -147,10 +150,10 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
 
     // If a chord progression is requested, we clear the loop queue
     if (isQueueEmpty(Command.sendchord)) {
-        clearQueue(Command.sendloop);
+        clearQueue(Command.sendloop, { backup: true });
     }
     const myTurn = queue(message, Command.sendchord);
-    chatClient.say(channel, 'Chord progression enqueued! ');
+    chatClient.say(channel, `Chord progression enqueued!`);
 
     await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
 
@@ -173,7 +176,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
     const chordProgression = _getChordProgression(message);
     const myTurn = queue(message, Command.sendloop);
 
-    chatClient.say(channel, 'Loop enqueued! ');
+    chatClient.say(channel, `Loop enqueued!`);
     do {
         // Execute at least once to wait for your turn in the queue
         await triggerChordList(chordProgression, targetMIDIChannel, Command.sendloop, myTurn);
@@ -195,6 +198,36 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
 
     const controllerList = removeDuplicates(ccCommandList.map(([controller]) => controller)).join(GLOBAL.COMMA_JOIN);
     chatClient.say(channel, `Control Change (${controllerList}) message(s) sent! `);
+}
+
+/**
+ * Shows the current chord progression or loop request being played
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function midicurrentrequest(...[, , { chatClient, channel }]: CommandParams): void {
+    const currentRequestPlaying = getCurrentRequestPlaying();
+    if (currentRequestPlaying == null) {
+        chatClient.say(channel, 'Nothing is playing now');
+        return;
+    }
+    chatClient.say(channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
+}
+
+/**
+ * Shows the current chord progression or loop request queue
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams): void {
+    const requestList = getRequestQueue()
+        .map(([type, request]) => `!${type} "${request}"`)
+        .join(GLOBAL.COMMA_JOIN);
+    chatClient.say(channel, '🟢Here is the request queue🟢: ' + (requestList.length === 0 ? 'There are no requests :P' : requestList));
 }
 
 /**
@@ -453,4 +486,24 @@ function _parseMIDIValue(midiValue: string | number): number {
         throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE + ': ' + String(midiValue));
     }
     return parsedValue;
+}
+
+/**
+ * A closure that informs of the current loop or chord progression playing via Twitch chat and saves it
+ * @param chatClient Twitch ChatClient
+ * @param channel Twitch Channel
+ * @returns An event handler
+ */
+function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Command, request: string) => void {
+    return (type, request) => chatClient.say(channel, _buildPlayingNowMessage(type, request));
+}
+
+/**
+ * Creates a message to show the request being played right now
+ * @param type
+ * @param request
+ * @returns A message
+ */
+function _buildPlayingNowMessage(type: Command, request: string): string {
+    return `🔊🎹Playing now - !${type} "${request}"`;
 }
