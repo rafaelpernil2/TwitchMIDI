@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.3.1] - 2022-05-08
+### Fixed
+- Now !settempo and !syncmidi repeat the current loop with the new tempo/synchronized
+- !sendloop->!sendchord->!stoploop->!sendloop overlap bug, now the logic is simpler and clearer
+
 ## [1.3.0] - 2022-05-07
 ### Added
 - !midirequestqueue command - Shows the requests in the queue
@@ -211,6 +216,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.3.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.17...v1.3.0
 [1.2.17]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.16...v1.2.17
 [1.2.16]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.15...v1.2.16

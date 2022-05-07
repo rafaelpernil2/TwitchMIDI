@@ -100,15 +100,15 @@ export async function triggerChordList(
     currentChordMode.set(type);
     for (const [noteList, timeout] of chordProgression) {
         // Skip iteration if tempo or sync changes
-        if (isSyncing.get()) {
-            continue;
-        }
+        if (isSyncing.get()) continue;
         await _sendMIDINoteListPromise(noteList, timeout, targetMIDIChannel);
     }
     // This way only the active loop gets skipped
+    if (!isSyncing.get()) {
+        // Move to next in queue
+        forwardQueue(type);
+    }
     isSyncing.set(false);
-    // Move to next in queue
-    forwardQueue(type);
     isChordInProgress.set(false);
 }
 
