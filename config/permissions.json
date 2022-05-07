@@ -102,6 +102,11 @@
             ],
             "whitelist": [],
             "blacklist": []
+        },
+        "midicurrentrequest": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
         }
     }
 }

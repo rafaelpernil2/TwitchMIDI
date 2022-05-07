@@ -80,7 +80,8 @@ export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], 
     fullstopmidi: 'Stops all MIDI messages and sound',
     settempo: 'Starts the MIDI clock and sets a tempo. Syntax: tempo (e.g. "120", "200")',
     syncmidi: 'Restarts the MIDI clock and syncs loop and clock on the next repetition',
-    fetchdb: 'Refreshes aliases configuration'
+    fetchdb: 'Refreshes aliases configuration',
+    midicurrentrequest: 'Shows the current request being played'
 } as const;
 
 export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean> = {
@@ -100,7 +101,8 @@ export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean
     fullstopmidi: false,
     settempo: false,
     syncmidi: false,
-    fetchdb: false
+    fetchdb: false,
+    midicurrentrequest: true
 } as const;
 
 export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
@@ -110,7 +112,8 @@ export const PERMISSIONS_DB = new JSONDatabase<PermissionsType>(CONFIG.PERMISSIO
 export const EVENT_EMITTER = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 
 export const EVENT = {
-    BAR_LOOP_CHANGE_EVENT: 'barLoopChange'
+    BAR_LOOP_CHANGE_EVENT: 'barLoopChange',
+    PLAYING_NOW: 'playingNow'
 };
 
 export const ALIAS_MAP: Record<string, Command> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};

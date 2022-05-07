@@ -38,7 +38,9 @@
         "cccommands": "cclist",
         "comandoscc": "cclist",
         "controlchangelist": "cclist",
-        "controlchange": "sendcc"
+        "controlchange": "sendcc",
+        "currentloop": "midicurrentrequest",
+        "currentchord": "midicurrentrequest"
     },
     "chordProgressions": {
         "autumn leaves": "Cm7 F7 Bbmaj7 Ebmaj7 Cm6 D7 Gm6",

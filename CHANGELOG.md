@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.2.18] - 2022-05-07
+### Added
+- !midicurrentrequest command - You can see which request is playing right now
+- Now a message in chat appears showing the request being played currently
+
 ## [1.2.17] - 2022-05-06
 ### Added
 - MacOS execution notes in README. If not launched properly, it has issues with paths
@@ -202,6 +207,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.2.18]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.17...v1.2.18
 [1.2.17]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.16...v1.2.17
 [1.2.16]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.15...v1.2.16
 [1.2.15]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.14...v1.2.15
