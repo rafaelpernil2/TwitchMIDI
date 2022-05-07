@@ -81,7 +81,8 @@ export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], 
     settempo: 'Starts the MIDI clock and sets a tempo. Syntax: tempo (e.g. "120", "200")',
     syncmidi: 'Restarts the MIDI clock and syncs loop and clock on the next repetition',
     fetchdb: 'Refreshes aliases configuration',
-    midicurrentrequest: 'Shows the current request being played'
+    midicurrentrequest: 'Shows the current request being played',
+    midirequestqueue: 'Shows the request queue for chord progressions and loops'
 } as const;
 
 export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean> = {
@@ -102,7 +103,8 @@ export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean
     settempo: false,
     syncmidi: false,
     fetchdb: false,
-    midicurrentrequest: true
+    midicurrentrequest: true,
+    midirequestqueue: true
 } as const;
 
 export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);

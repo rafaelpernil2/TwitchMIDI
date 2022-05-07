@@ -77,6 +77,14 @@ export function getCurrentRequestPlaying(): { type: Command; request: string } |
 }
 
 /**
+ * Returns the current queue for chord progressions and loops
+ * @returns Current queue
+ */
+export function getRequestQueue(): [type: Command, request: string][] {
+    return [..._processQueue(Command.sendchord), ..._processQueue(Command.sendloop)];
+}
+
+/**
  * Checks if queue is empty
  * @param type
  * @returns
@@ -89,17 +97,19 @@ export function isQueueEmpty(type: Command): boolean {
  * Removes petitions from a queue by type
  * @param type
  */
-export function clearQueue(type: Command): void {
-    queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
+export function clearQueue(type: Command, { backup = false } = {}): void {
+    if (backup) {
+        queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
+    }
     queueMap[type] = {};
 }
 
 /**
  * Clears all queues
  */
-export function clearAllQueues(): void {
+export function clearAllQueues({ backup = false } = {}): void {
     for (const type of Object.values(Command)) {
-        clearQueue(type);
+        clearQueue(type, { backup });
     }
     requestPlayingNow = null;
 }
@@ -205,9 +215,24 @@ function _isCollisionFree(currentChordMode: Command, type: Command): boolean {
  */
 function _setRequestPlayingNow(type: Command, request: string): void {
     // If it keeps playing the same, do nothing
-    if (requestPlayingNow?.request === request && requestPlayingNow?.type === type) {
+    if (request === GLOBAL.EMPTY_MESSAGE || (requestPlayingNow?.request === request && requestPlayingNow?.type === type)) {
         return;
     }
     requestPlayingNow = { request, type };
     EVENT_EMITTER.emit(EVENT.PLAYING_NOW, type, request);
+}
+
+/**
+ * Processes the queue for a particular command and returns a list of requests
+ * @param type Command type
+ * @returns List of requests
+ */
+function _processQueue(type: Command): [type: Command, request: string][] {
+    const queue: Array<string | null> = [];
+    Object.entries({ ...queueCommitMap[type], ...queueMap[type] }).map(([key, value]) => (queue[Number(key)] = value));
+
+    return queue
+        .slice(currentTurnMap[type])
+        .filter((request) => request !== GLOBAL.EMPTY_MESSAGE)
+        .map((request) => [type, request ?? GLOBAL.EMPTY_MESSAGE]);
 }

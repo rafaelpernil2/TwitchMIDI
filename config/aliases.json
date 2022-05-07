@@ -40,7 +40,10 @@
         "controlchangelist": "cclist",
         "controlchange": "sendcc",
         "currentloop": "midicurrentrequest",
-        "currentchord": "midicurrentrequest"
+        "currentchord": "midicurrentrequest",
+        "midiqueue": "midirequestqueue",
+        "chordqueue": "midirequestqueue",
+        "loopqueue": "midirequestqueue"
     },
     "chordProgressions": {
         "autumn leaves": "Cm7 F7 Bbmaj7 Ebmaj7 Cm6 D7 Gm6",

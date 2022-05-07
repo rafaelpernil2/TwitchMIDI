@@ -107,6 +107,11 @@
             "requirements": [],
             "whitelist": [],
             "blacklist": []
+        },
+        "midirequestqueue": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
         }
     }
 }

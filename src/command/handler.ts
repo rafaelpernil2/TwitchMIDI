@@ -1,6 +1,6 @@
 import { ResponseStatus } from '../database/interface';
 import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue, getCurrentRequestPlaying } from './queue';
+import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue, getCurrentRequestPlaying, getRequestQueue } from './queue';
 import { isValidCommand, deAliasCommand, splitCommandArguments } from './utils';
 import { CommandParams } from '../twitch/chat/types';
 import { removeDuplicates } from '../utils/generic';
@@ -150,10 +150,10 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
 
     // If a chord progression is requested, we clear the loop queue
     if (isQueueEmpty(Command.sendchord)) {
-        clearQueue(Command.sendloop);
+        clearQueue(Command.sendloop, { backup: true });
     }
     const myTurn = queue(message, Command.sendchord);
-    chatClient.say(channel, `Chord progression enqueued! ${_buildPetitionsBeforeMessage(myTurn - currentTurnMap.sendchord)}`);
+    chatClient.say(channel, `Chord progression enqueued!`);
 
     await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
 
@@ -176,7 +176,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
     const chordProgression = _getChordProgression(message);
     const myTurn = queue(message, Command.sendloop);
 
-    chatClient.say(channel, `Loop enqueued! ${_buildPetitionsBeforeMessage(myTurn - currentTurnMap.sendloop)}`);
+    chatClient.say(channel, `Loop enqueued!`);
     do {
         // Execute at least once to wait for your turn in the queue
         await triggerChordList(chordProgression, targetMIDIChannel, Command.sendloop, myTurn);
@@ -214,6 +214,20 @@ export function midicurrentrequest(...[, , { chatClient, channel }]: CommandPara
         return;
     }
     chatClient.say(channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
+}
+
+/**
+ * Shows the current chord progression or loop request queue
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams): void {
+    const requestList = getRequestQueue()
+        .map(([type, request]) => `!${type} "${request}"`)
+        .join(GLOBAL.COMMA_JOIN);
+    chatClient.say(channel, '🟢Here is the request queue🟢: ' + (requestList.length === 0 ? 'There are no requests :P' : requestList));
 }
 
 /**
@@ -491,18 +505,5 @@ function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Co
  * @returns A message
  */
 function _buildPlayingNowMessage(type: Command, request: string): string {
-    return `Playing now - !${type} "${request}"`;
-}
-
-/**
- * Creates a message to show the amount of petitions before yours
- * @param petitionsBefore Number of petitions before
- * @returns A message
- */
-function _buildPetitionsBeforeMessage(petitionsBefore: number): string {
-    if (petitionsBefore === 0) {
-        return `But... The queue is empty, it's your turn!!`;
-    }
-    const isPlural = petitionsBefore > 1;
-    return `There ${isPlural ? 'are' : 'is'} ${petitionsBefore} petition${isPlural ? 's' : ''} before yours`;
+    return `🔊🎹Playing now - !${type} "${request}"`;
 }

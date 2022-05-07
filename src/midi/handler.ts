@@ -90,9 +90,9 @@ export async function triggerChordList(
     // Reset sync flag
     isSyncing.set(false);
 
-    const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
     // We wait until the bar starts and is your turn
     await waitForMyTurn(myTurn, type);
+    const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
 
     // Blocking section
     isChordInProgress.set(true);
@@ -105,6 +105,8 @@ export async function triggerChordList(
         }
         await _sendMIDINoteListPromise(noteList, timeout, targetMIDIChannel);
     }
+    // This way only the active loop gets skipped
+    isSyncing.set(false);
     // Move to next in queue
     forwardQueue(type);
     isChordInProgress.set(false);
