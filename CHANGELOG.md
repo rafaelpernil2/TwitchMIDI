@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.3.2] - 2022-05-10
+### Changed
+- Updated a comment, removed typo and updated !fetchdb section at Features in README
+
 ## [1.3.1] - 2022-05-08
 ### Fixed
 - Now !settempo and !syncmidi repeat the current loop with the new tempo/synchronized
@@ -216,6 +220,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.3.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.17...v1.3.0
 [1.2.17]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.16...v1.2.17
