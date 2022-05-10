@@ -50,7 +50,7 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 * Done. Have fun!
 
-> Note: For MacOS, open a terminal, "cd" into the extrated folder and then execute it from there with "./TwitchMIDI-macos".
+> Note: For MacOS, open a terminal, "cd" into the extracted folder and then execute it from there with "./TwitchMIDI-macos".
 > Otherwise you will get an error like: "no such file or directory, open './config/aliases.json'"
 
 ## Why?
