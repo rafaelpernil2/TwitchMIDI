@@ -489,7 +489,7 @@ function _parseMIDIValue(midiValue: string | number): number {
 }
 
 /**
- * A closure that informs of the current loop or chord progression playing via Twitch chat and saves it
+ * A closure that informs of the current loop or chord progression playing via Twitch chat
  * @param chatClient Twitch ChatClient
  * @param channel Twitch Channel
  * @returns An event handler
