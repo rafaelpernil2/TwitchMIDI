@@ -44,7 +44,7 @@ export async function disconnectMIDI(targetMIDIChannel: number): Promise<void> {
  */
 export function checkMIDIConnection(): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
 }
 
@@ -120,7 +120,7 @@ export async function triggerChordList(
 export function triggerCCCommandList(rawCCCommandList: CCCommand[], targetMIDIChannel: number): void {
     const ccCommandList = _processCCCommandList(rawCCCommandList);
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     for (const [controller, value, time] of ccCommandList) {
         output.wait(time).control(targetMIDIChannel, controller, value);
@@ -134,7 +134,7 @@ export function triggerCCCommandList(rawCCCommandList: CCCommand[], targetMIDICh
  */
 export function triggerClock(targetMIDIChannel: number, newTempo?: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     if (newTempo != null) {
         globalTempo = newTempo;
@@ -148,7 +148,7 @@ export function triggerClock(targetMIDIChannel: number, newTempo?: number): void
  */
 export function stopAllMidi(targetMIDIChannel: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     output.stop();
     output.allNotesOff(targetMIDIChannel);
@@ -176,7 +176,7 @@ function _initVariables(): void {
  */
 function _sendMIDINoteList(noteList: number | string | string[], release: number, channels: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
     const releaseTime = Math.round(release / 1_000_000);
@@ -193,7 +193,7 @@ function _sendMIDINoteList(noteList: number | string | string[], release: number
  */
 async function _sendMIDINoteListPromise(noteList: number | string | string[], release: number, channels: number): Promise<void> {
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
     for (const note of parsedNoteList) {
@@ -319,7 +319,7 @@ function _sweep(
  */
 function _autoStartClock(targetMIDIChannel: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CONNECTION);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     if (!isClockActive()) {
         startClock(targetMIDIChannel, output, globalTempo);

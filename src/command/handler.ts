@@ -47,7 +47,7 @@ export async function midion(...[, { targetMIDIName }, { chatClient, channel }]:
     try {
         await connectMIDI(targetMIDIName);
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
-        console.log('MIDI connection stablished!');
+        console.log('TwitchMIDI enabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
     }
@@ -65,7 +65,7 @@ export async function midioff(...[, { targetMIDIChannel }, { chatClient, channel
     try {
         await disconnectMIDI(targetMIDIChannel);
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
-        console.log('MIDI disconnected!');
+        console.log('TwitchMIDI disabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
     }
