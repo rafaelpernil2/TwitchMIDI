@@ -117,7 +117,3 @@ export const EVENT = {
     BAR_LOOP_CHANGE_EVENT: 'barLoopChange',
     PLAYING_NOW: 'playingNow'
 };
-
-export const ALIAS_MAP: Record<string, Command> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
-
-export const COMMAND_VALUES = Object.fromEntries([...Object.entries(ALIAS_MAP), ...Object.entries(Command).map(([, v]) => [v, 1])]) as Record<string, string>;
