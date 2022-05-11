@@ -8,7 +8,7 @@ import { getLoadedEnvVariables } from './configuration/env/loader';
 import { getAuthProvider } from './twitch/auth/provider';
 import { ChatClient } from '@twurple/chat';
 import { onMessageHandlerClosure } from './twitch/chat/handler';
-import { ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
+import { CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
 import { getBooleanByStringList } from './utils/generic';
@@ -17,6 +17,8 @@ import { setupConfiguration } from './configuration/configurator/setup';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
 import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
+import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
+import { MessageHandler } from './twitch/chat/types';
 
 /**
  * Initialization code
@@ -29,19 +31,21 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 
         console.log(chalk.grey("Welcome! I'm loading stuff and making magic. Wait a few seconds..."));
 
+        // First, let's disable the rewards
+        await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
+
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
 
         await JZZ.requestMIDIAccess();
 
         // Chat code
-        chatClient.onMessage(onMessageHandlerClosure(chatClient, env));
+        chatClient.onMessage(onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env));
 
         // Rewards code
         if (env.REWARDS_MODE) {
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
-
         _showInitMessages(env);
     } catch (error) {
         console.log(String(error) + '\n' + ERROR_MSG.INIT);
@@ -57,14 +61,12 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables): Promise<void> {
     const pubSubClient = new PubSubClient();
     const userId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
-    await pubSubClient.onRedemption(userId, async ({ rewardTitle, message: args }: PubSubRedemptionMessage) => {
+    await pubSubClient.onRedemption(userId, async ({ id: redemptionId, rewardId, rewardTitle, message: args }: PubSubRedemptionMessage) => {
         // Look up the command
-        const command = REWARDS_DB.select(REWARD_TITLE_COMMAND, rewardTitle);
+        const [command] = REWARDS_DB.select(REWARD_TITLE_COMMAND, rewardTitle) ?? [];
 
         // For rewards that are not part of this plugin
-        if (!command) {
-            return;
-        }
+        if (!command) return;
 
         const [parsedCommand] = getCommand(command);
 
@@ -74,9 +76,35 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
             return;
         }
 
-        const callCommand = onMessageHandlerClosure(chatClient, { ...env, REWARDS_MODE: false, VIP_REWARDS_MODE: false });
-        await callCommand(`${GLOBAL.POUND}${env.TARGET_CHANNEL}`, userId, `${command} ${args}`);
+        const callCommand = onMessageHandlerClosure(broadcasterAuthProvider, chatClient, { ...env, REWARDS_MODE: false, VIP_REWARDS_MODE: false }, { bubbleErrors: true });
+        await _callCommandByRedeemption(callCommand, broadcasterAuthProvider, { env, args, command }, { redemptionId, userId, rewardId });
     });
+}
+
+/**
+ * Calls a command and manages the status of the redemption depending on the output
+ * @param callCommand MessageHandler
+ * @param authProvider Broadcaster authentication provider
+ * @param { env, args, command } commandData Environment variables and command data
+ * @param { redemptionId, rewardId, userId } rewardData Reward redemption data
+ */
+async function _callCommandByRedeemption(
+    callCommand: MessageHandler,
+    authProvider: RefreshingAuthProvider,
+    { env, args, command }: { env: ParsedEnvVariables; args: string; command: string },
+    { redemptionId, rewardId, userId }: { redemptionId: string; rewardId: string; userId: string }
+): Promise<void> {
+    try {
+        // In case the method does not end or error in X seconds, it is considered fulfilled
+        // For example, !sendloop request do not resolve until another request comes along
+        setTimeout(() => updateRedeemIdStatus(authProvider, env.TARGET_CHANNEL, { rewardId, redemptionId, status: 'FULFILLED' }), CONFIG.FULFILL_TIMEOUT_MS);
+        // Execute command and mark as fulfilled once finished
+        await callCommand(`${GLOBAL.POUND}${env.TARGET_CHANNEL}`, userId, `${command} ${args}`);
+        await updateRedeemIdStatus(authProvider, env.TARGET_CHANNEL, { rewardId, redemptionId, status: 'FULFILLED' });
+    } catch (error) {
+        // Cancel redemption if any error occurs
+        await updateRedeemIdStatus(authProvider, env.TARGET_CHANNEL, { rewardId, redemptionId, status: 'CANCELED' });
+    }
 }
 
 /**

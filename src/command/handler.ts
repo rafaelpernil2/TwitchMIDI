@@ -19,6 +19,7 @@ import { CCCommand, Command } from './types';
 import { inlineChord } from 'harmonics';
 import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
 import { ChatClient } from '@twurple/chat/lib/ChatClient';
+import { createRewards, toggleRewardsStatus } from '../rewards/handler';
 
 /**
  * Shows all available commands and explains how to use them
@@ -43,9 +44,14 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midion(...[, { targetMIDIName }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, user }]: CommandParams): Promise<void> {
     try {
         await connectMIDI(targetMIDIName);
+        if (isRewardsMode) {
+            chatClient.say(channel, 'Activating rewards... This may take a few seconds');
+            await createRewards(authProvider, user);
+            await toggleRewardsStatus(authProvider, user, { isEnabled: true });
+        }
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         console.log('TwitchMIDI enabled!');
     } catch (error) {
@@ -61,10 +67,14 @@ export async function midion(...[, { targetMIDIName }, { chatClient, channel }]:
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midioff(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, user }]: CommandParams): Promise<void> {
     chatClient.say(channel, 'Disabling TwitchMIDI. Wait a few seconds...');
     try {
         await disconnectMIDI(targetMIDIChannel);
+        if (isRewardsMode) {
+            chatClient.say(channel, 'De-activating rewards... This may take a few seconds');
+            await toggleRewardsStatus(authProvider, user, { isEnabled: false });
+        }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         console.log('TwitchMIDI disabled!');
     } catch (error) {

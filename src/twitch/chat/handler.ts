@@ -7,6 +7,7 @@ import * as CommandHandlers from '../../command/handler';
 import { checkCommandAccess } from '../../command/guards';
 import { Command } from '../../command/types';
 import { ParsedEnvVariables } from '../../configuration/env/types';
+import { RefreshingAuthProvider } from '@twurple/auth';
 
 /**
  * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control
@@ -14,7 +15,12 @@ import { ParsedEnvVariables } from '../../configuration/env/types';
  * @param env { REWARDS_MODE, VIP_REWARDS_MODE, TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }
  * @returns A ChatClient MessageHandler
  */
-export const onMessageHandlerClosure = (chatClient: ChatClient, { REWARDS_MODE, VIP_REWARDS_MODE, TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }: ParsedEnvVariables): MessageHandler => {
+export const onMessageHandlerClosure = (
+    authProvider: RefreshingAuthProvider,
+    chatClient: ChatClient,
+    { REWARDS_MODE, VIP_REWARDS_MODE, TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }: ParsedEnvVariables,
+    { bubbleErrors = false } = {}
+): MessageHandler => {
     return async (channel: string, user: string, message: string, msg?: TwitchPrivateMessage): Promise<void> => {
         const [command, args = GLOBAL.EMPTY_MESSAGE] = getCommand(message);
         // Ignore messages that are not commands
@@ -29,12 +35,14 @@ export const onMessageHandlerClosure = (chatClient: ChatClient, { REWARDS_MODE, 
             }
 
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
-            const twitch: TwitchParams = { channel, chatClient, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
+            const twitch: TwitchParams = { channel, chatClient, authProvider, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
             // Checks if the user has enough permissions
             checkCommandAccess(command, twitch);
-            await commandHandler(args, { targetMIDIChannel: TARGET_MIDI_CHANNEL, targetMIDIName: TARGET_MIDI_NAME }, twitch);
+            await commandHandler(args, { targetMIDIChannel: TARGET_MIDI_CHANNEL, targetMIDIName: TARGET_MIDI_NAME, isRewardsMode: REWARDS_MODE }, twitch);
         } catch (error) {
             chatClient.say(channel, String(error));
+            // Raise error if it's a reward to handle the redemption status
+            if (bubbleErrors) throw error;
         }
     };
 };

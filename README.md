@@ -98,7 +98,9 @@ So far, this first version does all that, keep reading the features for more det
 * Commands explaination with examples via [!midihelp](#midihelp) commandname
 * Fine-grained command access control with role check, whitelist and blackist on [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json)
 * Channel Points reward mode enabled via REWARDS_MODE flag and configurable on [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json)
-  * Set the name of your channel points reward and the command to launch (e.g. "Twitch Midi - Loop": "!sendloop" )
+  * Set the name of your channel points reward, the command to launch and the price (e.g. "Twitch Midi - Loop": \["!sendloop",100\] )
+  * Automatic enable/disable rewards on [!midion](#midion)/[!midioff](#midioff)
+  * Automatic points refund on bad requests / any kind of error
   * Commands only work for the streamer and mods
   * Allow VIPs to bypass rewards via VIP_REWARDS_MODE
 * Bundle optimized for different operating systems and no extra software required for execution

@@ -1,3 +1,4 @@
+import { RefreshingAuthProvider } from '@twurple/auth';
 import { ChatClient } from '@twurple/chat/lib/ChatClient';
 import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
 
@@ -40,10 +41,12 @@ export type CommandParams = [
 export interface CommandConfigParams {
     targetMIDIName: string;
     targetMIDIChannel: number;
+    isRewardsMode: boolean;
 }
 
 export interface TwitchParams {
     chatClient: ChatClient;
+    authProvider: RefreshingAuthProvider;
     channel: string;
     user: string;
     userRoles: UserRoles;
