@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.3.3] - 2022-05-11
+### Added
+- Support via Paypal message on start
+
+### Changed
+- Improved initialization messages with colors and different order
+- Bad MIDI connection error changed to bot disabled error to improve usability
+
 ## [1.3.2] - 2022-05-10
 ### Changed
 - Updated a comment, removed typo and updated !fetchdb section at Features in README
@@ -220,6 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.3.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.2.17...v1.3.0

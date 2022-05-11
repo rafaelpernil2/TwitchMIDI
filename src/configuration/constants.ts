@@ -28,7 +28,7 @@ export const ERROR_MSG = {
     BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
     INIT_ENV_VARIABLES: `Your .env file is not ready to use.\nProbably this is your first time running the app, follow the next configuration steps :)`,
     BAD_ENV_VARIABLE: (keys: string) => `This app cannot be executed, make sure you set a valid value for ${keys} inside the .env file. `,
-    BAD_MIDI_CONNECTION: 'Bad MIDI connection. Try !midion first',
+    BOT_DISCONNECTED: 'TwitchMIDI is disabled right now. Wait until the streamer enables it :)',
     BAD_MIDI_CHANNEL: 'Make sure "TARGET_MIDI_CHANNEL" is a valid MIDI channel between 1 and 16 (both inclusive)',
     BAD_MIDI_MESSAGE: 'Bad MIDI message, the value must be between 0 and 127 (inclusive)',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
