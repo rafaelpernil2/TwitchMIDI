@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [1.3.4] - 2022-05-11
+### Fixed
+- Removed kaomojis from init messages because they are not rendered properly ~(>_<。)＼
+
 ## [1.3.3] - 2022-05-11
 ### Added
 - Support via Paypal message on start
@@ -228,6 +232,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[1.3.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.0...v1.3.1

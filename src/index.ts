@@ -107,10 +107,10 @@ function _showInitMessages(env: ParsedEnvVariables): void {
     console.log(chalk.magenta('\tVIP can use commands in Rewards Mode:'), chalk.magentaBright(String(env.VIP_REWARDS_MODE)));
 
     // Support message
-    console.log(chalk.blueBright('\n(～￣▽￣)～\n'));
+    console.log(chalk.blueBright('\n***************\n'));
     console.log(chalk.cyan('This software is free and maintained in my spare time.'));
     console.log(chalk.cyan('If you want to support my work, please contribute on Paypal:\n'));
     console.log(chalk.cyanBright('https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN'));
-    console.log(chalk.cyan('\nThank you! 💛'));
-    console.log(chalk.blueBright('\n〜(￣▽￣〜)\n'));
+    console.log(chalk.cyan('\nThank you! ♥'));
+    console.log(chalk.blueBright('\n***************\n'));
 }
