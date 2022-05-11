@@ -38,7 +38,6 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
         chatClient.onMessage(onMessageHandlerClosure(chatClient, env));
 
         // Rewards code
-
         if (env.REWARDS_MODE) {
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
