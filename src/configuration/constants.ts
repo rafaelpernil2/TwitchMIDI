@@ -1,5 +1,5 @@
 import { JSONDatabase } from '../database/jsondb/implementation';
-import { AliasesType, COMMANDS_KEY, PermissionsType, RewardsType } from '../database/jsondb/types';
+import { AliasesType, PermissionsType, RewardsType } from '../database/jsondb/types';
 import EventEmitter from 'events';
 import { Command } from '../command/types';
 
@@ -117,7 +117,3 @@ export const EVENT = {
     BAR_LOOP_CHANGE_EVENT: 'barLoopChange',
     PLAYING_NOW: 'playingNow'
 };
-
-export const ALIAS_MAP: Record<string, Command> = ALIASES_DB.selectAll(COMMANDS_KEY) ?? {};
-
-export const COMMAND_VALUES = Object.fromEntries([...Object.entries(ALIAS_MAP), ...Object.entries(Command).map(([, v]) => [v, 1])]) as Record<string, string>;

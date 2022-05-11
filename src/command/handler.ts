@@ -62,6 +62,7 @@ export async function midion(...[, { targetMIDIName }, { chatClient, channel }]:
  *         ]
  */
 export async function midioff(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+    chatClient.say(channel, 'Disabling TwitchMIDI. Wait a few seconds...');
     try {
         await disconnectMIDI(targetMIDIChannel);
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
@@ -324,7 +325,7 @@ export async function fetchdb(...[, , { chatClient, channel }]: CommandParams): 
     await ALIASES_DB.fetchDB();
     await REWARDS_DB.fetchDB();
     await PERMISSIONS_DB.fetchDB();
-    chatClient.say(channel, 'MIDI lists updated!');
+    chatClient.say(channel, 'Configuration files reloaded!');
 }
 
 /**

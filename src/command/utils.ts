@@ -1,4 +1,5 @@
-import { ALIAS_MAP, COMMAND_VALUES, GLOBAL } from '../configuration/constants';
+import { ALIASES_DB, GLOBAL } from '../configuration/constants';
+import { COMMANDS_KEY } from '../database/jsondb/types';
 import { Command } from './types';
 
 /**
@@ -7,7 +8,8 @@ import { Command } from './types';
  * @returns
  */
 export function isValidCommand(message: string): message is Command {
-    return COMMAND_VALUES[message] != null;
+    const possibleCommand = deAliasCommand(message);
+    return Command[possibleCommand] != null;
 }
 
 /**
@@ -29,7 +31,7 @@ export function getCommand(message: string): [command?: Command, args?: string] 
  * @returns Command
  */
 export function deAliasCommand(command: string): Command {
-    return ALIAS_MAP[command] ?? command;
+    return ALIASES_DB.select(COMMANDS_KEY, command) ?? (command as Command);
 }
 
 /**
