@@ -1,5 +1,5 @@
 import { JSONDatabase } from '../database/jsondb/implementation';
-import { AliasesType, COMMANDS_KEY, PermissionsType, RewardsType } from '../database/jsondb/types';
+import { AliasesType, PermissionsType, RewardsType } from '../database/jsondb/types';
 import EventEmitter from 'events';
 import { Command } from '../command/types';
 
