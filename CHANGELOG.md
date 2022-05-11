@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.0.0] - 2022-05-11
+### Added
+- Automatic rewards management, they are created and enabled on !midion and disabled on !midioff and restart
+- If the bot returns an error with a petition, the redeemed points are returned
+
+### Changed
+- BREAKING CHANGE: rewards.json has a different model, now stores the price of rewards too
+- Updated Twurple, JZZ and dotenv dependencies
+- Updated @vercel/ncc devDependency
+
 ## [1.3.5] - 2022-05-11
 ### Fixed
 - Command alias reload on !fetchdb
@@ -238,6 +248,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.5...v2.0.0
 [1.3.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.2...v1.3.3

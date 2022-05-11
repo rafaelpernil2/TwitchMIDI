@@ -14,7 +14,7 @@ export const CC_CONTROLLERS = 'ccControllers';
 export const COMMANDS_KEY = 'commands';
 
 export interface RewardsType {
-    rewardTitleCommandMap: Record<string, string>;
+    rewardTitleCommandMap: Record<string, [command: string, cost: number]>;
 }
 
 export const REWARD_TITLE_COMMAND = 'rewardTitleCommandMap';

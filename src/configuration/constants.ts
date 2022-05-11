@@ -17,6 +17,7 @@ export const CONFIG = {
     MAX_TEMPO: 400,
     DEFAULT_TEMPO: 120,
     DEFAULT_SWEEP_FREQUENCY: 60,
+    FULFILL_TIMEOUT_MS: 10000,
     LOCAL_SERVER_HOST: 'localhost',
     LOCAL_SERVER_PORT: 8000,
     REDIRECT_URI: 'http://localhost:8000',
@@ -45,7 +46,8 @@ export const ERROR_MSG = {
     INIT: 'There was an initialization error. Please, restart the app (Ctrl+C or close the terminal window)',
     INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
     BAD_SETUP_PROCESS: 'Bad setup, try again',
-    DUPLICATE_REQUEST: 'This request is already queued, wait until the previous request is fulfilled'
+    DUPLICATE_REQUEST: 'This request is already queued, wait until the previous request is fulfilled',
+    BROADCASTER_USER_NOT_FOUND: 'Broadcaster not found'
 };
 
 export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };
