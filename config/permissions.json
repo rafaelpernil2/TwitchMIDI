@@ -112,6 +112,20 @@
             "requirements": [],
             "whitelist": [],
             "blacklist": []
+        },
+        "midipause": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midiresume": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
         }
     }
 }

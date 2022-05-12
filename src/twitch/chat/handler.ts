@@ -11,8 +11,10 @@ import { RefreshingAuthProvider } from '@twurple/auth';
 
 /**
  * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control
+ * @param authProvider Broadcaster Authentication Provider
  * @param chatClient Twitch ChatClient
- * @param env { REWARDS_MODE, VIP_REWARDS_MODE, TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }
+ * @param env  { REWARDS_MODE, VIP_REWARDS_MODE, TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }
+ * @param config { bubbleErrors = false }
  * @returns A ChatClient MessageHandler
  */
 export const onMessageHandlerClosure = (
@@ -35,7 +37,7 @@ export const onMessageHandlerClosure = (
             }
 
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
-            const twitch: TwitchParams = { channel, chatClient, authProvider, user, userRoles: msg?.userInfo ?? CONFIG.FULL_ACCESS_USER_ROLES };
+            const twitch: TwitchParams = { channel, chatClient, authProvider, user, userRoles: msg?.userInfo ?? CONFIG.DEFAULT_USER_ROLES };
             // Checks if the user has enough permissions
             checkCommandAccess(command, twitch);
             await commandHandler(args, { targetMIDIChannel: TARGET_MIDI_CHANNEL, targetMIDIName: TARGET_MIDI_NAME, isRewardsMode: REWARDS_MODE }, twitch);

@@ -1,5 +1,6 @@
 import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants';
 import { isEmptyObject } from '../utils/generic';
+import { isTwitchMIDIOpen } from './guards';
 import { Command } from './types';
 
 const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
@@ -35,7 +36,7 @@ export function forwardQueue(type: Command): void {
     const turn = _nextTurn(currentTurnMap[type]);
 
     // Keep playing same loop if it's looping alone
-    if (_isLoopingAlone(type, turn)) {
+    if (_isLoopingAlone(type, turn) || !isTwitchMIDIOpen.get()) {
         return;
     }
 
