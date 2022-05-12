@@ -8,12 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.1.1] - 2022-05-12
 ### Fixed
+- Twitch username dependency injection in rewards mode, it was using broadcaster user id
 - Allow users to access safe commands at any moment (!chordlist, !cclist, !midihelp, !midicurrentrequest and !midirequestqueue)
 - Full access as broadcaster at top level
 
 ### Changed
 - Improved rewards/chat selection logic, now it's easier to understand
-- Now rewards do not use permissions.json at all, the rewards you create have full access
+- Now rewards only use permissions.json for blacklist and whitelist
 
 ## [2.1.0] - 2022-05-12
 ### Added

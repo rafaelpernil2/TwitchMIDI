@@ -28,14 +28,10 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
     _checkTwitchMIDIOpen();
 
     // Restricted access: Active and chat requests
-    // We can't obtain user info from rewards, so they are trusted
-    if (source === RequestSource.REWARD) {
-        return;
-    }
-    _checkChatRequestMode(env, userRoles);
+    _checkRequestSource(source, env, userRoles);
     _checkBlacklist(blacklist, user);
     _checkWhitelist(whitelist, user);
-    _checkRequirements(requirements, userRoles);
+    _checkRequirements(source, requirements, userRoles);
 }
 
 /**
@@ -50,13 +46,15 @@ function _checkTwitchMIDIOpen(): void {
 
 /**
  * Checks the roles of the user to decide whether allow the request or deny it
+ * @param source Request source
  * @param requirements Role requirements
  * @param userRoles Roles of user
  * @returns
  */
-function _checkRequirements(requirements: Array<keyof UserRoles>, userRoles: UserRoles): void {
+function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles): void {
     // If no data, that means everyone is allowed
-    if (requirements == null || requirements.length === 0) {
+    // Also, we can't obtain user info from rewards, so they are trusted
+    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD) {
         return;
     }
     const isValid = requirements.some((requirement) => userRoles[requirement]);
@@ -102,13 +100,14 @@ function _checkWhitelist(whitelist: string[], user: string): void {
 }
 
 /**
- * Checks rewardsMode/vipRewardsMode to assess if a command can be executed from the chat
+ * Checks rewardsMode/vipRewardsMode to assess if a command can be executed from the current source
+ * @param source Request source
  * @param env Environment variables
  * @param userRoles { isMod, isVip } Twitch user roles
  * @returns
  */
-function _checkChatRequestMode({ REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvVariables, { isMod, isVip }: UserRoles): void {
-    if (REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
+function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvVariables, { isMod, isVip }: UserRoles): void {
+    if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS);
     }
 }

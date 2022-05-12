@@ -60,8 +60,8 @@ import { MessageHandler, RequestSource } from './twitch/chat/types';
  */
 async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables): Promise<void> {
     const pubSubClient = new PubSubClient();
-    const userId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
-    await pubSubClient.onRedemption(userId, async ({ id: redemptionId, rewardId, rewardTitle, message: args }: PubSubRedemptionMessage) => {
+    const broadcasterUserId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
+    await pubSubClient.onRedemption(broadcasterUserId, async ({ id: redemptionId, rewardId, rewardTitle, message: args, userName }: PubSubRedemptionMessage) => {
         // Look up the command
         const [command] = REWARDS_DB.select(REWARD_TITLE_COMMAND, rewardTitle) ?? [];
 
@@ -77,7 +77,7 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
         }
 
         const callCommand = onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env, RequestSource.REWARD);
-        await _callCommandByRedeemption(callCommand, broadcasterAuthProvider, { env, args, command }, { redemptionId, userId, rewardId });
+        await _callCommandByRedeemption(callCommand, broadcasterAuthProvider, { env, args, command }, { redemptionId, userName, rewardId });
     });
 }
 
@@ -92,14 +92,14 @@ async function _callCommandByRedeemption(
     callCommand: MessageHandler,
     authProvider: RefreshingAuthProvider,
     { env, args, command }: { env: ParsedEnvVariables; args: string; command: string },
-    { redemptionId, rewardId, userId }: { redemptionId: string; rewardId: string; userId: string }
+    { redemptionId, rewardId, userName }: { redemptionId: string; rewardId: string; userName: string }
 ): Promise<void> {
     try {
         // In case the method does not end or error in X seconds, it is considered fulfilled
         // For example, !sendloop request do not resolve until another request comes along
         setTimeout(() => updateRedeemIdStatus(authProvider, env.TARGET_CHANNEL, { rewardId, redemptionId, status: 'FULFILLED' }), CONFIG.FULFILL_TIMEOUT_MS);
         // Execute command and mark as fulfilled once finished
-        await callCommand(`${GLOBAL.POUND}${env.TARGET_CHANNEL}`, userId, `${command} ${args}`);
+        await callCommand(`${GLOBAL.POUND}${env.TARGET_CHANNEL}`, userName, `${command} ${args}`);
         await updateRedeemIdStatus(authProvider, env.TARGET_CHANNEL, { rewardId, redemptionId, status: 'FULFILLED' });
     } catch (error) {
         // Cancel redemption if any error occurs
