@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.1.1] - 2022-05-12
+### Fixed
+- Allow users to access safe commands at any moment (!chordlist, !cclist, !midihelp, !midicurrentrequest and !midirequestqueue)
+- Full access as broadcaster at top level
+
+### Changed
+- Improved rewards/chat selection logic, now it's easier to understand
+- Now rewards do not use permissions.json at all, the rewards you create have full access
+
 ## [2.1.0] - 2022-05-12
 ### Added
 - Requests pause (!midipause and !midiresume), allows the streamer to enjoy the current request and blocks chat redemptions and requests
@@ -256,6 +265,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.5...v2.0.0
 [1.3.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.4...v1.3.5

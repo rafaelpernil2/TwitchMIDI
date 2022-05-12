@@ -18,7 +18,7 @@ import { RefreshingAuthProvider } from '@twurple/auth/lib';
 import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
-import { MessageHandler } from './twitch/chat/types';
+import { MessageHandler, RequestSource } from './twitch/chat/types';
 
 /**
  * Initialization code
@@ -40,7 +40,7 @@ import { MessageHandler } from './twitch/chat/types';
         await JZZ.requestMIDIAccess();
 
         // Chat code
-        chatClient.onMessage(onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env));
+        chatClient.onMessage(onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env, RequestSource.CHAT));
 
         // Rewards code
         if (env.REWARDS_MODE) {
@@ -76,7 +76,7 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
             return;
         }
 
-        const callCommand = onMessageHandlerClosure(broadcasterAuthProvider, chatClient, { ...env, REWARDS_MODE: false, VIP_REWARDS_MODE: false }, { bubbleErrors: true });
+        const callCommand = onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env, RequestSource.REWARD);
         await _callCommandByRedeemption(callCommand, broadcasterAuthProvider, { env, args, command }, { redemptionId, userId, rewardId });
     });
 }
