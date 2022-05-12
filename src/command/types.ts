@@ -17,7 +17,9 @@ export enum Command {
     syncmidi = 'syncmidi',
     fetchdb = 'fetchdb',
     midicurrentrequest = 'midicurrentrequest',
-    midirequestqueue = 'midirequestqueue'
+    midirequestqueue = 'midirequestqueue',
+    midipause = 'midipause',
+    midiresume = 'midiresume'
 }
 
 export type CCCommand = [controller: number, value: number, time: number];

@@ -1,7 +1,10 @@
 import { ERROR_MSG, PERMISSIONS_DB } from '../configuration/constants';
 import { PERMISSIONS_MAP } from '../database/jsondb/types';
+import { SharedVariable } from '../shared-variable/implementation';
 import { TwitchParams, UserRoles } from '../twitch/chat/types';
 import { Command } from './types';
+
+export const isTwitchMIDIOpen = new SharedVariable(false);
 
 /**
  * Checks that the user has enough permissions to execute the command matching permissions.json
@@ -16,9 +19,21 @@ export function checkCommandAccess(command: Command, twitch: TwitchParams): void
     }
     const { userRoles, user } = twitch;
     const { requirements, blacklist, whitelist } = permissionTable;
+    _checkTwitchMIDIOpen(userRoles);
     _checkBlacklist(blacklist, user);
     _checkWhitelist(whitelist, user);
     _checkRequirements(requirements, userRoles);
+}
+
+/**
+ * Checks if the requests are open. If you are the streamer, you have total freedom
+ * @param userRoles Roles of user
+ * @returns
+ */
+function _checkTwitchMIDIOpen({ isBroadcaster }: UserRoles): void {
+    if (!isTwitchMIDIOpen.get() && !isBroadcaster) {
+        throw new Error(ERROR_MSG.BOT_PAUSED_DISCONNECTED);
+    }
 }
 
 /**

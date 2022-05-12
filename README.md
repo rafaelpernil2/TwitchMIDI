@@ -15,6 +15,8 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
       - [!midihelp](#midihelp)
       - [!midion](#midion)
       - [!midioff](#midioff)
+      - [!midipause](#midipause)
+      - [!midiresume](#midiresume)
       - [!addchord](#addchord)
       - [!removechord](#removechord)
       - [!chordlist](#chordlist)
@@ -32,6 +34,7 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
       - [!syncmidi](#syncmidi)
       - [!fetchdb](#fetchdb)
   - [Contributing](#contributing)
+  - [Support](#support)
   - [Credits](#credits)
   - [Changelog](#changelog)
   - [License](#license)
@@ -84,6 +87,7 @@ So far, this first version does all that, keep reading the features for more det
   * Clock-Loop synchronizer to correct sync issues via [!syncmidi](#syncmidi)
   * Automatic synchronization that forces loops to wait until the start of the beat
   * On/Off bot toggle
+  * Pause requests with [!midipause](#midipause) and resume with [!midiresume](#midiresume)
 * Configurable aliases on [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json)
   * Commands - Add as many command aliases as you want
   * Chord progressions/loops - Add an alias for a chord progresion to play or loop using "name/chords" syntax
@@ -122,6 +126,11 @@ So far, this first version does all that, keep reading the features for more det
 #### !midioff
 &nbsp;&nbsp;&nbsp;&nbsp;Turns off the MIDI functionality of the bot
 
+#### !midipause
+&nbsp;&nbsp;&nbsp;&nbsp;Pauses the requests but keeps playing whatever was already playing
+
+#### !midiresume
+&nbsp;&nbsp;&nbsp;&nbsp;Reactivates requests after they were paused with !midipause
 
 #### !addchord
 &nbsp;&nbsp;&nbsp;&nbsp;Adds a chord progression or loop with an alias to [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json).
@@ -222,6 +231,12 @@ So far, this first version does all that, keep reading the features for more det
 
 ## Contributing
 There is no plan regarding contributions in this project.
+
+## Support
+This software is free and maintained in my spare time.
+If you want to support my work, please contribute on [Paypal](https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN)
+
+Thank you! ♥
 
 ## Credits
 This software is developed by:

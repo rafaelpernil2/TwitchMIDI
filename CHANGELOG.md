@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.1.0] - 2022-05-12
+### Added
+- Requests pause (!midipause and !midiresume), allows the streamer to enjoy the current request and blocks chat redemptions and requests
+- Support section in README
+- Missing comments in code
+### Change
+- Reduced user roles for rewards to bare minimum. If one user must have extra permissions to do something, it's better to make that user VIP or Mod.
+
 ## [2.0.0] - 2022-05-11
 ### Added
 - Automatic rewards management, they are created and enabled on !midion and disabled on !midioff and restart
@@ -248,6 +256,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.5...v2.0.0
 [1.3.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.4...v1.3.5
 [1.3.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.3...v1.3.4

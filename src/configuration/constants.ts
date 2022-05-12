@@ -22,14 +22,15 @@ export const CONFIG = {
     LOCAL_SERVER_PORT: 8000,
     REDIRECT_URI: 'http://localhost:8000',
     TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/',
-    FULL_ACCESS_USER_ROLES: { isBroadcaster: true, isMod: false, isSubscriber: true, isVip: false, isFounder: false }
+    DEFAULT_USER_ROLES: { isBroadcaster: false, isMod: false, isSubscriber: false, isVip: false, isFounder: false }
 };
 
 export const ERROR_MSG = {
     BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
     INIT_ENV_VARIABLES: `Your .env file is not ready to use.\nProbably this is your first time running the app, follow the next configuration steps :)`,
     BAD_ENV_VARIABLE: (keys: string) => `This app cannot be executed, make sure you set a valid value for ${keys} inside the .env file. `,
-    BOT_DISCONNECTED: 'TwitchMIDI is disabled right now. Wait until the streamer enables it :)',
+    BOT_PAUSED_DISCONNECTED: 'TwitchMIDI is disabled or paused right now. Wait until the streamer enables it :)',
+    BOT_DISCONNECTED: 'TwitchMIDI is disabled right now. Enable it with !midion',
     BAD_MIDI_CHANNEL: 'Make sure "TARGET_MIDI_CHANNEL" is a valid MIDI channel between 1 and 16 (both inclusive)',
     BAD_MIDI_MESSAGE: 'Bad MIDI message, the value must be between 0 and 127 (inclusive)',
     INVALID_VOLUME: 'Please set a volume between 0% and 100%',
@@ -84,7 +85,9 @@ export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], 
     syncmidi: 'Restarts the MIDI clock and syncs loop and clock on the next repetition',
     fetchdb: 'Refreshes aliases configuration',
     midicurrentrequest: 'Shows the current request being played',
-    midirequestqueue: 'Shows the request queue for chord progressions and loops'
+    midirequestqueue: 'Shows the request queue for chord progressions and loops',
+    midipause: 'Pauses the requests but keeps playing whatever was already playing',
+    midiresume: 'Reactivates requests after they were paused with !midipause'
 } as const;
 
 export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean> = {
@@ -106,7 +109,9 @@ export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean
     syncmidi: false,
     fetchdb: false,
     midicurrentrequest: true,
-    midirequestqueue: true
+    midirequestqueue: true,
+    midipause: false,
+    midiresume: false
 } as const;
 
 export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);

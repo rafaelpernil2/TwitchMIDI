@@ -20,6 +20,7 @@ import { inlineChord } from 'harmonics';
 import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
 import { ChatClient } from '@twurple/chat/lib/ChatClient';
 import { createRewards, toggleRewardsStatus } from '../rewards/handler';
+import { isTwitchMIDIOpen } from './guards';
 
 /**
  * Shows all available commands and explains how to use them
@@ -53,6 +54,7 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
             await toggleRewardsStatus(authProvider, user, { isEnabled: true });
         }
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
+        isTwitchMIDIOpen.set(true);
         console.log('TwitchMIDI enabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
@@ -76,6 +78,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
             await toggleRewardsStatus(authProvider, user, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
+        isTwitchMIDIOpen.set(false);
         console.log('TwitchMIDI disabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
@@ -83,6 +86,29 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
     chatClient.say(channel, 'TwitchMIDI disabled! - Tool developed by Rafael Pernil (@rafaelpernil2)');
 }
 
+/**
+ * Pauses TwitchMIDI to stop users from requesting
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function midipause(...[, , { chatClient, channel }]: CommandParams): void {
+    isTwitchMIDIOpen.set(false);
+    chatClient.say(channel, 'TwitchMIDI paused! - Now only the streamer can send commands and requests');
+}
+
+/**
+ * Resumes TwitchMIDI to allow users to request again
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function midiresume(...[, , { chatClient, channel }]: CommandParams): void {
+    isTwitchMIDIOpen.set(true);
+    chatClient.say(channel, 'TwitchMIDI resumed! - Go crazy with your requests!!! :D ');
+}
 /**
  * Saves a chord progresion with an alias to be used later
  * @param commandParams [message, // Command arguments
