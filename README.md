@@ -95,7 +95,7 @@ So far, this first version does all that, keep reading the features for more det
     * Sweep functionality, specify two values and the time in milliseconds to get from one value to other (e.g "cutoff 20(5000),cutoff 120(10000)")
     * List all added chord progressions with their name with [!cclist](#cclist)
   * Reload [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json), [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json) and [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json) file while using the bot with [!fetchdb](#fetchdb)
-* Commands explaination with examples via [!midihelp](#midihelp) commandname
+* Commands explanation with examples via [!midihelp](#midihelp) commandname
 * Fine-grained command access control with role check, whitelist and blackist on [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json)
 * Channel Points reward mode enabled via REWARDS_MODE flag and configurable on [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json)
   * Set the name of your channel points reward, the command to launch and the price (e.g. "Twitch Midi - Loop": \["!sendloop",100\] )
