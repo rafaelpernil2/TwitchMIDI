@@ -30,7 +30,7 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
             }
 
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
-            const twitch: TwitchParams = { channel, chatClient, authProvider, user, userRoles: msg?.userInfo ?? CONFIG.DEFAULT_USER_ROLES };
+            const twitch: TwitchParams = { channel, chatClient, authProvider, user, broadcasterUser: env.TARGET_CHANNEL, userRoles: msg?.userInfo ?? CONFIG.DEFAULT_USER_ROLES };
             // Checks if the user has enough permissions
             checkCommandAccess(command, twitch, source, env);
             await commandHandler(args, { targetMIDIChannel: env.TARGET_MIDI_CHANNEL, targetMIDIName: env.TARGET_MIDI_NAME, isRewardsMode: env.REWARDS_MODE }, twitch);

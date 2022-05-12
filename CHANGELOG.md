@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [2.1.1] - 2022-05-12
+## [2.1.2] - 2022-05-13
+### Fixed
+- !midion/!midioff broadcaster username dependency injection for creating/enabling/disabling rewards
+
+## [2.1.1] - 2022-05-13
 ### Fixed
 - Twitch username dependency injection in rewards mode, it was using broadcaster user id
 - Allow users to access safe commands at any moment (!chordlist, !cclist, !midihelp, !midicurrentrequest and !midirequestqueue)
@@ -266,6 +270,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v1.3.5...v2.0.0

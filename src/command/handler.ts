@@ -45,13 +45,13 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, user }]: CommandParams): Promise<void> {
+export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
     try {
         await connectMIDI(targetMIDIName);
         if (isRewardsMode) {
             chatClient.say(channel, 'Activating rewards... This may take a few seconds');
-            await createRewards(authProvider, user);
-            await toggleRewardsStatus(authProvider, user, { isEnabled: true });
+            await createRewards(authProvider, broadcasterUser);
+            await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
         }
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         isTwitchMIDIOpen.set(true);
@@ -69,13 +69,13 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, user }]: CommandParams): Promise<void> {
+export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
     chatClient.say(channel, 'Disabling TwitchMIDI. Wait a few seconds...');
     try {
         await disconnectMIDI(targetMIDIChannel);
         if (isRewardsMode) {
             chatClient.say(channel, 'De-activating rewards... This may take a few seconds');
-            await toggleRewardsStatus(authProvider, user, { isEnabled: false });
+            await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         isTwitchMIDIOpen.set(false);

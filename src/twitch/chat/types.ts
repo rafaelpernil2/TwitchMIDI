@@ -54,5 +54,6 @@ export interface TwitchParams {
     authProvider: RefreshingAuthProvider;
     channel: string;
     user: string;
+    broadcasterUser: string;
     userRoles: UserRoles;
 }
