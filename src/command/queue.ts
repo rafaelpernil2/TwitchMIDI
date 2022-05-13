@@ -38,7 +38,7 @@ export function forwardQueue(type: Command): void {
     const turn = _nextTurn(currentTurnMap[type]);
 
     // Skip if it's looping alone, requests are closed or queue is empty
-    if (!_canForwardQueue(type, turn)) {
+    if (_mustRepeatRequest(type, turn)) {
         return;
     }
 
@@ -227,13 +227,13 @@ function _isCollisionFree(type: Command): boolean {
 }
 
 /**
- * Checks if the queue can be forwarded
+ * Checks if the queue needs to repeat the current request
  * @param type Queue type
  * @param turn New turn
  * @returns If queue can progress
  */
-function _canForwardQueue(type: Command, turn: number): boolean {
-    return !syncMode.is(Sync.REPEAT) && (syncMode.is(Sync.FORWARD) || (!_isLoopingAlone(type, turn) && isTwitchMIDIOpen.get() && !isQueueEmpty(type)));
+function _mustRepeatRequest(type: Command, turn: number): boolean {
+    return (syncMode.is(Sync.REPEAT) && type === Command.sendloop) || (syncMode.is(Sync.OFF) && (_isLoopingAlone(type, turn) || !isTwitchMIDIOpen.get() || isQueueEmpty(type)));
 }
 
 /**
