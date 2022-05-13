@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.1.4] - 2022-05-13
+### Fixed
+- !sendloop-!stoploop-!sendloop bug - It replayed already cleared request, it needed to sync
+### Changed
+- Improved Synchronization/Request flush logic
+
 ## [2.1.3] - 2022-05-13
 ### Fixed
 - !sendloop-!sendchord bug - It did not come back to the loop after playing the chord progression
@@ -276,6 +282,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.0...v2.1.1

@@ -24,4 +24,13 @@ export class SharedVariable<T> {
     public set(v: T): void {
         this.innerValue = v;
     }
+
+    /**
+     * Evaluates if a value is the same as the one stored in the instance
+     * @param v Value
+     * @returns Is equals
+     */
+    public is(v: T): boolean {
+        return this.innerValue === v;
+    }
 }

@@ -1,4 +1,6 @@
 import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants';
+import { syncMode } from '../midi/clock';
+import { Sync } from '../midi/types';
 import { isEmptyObject } from '../utils/generic';
 import { isTwitchMIDIOpen } from './guards';
 import { Command } from './types';
@@ -35,8 +37,8 @@ export function queue(request: string, type: Command): number {
 export function forwardQueue(type: Command): void {
     const turn = _nextTurn(currentTurnMap[type]);
 
-    // Skip queue forwarding if it's looping alone, requests are closed or queue is empty
-    if (_isLoopingAlone(type, turn) || !isTwitchMIDIOpen.get() || isQueueEmpty(type)) {
+    // Skip if it's looping alone, requests are closed or queue is empty
+    if (!_canForwardQueue(type, turn)) {
         return;
     }
 
@@ -57,9 +59,15 @@ export function forwardQueue(type: Command): void {
  * @returns An empty promise
  */
 export async function waitForMyTurn(turn: number, type: Command): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const onCommandTurn = () => {
-            if (_isMyTurn(turn, type) && _isCollisionFree(type)) {
+            // If request was removed from queue
+            if (!isInQueue(turn, type)) {
+                EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
+                reject();
+            }
+            // If it is in queue and is your turn
+            else if (_isMyTurn(turn, type) && _isCollisionFree(type)) {
                 _setRequestPlayingNow(type, queueMap[type][turn] ?? GLOBAL.EMPTY_MESSAGE);
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
@@ -67,6 +75,16 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
         };
         EVENT_EMITTER.on(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
     });
+}
+
+/**
+ * Checks if a request is still in queue
+ * @param turn
+ * @param type
+ * @returns If the queued request is not null
+ */
+export function isInQueue(turn: number, type: Command): boolean {
+    return queueMap[type][turn] != null;
 }
 
 /**
@@ -103,6 +121,7 @@ export function clearQueue(type: Command, { backup = false } = {}): void {
         queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
     } else {
         queueCommitMap[type] = {};
+        syncMode.set(Sync.FORWARD);
     }
     queueMap[type] = {};
 }
@@ -205,6 +224,16 @@ function _isMyTurn(turn: number, type: Command): boolean {
 function _isCollisionFree(type: Command): boolean {
     // In any case, the queue for the type must not be empty, otherwise, if it has "sendloop" type, it has to wait until "sendchord" queue is empty
     return !isQueueEmpty(type) && (type !== Command.sendloop || isQueueEmpty(Command.sendchord));
+}
+
+/**
+ * Checks if the queue can be forwarded
+ * @param type Queue type
+ * @param turn New turn
+ * @returns If queue can progress
+ */
+function _canForwardQueue(type: Command, turn: number): boolean {
+    return !syncMode.is(Sync.REPEAT) && (syncMode.is(Sync.FORWARD) || (!_isLoopingAlone(type, turn) && isTwitchMIDIOpen.get() && !isQueueEmpty(type)));
 }
 
 /**
