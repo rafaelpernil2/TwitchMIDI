@@ -15,7 +15,6 @@ let output: ReturnType<JZZTypes['openMidiOut']> | undefined;
 // Closure variables
 let globalTempo = CONFIG.DEFAULT_TEMPO;
 let globalVolume = CONFIG.DEFAULT_VOLUME;
-export const currentChordMode = new SharedVariable<Command.sendchord | Command.sendloop | undefined>(undefined);
 export const isChordInProgress = new SharedVariable<boolean>(false);
 
 /**
@@ -96,8 +95,6 @@ export async function triggerChordList(
 
     // Blocking section
     isChordInProgress.set(true);
-    // Set which mode is active now
-    currentChordMode.set(type);
     for (const [noteList, timeout] of chordProgression) {
         // Skip iteration if tempo or sync changes
         if (isSyncing.get()) continue;
@@ -162,7 +159,6 @@ export function stopAllMidi(targetMIDIChannel: number): void {
 function _initVariables(): void {
     initClockData();
     isChordInProgress.set(false);
-    currentChordMode.set(undefined);
     globalTempo = CONFIG.DEFAULT_TEMPO;
     globalVolume = CONFIG.DEFAULT_VOLUME;
 }

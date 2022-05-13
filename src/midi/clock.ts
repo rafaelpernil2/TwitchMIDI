@@ -3,7 +3,7 @@ import { EVENT_EMITTER, EVENT } from '../configuration/constants';
 import { JZZTypes } from '../custom-typing/jzz';
 import { NanoTimerProperties } from '../custom-typing/nanotimer';
 import { SharedVariable } from '../shared-variable/implementation';
-import { currentChordMode, isChordInProgress } from './handler';
+import { isChordInProgress } from './handler';
 
 // Shared variables
 export const isSyncing = new SharedVariable(false);
@@ -76,7 +76,6 @@ function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
     return () => {
         // Constant time operations to ensure time stability
         const isInProgress = isChordInProgress.get();
-        const chordMode = currentChordMode.get();
         tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
         // This way, the next condition always take the exact amout of time
 
@@ -84,7 +83,7 @@ function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
         // If is bar start and it's not executing blocking section
         if (tick === 1 && !isInProgress) {
             // Notify and send the current active mode
-            emitter.emit(event, chordMode);
+            emitter.emit(event);
         }
 
         if (isFirst) {
