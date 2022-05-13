@@ -35,8 +35,8 @@ export function queue(request: string, type: Command): number {
 export function forwardQueue(type: Command): void {
     const turn = _nextTurn(currentTurnMap[type]);
 
-    // Keep playing same loop if it's looping alone
-    if (_isLoopingAlone(type, turn) || !isTwitchMIDIOpen.get()) {
+    // Skip queue forwarding if it's looping alone, requests are closed or queue is empty
+    if (_isLoopingAlone(type, turn) || !isTwitchMIDIOpen.get() || isQueueEmpty(type)) {
         return;
     }
 

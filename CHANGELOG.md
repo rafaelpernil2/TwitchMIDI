@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.1.3] - 2022-05-13
+### Fixed
+- !sendloop-!sendchord bug - It did not come back to the loop after playing the chord progression
+### Changed
+- Removed unused variable
+
 ## [2.1.2] - 2022-05-13
 ### Fixed
 - !midion/!midioff broadcaster username dependency injection for creating/enabling/disabling rewards
@@ -270,6 +276,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.1...v2.1.2
 [2.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.0.0...v2.1.0
