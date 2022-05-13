@@ -37,7 +37,7 @@ export function queue(request: string, type: Command): number {
 export function forwardQueue(type: Command): void {
     const turn = _nextTurn(currentTurnMap[type]);
 
-    // Skip if it's looping alone, requests are closed or queue is empty
+    // Skip if it's looping alone, requests are closed, queue is empty, or synchronization with repetition is active
     if (_mustRepeatRequest(type, turn)) {
         return;
     }
