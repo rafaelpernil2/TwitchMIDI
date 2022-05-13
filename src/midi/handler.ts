@@ -4,8 +4,9 @@ import { JZZTypes } from '../custom-typing/jzz';
 import { CONFIG, ERROR_MSG } from '../configuration/constants';
 import { forwardQueue, waitForMyTurn, clearAllQueues } from '../command/queue';
 import { SharedVariable } from '../shared-variable/implementation';
-import { initClockData, isClockActive, isSyncing, startClock, stopClock } from './clock';
+import { initClockData, isClockActive, syncMode, startClock, stopClock } from './clock';
 import { CCCommand, Command } from '../command/types';
+import { Sync } from './types';
 
 // IMPORTANT: ONLY THIS FILE CONTAINS A MIDI CONNECTION
 // For example, the clock uses the MIDI connection but it is always provided as an argument
@@ -87,26 +88,32 @@ export async function triggerChordList(
     // If the MIDI clock has not started yet, start it to make the chord progression sound
     _autoStartClock(targetMIDIChannel);
     // Reset sync flag
-    isSyncing.set(false);
+    syncMode.set(Sync.OFF);
 
     // We wait until the bar starts and is your turn
-    await waitForMyTurn(myTurn, type);
-    const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
+    try {
+        await waitForMyTurn(myTurn, type);
+        const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
 
-    // Blocking section
-    isChordInProgress.set(true);
-    for (const [noteList, timeout] of chordProgression) {
-        // Skip iteration if tempo or sync changes
-        if (isSyncing.get()) continue;
-        await _sendMIDINoteListPromise(noteList, timeout, targetMIDIChannel);
-    }
-    // This way only the active loop gets skipped
-    if (!isSyncing.get()) {
+        // Blocking section
+        isChordInProgress.set(true);
+        for (const [noteList, timeout] of chordProgression) {
+            // Skip iteration if sync is on or request is no longer in queue
+            if (!syncMode.is(Sync.OFF)) continue;
+            await _sendMIDINoteListPromise(noteList, timeout, targetMIDIChannel);
+        }
         // Move to next in queue
         forwardQueue(type);
+        // Only the current request should be repeated after tempo change (repeat sync)
+        if (syncMode.is(Sync.REPEAT)) {
+            syncMode.set(Sync.OFF);
+        }
+        isChordInProgress.set(false);
+    } catch (error) {
+        // In case of error, we forward the queue and exit
+        // This should happen when the request queue is cleared
+        forwardQueue(type);
     }
-    isSyncing.set(false);
-    isChordInProgress.set(false);
 }
 
 /**

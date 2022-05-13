@@ -4,9 +4,10 @@ import { JZZTypes } from '../custom-typing/jzz';
 import { NanoTimerProperties } from '../custom-typing/nanotimer';
 import { SharedVariable } from '../shared-variable/implementation';
 import { isChordInProgress } from './handler';
+import { Sync } from './types';
 
 // Shared variables
-export const isSyncing = new SharedVariable(false);
+export const syncMode = new SharedVariable<Sync>(Sync.OFF);
 // Clock variables
 let timer = new NanoTimer();
 let tick = 0;
@@ -30,7 +31,7 @@ export function startClock(targetMIDIChannel: number, output: ReturnType<JZZType
  * Stops the clock
  */
 export function stopClock(): void {
-    isSyncing.set(true);
+    syncMode.set(Sync.REPEAT);
     initClockData();
     timer = new NanoTimer();
 }
@@ -57,7 +58,7 @@ export function initClockData(): void {
  * @param output VirtualMIDI device
  */
 function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>): void {
-    isSyncing.set(true);
+    syncMode.set(Sync.REPEAT);
     initClockData();
     output.stop();
     output.allNotesOff(targetMIDIChannel);
