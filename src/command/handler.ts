@@ -20,7 +20,7 @@ import { inlineChord } from 'harmonics';
 import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
 import { ChatClient } from '@twurple/chat/lib/ChatClient';
 import { createRewards, toggleRewardsStatus } from '../rewards/handler';
-import { isTwitchMIDIOpen } from './guards';
+import { areRequestsOpen } from './guards';
 
 /**
  * Shows all available commands and explains how to use them
@@ -54,7 +54,7 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
         }
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
-        isTwitchMIDIOpen.set(true);
+        areRequestsOpen.set(true);
         console.log('TwitchMIDI enabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
@@ -78,7 +78,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
-        isTwitchMIDIOpen.set(false);
+        areRequestsOpen.set(false);
         console.log('TwitchMIDI disabled!');
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
@@ -94,7 +94,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
  *         ]
  */
 export function midipause(...[, , { chatClient, channel }]: CommandParams): void {
-    isTwitchMIDIOpen.set(false);
+    areRequestsOpen.set(false);
     chatClient.say(channel, 'TwitchMIDI paused! - Now only the streamer can send commands and requests');
 }
 
@@ -106,7 +106,7 @@ export function midipause(...[, , { chatClient, channel }]: CommandParams): void
  *         ]
  */
 export function midiresume(...[, , { chatClient, channel }]: CommandParams): void {
-    isTwitchMIDIOpen.set(true);
+    areRequestsOpen.set(true);
     chatClient.say(channel, 'TwitchMIDI resumed! - Go crazy with your requests!!! :D ');
 }
 /**
@@ -291,6 +291,9 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
     // Convert to range 0-127
     setMIDIVolume(value);
     chatClient.say(channel, 'Volume set to ' + String(value) + '%');
+    if (value === 69) {
+        chatClient.say(channel, 'Nice! (～￣▽￣)～');
+    }
 }
 
 /**

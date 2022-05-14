@@ -6,31 +6,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.1.5] - 2022-05-14
+### Added
+- More 69 easter eggs  \\(￣︶￣*\\))
+
+### Changed
+- Improved changelog descriptions
+- Minor refactor in clearQueue to avoid future bugs using queues for anything other than !sendchord and !sendloop
+- Minor variable and method renames for better readability
+
 ## [2.1.4] - 2022-05-13
 ### Fixed
-- !sendloop-!stoploop-!sendloop bug - It replayed already cleared request, it needed to sync
+- Request flushing with !stoploop (!sendloop->!stoploop->!sendloop)
 ### Changed
-- Improved Synchronization/Request flush logic
+- Changed isSyncing flag to syncMode with 3 options, "Off", "Repeat last one" and "Skip". "!stoploop" skips all requests while "!sync" and !settempo" repeat last request
 
 ## [2.1.3] - 2022-05-13
 ### Fixed
-- !sendloop-!sendchord bug - It did not come back to the loop after playing the chord progression
+- !sendchord after !sendloop request. !sendchord is supposed to play once, so it should not disrupt the previous or future !sendloop requests
 ### Changed
 - Removed unused variable
 
 ## [2.1.2] - 2022-05-13
 ### Fixed
-- !midion/!midioff broadcaster username dependency injection for creating/enabling/disabling rewards
+- Reward creation/update username, it was tied to the user typing the command when it must be the broadcaster username
 
 ## [2.1.1] - 2022-05-13
 ### Fixed
-- Twitch username dependency injection in rewards mode, it was using broadcaster user id
+- Rewards redemption user, it was using the broadcaster userId when it has to be the user that redeemed the reward
 - Allow users to access safe commands at any moment (!chordlist, !cclist, !midihelp, !midicurrentrequest and !midirequestqueue)
-- Full access as broadcaster at top level
+- Full access as broadcaster without further access checks
 
 ### Changed
-- Improved rewards/chat selection logic, now it's easier to understand
-- Now rewards only use permissions.json for blacklist and whitelist
+- Improved rewards/chat selection logic, now there's a flag that shows where the request is coming from
+- Rewards only use permissions.json for blacklist and whitelist
 
 ## [2.1.0] - 2022-05-12
 ### Added
@@ -282,6 +291,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.2...v2.1.3
 [2.1.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.1...v2.1.2

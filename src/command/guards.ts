@@ -5,7 +5,7 @@ import { SharedVariable } from '../shared-variable/implementation';
 import { RequestSource, TwitchParams, UserRoles } from '../twitch/chat/types';
 import { Command } from './types';
 
-export const isTwitchMIDIOpen = new SharedVariable(false);
+export const areRequestsOpen = new SharedVariable(false);
 
 /**
  * Checks that the user has enough permissions to execute the command matching permissions.json
@@ -25,7 +25,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
     }
 
     // Check if requests are open
-    _checkTwitchMIDIOpen();
+    _checkRequestsOpen();
 
     // Restricted access: Active and chat requests
     _checkRequestSource(source, env, userRoles);
@@ -38,8 +38,8 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
  * Checks if the requests are open
  * @returns
  */
-function _checkTwitchMIDIOpen(): void {
-    if (!isTwitchMIDIOpen.get()) {
+function _checkRequestsOpen(): void {
+    if (!areRequestsOpen.get()) {
         throw new Error(ERROR_MSG.BOT_PAUSED_DISCONNECTED);
     }
 }
