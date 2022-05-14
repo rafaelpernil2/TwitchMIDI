@@ -49,7 +49,7 @@ import { MessageHandler, RequestSource } from './twitch/chat/types';
         _showInitMessages(env);
     } catch (error) {
         console.log(chalk.red(String(error)));
-        _askUserInput(ERROR_MSG.INIT + '\n');
+        _askUserInput(ERROR_MSG.INIT);
     }
 })();
 

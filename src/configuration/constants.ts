@@ -44,7 +44,7 @@ export const ERROR_MSG = {
     BAD_SWEEP_DELAY: 'Invalid control change sweep, make sure your delay times are in incremental order',
     BAD_PERMISSIONS: "You don't have enough permissions to use this command. Sorry!",
     INVALID_SWEEP_RANGE: 'Invalid sweep range',
-    INIT: 'There was an initialization error. Press enter or Ctrl+C to close the app',
+    INIT: 'There was an initialization error. Please, close the app (Ctrl+C or close the terminal window)',
     INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
     BAD_SETUP_PROCESS: 'Bad setup, try again',
     DUPLICATE_REQUEST: 'This request is already queued, wait until the previous request is fulfilled',
