@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.1.7] - 2022-05-14
+### Fixed
+- Initialization problems with non-affiliated Twitch users. No rewards code must be executed with REWARDS_MODE as false
+
 ## [2.1.6] - 2022-05-14
 ### Fixed
 - App stays open on error to show what happened. The user needs to press enter to close it
@@ -295,6 +299,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.1.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.6...v2.1.7
 [2.1.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.5...v2.1.6
 [2.1.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.4...v2.1.5
 [2.1.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.3...v2.1.4
