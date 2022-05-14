@@ -3,6 +3,7 @@ import 'dotenv/config';
 
 import * as JZZ from 'jzz';
 
+import readline from 'readline';
 import chalk from 'chalk';
 import { getLoadedEnvVariables } from './configuration/env/loader';
 import { getAuthProvider } from './twitch/auth/provider';
@@ -48,7 +49,8 @@ import { MessageHandler, RequestSource } from './twitch/chat/types';
         }
         _showInitMessages(env);
     } catch (error) {
-        console.log(String(error) + '\n' + ERROR_MSG.INIT);
+        console.log(chalk.red(String(error)));
+        _askUserInput(ERROR_MSG.INIT);
     }
 })();
 
@@ -141,4 +143,23 @@ function _showInitMessages(env: ParsedEnvVariables): void {
     console.log(chalk.cyanBright('https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN'));
     console.log(chalk.cyan('\nThank you! ♥'));
     console.log(chalk.blueBright('\n***************\n'));
+}
+
+/**
+ * Asks for user input
+ * @param question Question
+ * @returns
+ */
+function _askUserInput(question: string): Promise<string> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) =>
+        rl.question(question, (answer) => {
+            rl.close();
+            resolve(answer);
+        })
+    );
 }
