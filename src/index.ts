@@ -32,9 +32,6 @@ import { MessageHandler, RequestSource } from './twitch/chat/types';
 
         console.log(chalk.grey("Welcome! I'm loading stuff and making magic. Wait a few seconds..."));
 
-        // First, let's disable the rewards
-        await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
-
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
 
@@ -45,12 +42,14 @@ import { MessageHandler, RequestSource } from './twitch/chat/types';
 
         // Rewards code
         if (env.REWARDS_MODE) {
+            // First, let's disable the rewards
+            await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
         _showInitMessages(env);
     } catch (error) {
         console.log(chalk.red(String(error)));
-        _askUserInput(ERROR_MSG.INIT);
+        _askUserInput(ERROR_MSG.INIT + '\n');
     }
 })();
 
