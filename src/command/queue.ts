@@ -2,7 +2,7 @@ import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/consta
 import { syncMode } from '../midi/clock';
 import { Sync } from '../midi/types';
 import { isEmptyObject } from '../utils/generic';
-import { isTwitchMIDIOpen } from './guards';
+import { areRequestsOpen } from './guards';
 import { Command } from './types';
 
 const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
@@ -121,8 +121,11 @@ export function clearQueue(type: Command, { backup = false } = {}): void {
         queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
     } else {
         queueCommitMap[type] = {};
-        syncMode.set(Sync.FORWARD);
+        if (type === Command.sendchord || type === Command.sendloop) {
+            syncMode.set(Sync.FORWARD);
+        }
     }
+
     queueMap[type] = {};
 }
 
@@ -233,7 +236,7 @@ function _isCollisionFree(type: Command): boolean {
  * @returns If queue can progress
  */
 function _mustRepeatRequest(type: Command, turn: number): boolean {
-    return (syncMode.is(Sync.REPEAT) && type === Command.sendloop) || (syncMode.is(Sync.OFF) && (_isLoopingAlone(type, turn) || !isTwitchMIDIOpen.get() || isQueueEmpty(type)));
+    return (syncMode.is(Sync.REPEAT) && type === Command.sendloop) || (syncMode.is(Sync.OFF) && (_isLoopingAlone(type, turn) || !areRequestsOpen.get() || isQueueEmpty(type)));
 }
 
 /**
