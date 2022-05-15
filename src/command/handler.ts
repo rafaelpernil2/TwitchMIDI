@@ -150,7 +150,15 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function chordlist(...[, , { chatClient, channel }]: CommandParams): void {
+export function chordlist(...[message, , { chatClient, channel }]: CommandParams): void {
+    // Case with alias to lookup
+    const aliasToLookup = message.toLowerCase();
+    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS, message);
+    if (aliasToLookup !== GLOBAL.EMPTY_MESSAGE && chordProgression != null) {
+        chatClient.say(channel, `🎵${aliasToLookup}🎵:🎼${chordProgression}🎼`);
+        return;
+    }
+    // Default case showing all
     const chordProgressionList = Object.entries(ALIASES_DB.value?.chordProgressions ?? {});
     chatClient.say(channel, '🔵Here is the list of saved chord progresison/loop🔵:');
     for (const [alias, chordProgression] of chordProgressionList) {
