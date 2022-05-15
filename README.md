@@ -9,6 +9,9 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
   - [Table of Contents](#table-of-contents)
   - [Download](#download)
   - [Installation](#installation)
+  - [Update](#update)
+    - [Overriding custom settings](#overriding-custom-settings)
+    - [Safe method](#safe-method)
   - [Why?](#why)
   - [Features](#features)
   - [Commands](#commands)
@@ -55,6 +58,25 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 > Note: For MacOS, open a terminal, "cd" into the extracted folder and then execute it from there with "./TwitchMIDI-macos".
 > Otherwise you will get an error like: "no such file or directory, open './config/aliases.json'"
+
+## Update
+
+### Overriding custom settings
+
+* Extract and replace all files except .env into your folder
+
+### Safe method
+
+Okay, this can get a little more complicated, but if you are using custom settings, you already know how they work
+
+* Extract the zip in a different folder than before
+* Copy and replace TwitchMIDI-yourplatform (e.g TwitchMIDI-win.exe) and package.json into your folder
+* Open [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json) and make sure all commands have an entry, otherwise those missing will always return permissions errors
+* That's it!
+
+> Note: You do not need to replace the entire config folder unless there is a major version change (e.g, from 1.x.x to 2.x.x).
+> In case of doubt, compare old with new versions of config files and re-apply your changes. See [CHANGELOG.md](CHANGELOG.md) for more info.
+
 
 ## Why?
 
@@ -108,6 +130,7 @@ So far, this first version does all that, keep reading the features for more det
   * Commands only work for the streamer and mods
   * Allow VIPs to bypass rewards via VIP_REWARDS_MODE
 * Bundle optimized for different operating systems and no extra software required for execution
+* Update checking on startup, a message appears if there is a new version available
 
 ## Commands
 
