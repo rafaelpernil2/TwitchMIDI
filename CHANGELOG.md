@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.2.1] - 2022-05-15
+### Changed
+- !chordlist now can lookup a particular alias and show that chord progression if found. It works as before by default.
+
 ## [2.2.0] - 2022-05-15
 ### Added
 - Update detection, now you can know if there is an update at initialization
@@ -308,6 +312,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.2.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.8...v2.2.0
 [2.1.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.7...v2.1.8
 [2.1.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.6...v2.1.7
