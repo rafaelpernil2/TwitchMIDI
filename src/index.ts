@@ -20,6 +20,9 @@ import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
 import { MessageHandler, RequestSource } from './twitch/chat/types';
+import { promises as fs } from 'fs';
+import { httpsRequestPromise } from './utils/promise';
+import http from 'http';
 
 /**
  * Initialization code
@@ -31,6 +34,7 @@ import { MessageHandler, RequestSource } from './twitch/chat/types';
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
         console.log(chalk.grey("Welcome! I'm loading stuff and making magic. Wait a few seconds..."));
+        await _showUpdateMessages();
 
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
@@ -127,8 +131,9 @@ function _parseEnvVariables(env: EnvObject): ParsedEnvVariables {
 function _showInitMessages(env: ParsedEnvVariables): void {
     // Initial message
     console.log(chalk.yellow('\nTwitchMIDI ready!'));
-    console.log(chalk.green('\nUse'), chalk.greenBright('!midion'), chalk.green('in your chat to enable this tool and have fun!'));
-    console.log(chalk.green('Whenever you want to disable it, use'), chalk.greenBright('!midioff'));
+    console.log(chalk.green('\nUse'), chalk.greenBright('!midion'), chalk.green('in your chat to enable this tool'));
+    console.log(chalk.green('Explore all available commands with'), chalk.greenBright('!midihelp'), chalk.green('and have fun!'));
+    console.log(chalk.green('...And whenever you want to disable it, use'), chalk.greenBright('!midioff'));
 
     // Flags
     console.log(chalk.gray('\nCurrent flags:'));
@@ -161,4 +166,38 @@ function _askUserInput(question: string): Promise<string> {
             resolve(answer);
         })
     );
+}
+
+/**
+ * Checks if there are updates available on GitHub
+ */
+async function _checkUpdates(): Promise<[localVersion: string, remoteVersion: string]> {
+    try {
+        // Read package.json
+        const { version: localVersion } = JSON.parse(await fs.readFile(CONFIG.PACKAGE_JSON_PATH, { encoding: 'utf-8' })) as { version: string };
+        // Read GitHub's master package.json
+        const options: http.RequestOptions = {
+            hostname: CONFIG.GITHUB_CONTENT_BASE_URL,
+            path: CONFIG.REMOTE_PACKAGE_JSON_PATH,
+            port: 443,
+            method: 'GET'
+        };
+        const { version: remoteVersion } = (await httpsRequestPromise(options))?.body as { version: string };
+        // Return old and new version
+        return [localVersion, remoteVersion];
+    } catch (error) {
+        // If any read error occurs, return same empty message as local and remote version
+        return [GLOBAL.EMPTY_MESSAGE, GLOBAL.EMPTY_MESSAGE];
+    }
+}
+
+/**
+ * Checks for updates on GitHub and shows a message if there's a difference between local and remote version
+ */
+async function _showUpdateMessages(): Promise<void> {
+    const [localVersion, remoteVersion] = await _checkUpdates();
+    if (localVersion !== remoteVersion) {
+        console.log(chalk.bgBlue.bold(`\nHey, there is an update! Latest available version is v${remoteVersion}, you have v${localVersion}.`));
+        console.log(chalk.bgBlue.bold('Download latest version at https://github.com/rafaelpernil2/TwitchMIDI\n'));
+    }
 }
