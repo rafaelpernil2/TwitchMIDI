@@ -10,6 +10,7 @@ export const CONFIG = {
     BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
     REWARDS_PATH: './config/rewards.json',
     PERMISSIONS_DB: './config/permissions.json',
+    PACKAGE_JSON_PATH: './package.json',
     DOT_ENV_PATH: '.env',
     DEFAULT_OCTAVE: '5',
     DEFAULT_VOLUME: 64,
@@ -22,6 +23,8 @@ export const CONFIG = {
     LOCAL_SERVER_PORT: 8000,
     REDIRECT_URI: 'http://localhost:8000',
     TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/',
+    GITHUB_CONTENT_BASE_URL: 'raw.githubusercontent.com',
+    REMOTE_PACKAGE_JSON_PATH: '/rafaelpernil2/TwitchMIDI/master/package.json',
     DEFAULT_USER_ROLES: { isBroadcaster: false, isMod: false, isSubscriber: false, isVip: false, isFounder: false }
 };
 
