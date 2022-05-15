@@ -117,7 +117,9 @@ export function midiresume(...[, , { chatClient, channel }]: CommandParams): voi
  *         ]
  */
 export async function addchord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
-    const [alias, chordProgression] = message.split(GLOBAL.SLASH_SEPARATOR).map((str) => str.trim());
+    const [alias, ...chordProgressionTokens] = message.split(GLOBAL.SLASH_SEPARATOR).map((str) => str.trim());
+    const chordProgression = chordProgressionTokens.join(GLOBAL.SLASH_SEPARATOR);
+
     const insertStatus = ALIASES_DB.insertUpdate(CHORD_PROGRESSIONS, { [alias.toLowerCase()]: chordProgression });
     if (insertStatus === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION);
