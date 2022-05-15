@@ -477,7 +477,7 @@ function _parseChord(chord: string): string {
  */
 function _isValidAndBounded(chord: string, extraChars: number): boolean {
     const maxLength = 2 + extraChars;
-    return chord.length === maxLength - 1 || (chord.length === maxLength && (chord.includes('b') || chord.includes('#')))
+    return chord.length === maxLength - 1 || (chord.length === maxLength && (chord.includes('b') || chord.includes('#')));
 }
 
 /**
