@@ -100,7 +100,7 @@ So far, this first version does all that, keep reading the features for more det
   * High precision MIDI Clock using "nanotimer" with adjustable tempo via [!settempo](#settempo)
   * Sequencer on 4/4 time signature with infinite subdivisions (1 = Quarter note, 0.5 = 8th note, 0.25 = 16th note...)
   * Trigger individual notes or build a chord via [!sendnote](#sendnote)
-  * Trigger chord progressions with specific length per chord via [!sendchord](#sendchord)
+  * Trigger chord progressions with specific length per chord via [!sendchord](#sendchord) with an extensive list of chords to choose from. See [CHORDS.md](CHORDS.md)
   * Loop chord progressions via [!sendloop](#sendloop)
   * See the current chord progression via [!midicurrentrequest](#midicurrentrequest)
   * Check the chord progression request queue via [!midirequestqueue](#midirequestqueue)
