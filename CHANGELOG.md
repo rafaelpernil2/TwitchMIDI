@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [2.1.9] - 2022-05-15
+## [2.2.0] - 2022-05-15
 ### Added
 - Update detection, now you can know if there is an update at initialization
 - Initialization suggestion to use !midihelp to explore all commands available
@@ -308,7 +308,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
-[2.1.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.8...v2.1.9
+[2.2.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.8...v2.2.0
 [2.1.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.7...v2.1.8
 [2.1.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.6...v2.1.7
 [2.1.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.1.5...v2.1.6
