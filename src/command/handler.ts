@@ -448,27 +448,36 @@ function _parseNote(note: string): [note: string, timeSubDivision: number] {
  */
 function _parseChord(chord: string): string {
     const [parsedChord] = _splitTokenTime(chord);
-    if (parsedChord.length === 0) {
-        return '';
-    }
+    if (parsedChord.length === 0) return '';
+
     // If only a note is provided, it will be transformed into a major chord (e.g CM, EbM...)
-    if (parsedChord.length === 1 || (parsedChord.length === 2 && (parsedChord.includes('b') || parsedChord.includes('#')))) {
-        return parsedChord + 'M';
-    }
+    if (_isValidAndBounded(parsedChord, 0)) return parsedChord + 'M';
+
     // If "min" is used to represent a minor chord, it will be converted to harmonics syntax "m"
     if (parsedChord.includes('min')) {
         const [pre, post] = parsedChord.split('min');
         return pre + 'm' + post;
     }
-    // If a 9,7 or 6 chord is provided but without "th", it will be converted to harmonics syntax "th"
-    if (
-        ['9', '7', '6'].includes(parsedChord.charAt(parsedChord.length - 1)) &&
-        (parsedChord.length < 3 || (parsedChord.length === 3 ? parsedChord.includes('b') || parsedChord.includes('#') : false))
-    ) {
-        return parsedChord + 'th';
-    }
+
+    // If a 9, 7, 6, 5 or 4 chord is provided but without "th", it will be converted to harmonics syntax "th"
+    if (['9', '7', '6', '5', '4'].includes(parsedChord.slice(-1)) && _isValidAndBounded(parsedChord, 1)) return parsedChord + 'th';
+
+    // If a 13 or 11 chord is provided but without "th", it will be converted to harmonics syntax "th"
+    if (['13', '11'].includes(parsedChord.slice(-2)) && _isValidAndBounded(parsedChord, 2)) return parsedChord + 'th';
+
     // Default
     return parsedChord;
+}
+
+/**
+ * Checks if chord notation contains a valid note + an expected amount of extra characters
+ * @param chord Chord to check
+ * @param extraChars Amount of extra characters
+ * @returns If chord is bounded
+ */
+function _isValidAndBounded(chord: string, extraChars: number): boolean {
+    const maxLength = 2 + extraChars;
+    return chord.length === maxLength - 1 || (chord.length === maxLength && (chord.includes('b') || chord.includes('#')))
 }
 
 /**
