@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.4.0] - 2022-05-16
+### Added
+- Support for music rests, now you can add silences between chords or notes when using !sendchord, !sendloop and !sendnote with the token "rest"
+
 ## [2.3.0] - 2022-05-16
 ### Added
 - Support for melodies using !sendnote. Separate your notes by commas to play them sequentially (e.g. "C5,E5,G5")
@@ -331,6 +335,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.4.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.3...v2.3.0
 [2.2.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.1...v2.2.2

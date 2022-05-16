@@ -440,6 +440,15 @@ function _splitTokenTime(message: string): [token: string, timeDivision: number]
 function _parseNote(note: string): [note: string, timeSubDivision: number] {
     const [preparedNote, timeSubDivision] = _splitTokenTime(note);
 
+    // Prepare and check timeSubDivision
+    // Since it is a melody, notes should last a quarter note by default
+    const parsedTimeDivision = timeSubDivision === 0 ? 1 : timeSubDivision;
+
+    // If it is a rest, do not parse chord
+    if (preparedNote.toLowerCase() === GLOBAL.MUSIC_REST_TOKEN) {
+        return [GLOBAL.MUSIC_REST_TOKEN, parsedTimeDivision];
+    }
+
     // Prepare and check note
     const lastChar = preparedNote.charAt(preparedNote.length - 1);
     const octave = isNaN(Number(lastChar)) ? CONFIG.DEFAULT_OCTAVE : '';
@@ -448,10 +457,6 @@ function _parseNote(note: string): [note: string, timeSubDivision: number] {
     if (!_isValidAndBounded(parsedNote, 1)) {
         throw new Error(ERROR_MSG.BAD_MIDI_NOTE);
     }
-
-    // Prepare and check timeSubDivision
-    // Since it is a melody, notes should last a quarter note by default
-    const parsedTimeDivision = timeSubDivision === 0 ? 1 : timeSubDivision;
 
     // Return
     return [parsedNote, parsedTimeDivision];
@@ -506,6 +511,9 @@ function _parseChordProgression(chordProgression: string): Array<[noteList: stri
     return chordProgressionList.map((chord) => {
         try {
             const [chordPart, timeSubDivision] = _splitTokenTime(chord);
+            // If it is a rest, do not parse chord
+            if (chordPart.toLowerCase() === GLOBAL.MUSIC_REST_TOKEN) return [[GLOBAL.MUSIC_REST_TOKEN], timeSubDivision];
+
             return [inlineChord(_parseChord(chordPart)), timeSubDivision];
         } catch (error) {
             throw new Error(ERROR_MSG.INVALID_CHORD(chord));

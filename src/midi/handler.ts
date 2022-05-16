@@ -1,7 +1,7 @@
 import { setTimeoutPromise } from '../utils/promise';
 import * as JZZ from 'jzz';
 import { JZZTypes } from '../custom-typing/jzz';
-import { CONFIG, ERROR_MSG } from '../configuration/constants';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
 import { forwardQueue, waitForMyTurn, clearAllQueues } from '../command/queue';
 import { SharedVariable } from '../shared-variable/implementation';
 import { initClockData, isClockActive, syncMode, startClock, stopClock } from './clock';
@@ -180,6 +180,11 @@ async function _sendMIDINoteListPromise(noteList: number | string | string[], re
         throw new Error(ERROR_MSG.BOT_DISCONNECTED);
     }
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
+    if (parsedNoteList.length === 1 && parsedNoteList[0] === GLOBAL.MUSIC_REST_TOKEN) {
+        await setTimeoutPromise(release);
+        return;
+    }
+
     for (const note of parsedNoteList) {
         output.noteOn(channels, note, globalVolume);
     }

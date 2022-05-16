@@ -67,7 +67,8 @@ export const GLOBAL = {
     EXCLAMATION_MARK: '!',
     OPEN_PARENTHESIS_SEPARATOR: '(',
     CLOSE_PARENTHESIS_SEPARATOR: ')',
-    CC_CONTROLLER: 'CC#'
+    CC_CONTROLLER: 'CC#',
+    MUSIC_REST_TOKEN: 'rest'
 } as const;
 
 export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], string> = {
