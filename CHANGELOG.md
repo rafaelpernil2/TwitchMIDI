@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.3.0] - 2022-05-16
+### Added
+- Support for melodies using !sendnote. Separate your notes by commas to play them sequentially (e.g. "C5,E5,G5")
+
+### Changed
+- !sendnote now uses 1 quarter note length by default insead of 4 quarter notes length
+- Improved error handling in !sendnote
+
 ## [2.2.3] - 2022-05-15
 ### Fixed
 - !addchord does not work properly with chords containing a slash (/) like "m/ma7" or "6/9"
@@ -323,6 +331,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.3...v2.3.0
 [2.2.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.0...v2.2.1
