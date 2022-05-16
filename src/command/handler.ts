@@ -444,7 +444,7 @@ function _parseNote(note: string): [note: string, timeSubDivision: number] {
     // Since it is a melody, notes should last a quarter note by default
     const parsedTimeDivision = timeSubDivision === 0 ? 1 : timeSubDivision;
 
-    // If it is a rest, do not parse chord
+    // If it is a rest, do not parse note
     if (preparedNote.toLowerCase() === GLOBAL.MUSIC_REST_TOKEN) {
         return [GLOBAL.MUSIC_REST_TOKEN, parsedTimeDivision];
     }
