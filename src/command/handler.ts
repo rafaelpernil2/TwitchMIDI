@@ -169,18 +169,19 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
 }
 
 /**
- * Sends a set of MIDI notes separated by spaces
+ * Sends a set of MIDI notes separated by spaces or a melody separated by commas
  * @param commandParams [message, // Command arguments
  *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function sendnote(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
-    chatClient.say(channel, 'Note sent! ');
+export async function sendnote(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
     checkMIDIConnection();
-
-    const noteList = _getNoteList(message);
-    triggerNoteList(noteList, targetMIDIChannel);
+    const requestList = message.split(GLOBAL.COMMA_SEPARATOR).map((request) => _getNoteList(request));
+    chatClient.say(channel, 'Note sent! ');
+    for (const request of requestList) {
+        await triggerNoteList(request, targetMIDIChannel);
+    }
 }
 
 /**
@@ -438,9 +439,22 @@ function _splitTokenTime(message: string): [token: string, timeDivision: number]
  */
 function _parseNote(note: string): [note: string, timeSubDivision: number] {
     const [preparedNote, timeSubDivision] = _splitTokenTime(note);
+
+    // Prepare and check note
     const lastChar = preparedNote.charAt(preparedNote.length - 1);
     const octave = isNaN(Number(lastChar)) ? CONFIG.DEFAULT_OCTAVE : '';
-    return [preparedNote + octave, timeSubDivision];
+    const parsedNote = preparedNote + octave;
+
+    if (!_isValidAndBounded(parsedNote, 1)) {
+        throw new Error(ERROR_MSG.BAD_MIDI_NOTE);
+    }
+
+    // Prepare and check timeSubDivision
+    // Since it is a melody, notes should last a quarter note by default
+    const parsedTimeDivision = timeSubDivision === 0 ? 1 : timeSubDivision;
+
+    // Return
+    return [parsedNote, parsedTimeDivision];
 }
 
 /**

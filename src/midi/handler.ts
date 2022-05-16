@@ -65,11 +65,10 @@ export function setMIDIVolume(value: number): void {
  * @param rawNoteList List of notes
  * @param targetMIDIChannel Virtual device MIDI channel
  */
-export function triggerNoteList(rawNoteList: Array<[note: string, timeSubDivision: number]>, targetMIDIChannel: number): void {
+export async function triggerNoteList(rawNoteList: Array<[note: string, timeSubDivision: number]>, targetMIDIChannel: number): Promise<void> {
     const noteList = _processNoteList(rawNoteList, globalTempo);
-    for (const [note, timeout] of noteList) {
-        _sendMIDINoteList(note, timeout, targetMIDIChannel);
-    }
+    const sentNoteList = noteList.map(([note, timeout]) => _sendMIDINoteListPromise(note, timeout, targetMIDIChannel));
+    await Promise.all(sentNoteList);
 }
 
 /**
@@ -168,24 +167,6 @@ function _initVariables(): void {
     isChordInProgress.set(false);
     globalTempo = CONFIG.DEFAULT_TEMPO;
     globalVolume = CONFIG.DEFAULT_VOLUME;
-}
-
-/**
- * Sends a list of notes to the virtual MIDI device with a programmed delayed trigger for NoteOff
- * It differs from _triggerNoteList because this method returns instantly instead of waiting for the message to be sent
- * @param noteList Single note or list of notes
- * @param release Time between NoteOn and NoteOff
- * @param channels Target MIDI channel for the virtual MIDI device
- */
-function _sendMIDINoteList(noteList: number | string | string[], release: number, channels: number): void {
-    if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
-    }
-    const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
-    const releaseTime = Math.round(release / 1_000_000);
-    for (const note of parsedNoteList) {
-        output.note(channels, note, globalVolume, releaseTime);
-    }
 }
 
 /**
