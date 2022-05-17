@@ -2,6 +2,9 @@ import NanoTimer from 'nanotimer';
 import https from 'https';
 import http from 'http';
 import { isJsonString } from './generic';
+import readline from 'readline';
+import i18n from '../i18n/loader';
+import { GLOBAL } from '../configuration/constants';
 
 /**
  * Creates a promise that resolves in a determined amount of nanoseconds
@@ -31,11 +34,38 @@ export async function httpsRequestPromise<T>(options: https.RequestOptions): Pro
                 if (statusCode != null && statusCode >= 200 && statusCode <= 299) {
                     resolve({ statusCode, headers, body: isJsonString(body) ? (JSON.parse(body) as T) : body });
                 } else {
-                    reject('Request failed. status: ' + String(statusCode) + ', body: ' + body);
+                    reject(i18n.t('ERROR_REQUEST_FAILED') + String(statusCode) + ', body: ' + body);
                 }
             });
         });
         req.on('error', (error) => reject(error));
         req.end();
+    });
+}
+
+/**
+ * Asks for user input
+ * @param question Question
+ * @param timeout Timeout for closing input in ms
+ * @param defaultAnswer Answer returned on timeout
+ * @returns
+ */
+export function askUserInput(question: string, timeout = 0, defaultAnswer: string = GLOBAL.EMPTY_MESSAGE): Promise<string> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(question, (answer) => {
+            rl.close();
+            resolve(answer);
+        });
+        if (timeout !== 0) {
+            setTimeout(() => {
+                rl.close();
+                resolve(defaultAnswer);
+            }, timeout);
+        }
     });
 }

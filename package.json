@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -35,6 +35,7 @@
     "chalk": "^4.1.2",
     "dotenv": "^16.0.1",
     "harmonics": "^1.1.0",
+    "i18next": "^21.8.2",
     "jzz": "^1.5.1",
     "nanotimer": "^0.3.15"
   },

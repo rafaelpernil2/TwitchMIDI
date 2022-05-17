@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.0] - 2022-05-17
+### Added
+- Internacionalization (i18n) and full Spanish translation
+### Fixed
+- Token expiry bug, now it tries to retrieve the tokens from tokens.json files before .env since .env does not update itself
+
 ## [2.4.0] - 2022-05-16
 ### Added
 - Support for music rests, now you can add silences between chords or notes when using !sendchord, !sendloop and !sendnote with the token "rest"
@@ -335,6 +341,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.3...v2.3.0
 [2.2.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.2...v2.2.3

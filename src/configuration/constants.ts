@@ -2,6 +2,7 @@ import { JSONDatabase } from '../database/jsondb/implementation';
 import { AliasesType, PermissionsType, RewardsType } from '../database/jsondb/types';
 import EventEmitter from 'events';
 import { Command } from '../command/types';
+import i18n from '../i18n/loader';
 
 export const CONFIG = {
     ALIASES_DB_PATH: './config/aliases.json',
@@ -25,34 +26,39 @@ export const CONFIG = {
     TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/',
     GITHUB_CONTENT_BASE_URL: 'raw.githubusercontent.com',
     REMOTE_PACKAGE_JSON_PATH: '/rafaelpernil2/TwitchMIDI/master/package.json',
+    SPONSOR_PAYPAL_LINK: 'https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN',
+    REPOSITORY_LINK: 'https://github.com/rafaelpernil2/TwitchMIDI',
     DEFAULT_USER_ROLES: { isBroadcaster: false, isMod: false, isSubscriber: false, isVip: false, isFounder: false }
 };
 
 export const ERROR_MSG = {
-    BAD_ENV_VARIABLE_GENERIC: 'Some .env variables are wrong. Check the previous errors',
-    INIT_ENV_VARIABLES: `Your .env file is not ready to use.\nProbably this is your first time running the app, follow the next configuration steps :)`,
-    BAD_ENV_VARIABLE: (keys: string) => `This app cannot be executed, make sure you set a valid value for ${keys} inside the .env file. `,
-    BOT_PAUSED_DISCONNECTED: 'TwitchMIDI is disabled or paused right now. Wait until the streamer enables it :)',
-    BOT_DISCONNECTED: 'TwitchMIDI is disabled right now. Enable it with !midion',
-    BAD_MIDI_CHANNEL: 'Make sure "TARGET_MIDI_CHANNEL" is a valid MIDI channel between 1 and 16 (both inclusive)',
-    BAD_MIDI_MESSAGE: 'Bad MIDI message, the value must be between 0 and 127 (inclusive)',
-    BAD_MIDI_NOTE: 'Bad MIDI note, make sure you sent a valid note like C, F#, G...',
-    INVALID_VOLUME: 'Please set a volume between 0% and 100%',
-    INVALID_TEMPO: `Please set a tempo between ${CONFIG.MIN_TEMPO} and ${CONFIG.MAX_TEMPO} (Default: ${CONFIG.DEFAULT_TEMPO}, decimal point is . )`,
-    CHORD_PROGRESSION_NOT_FOUND: 'Chord progression/loop not found',
-    CHORD_PROGRESSION_BAD_INSERTION: 'Chord progression/loop could not be inserted',
-    INVALID_CHORD: (chord: string) => 'There is at least one invalid chord or the alias was not found: ' + chord,
-    MIDI_DISCONNECTION_ERROR: 'MIDI could not be disconnected',
-    MIDI_CONNECTION_ERROR: 'MIDI could not be connected',
-    BAD_CC_MESSAGE: 'Bad Control Change message, please review your values. Controller/value must be between 0 and 127 (inclusive)',
-    BAD_SWEEP_DELAY: 'Invalid control change sweep, make sure your delay times are in incremental order',
-    BAD_PERMISSIONS: "You don't have enough permissions to use this command. Sorry!",
-    INVALID_SWEEP_RANGE: 'Invalid sweep range',
-    INIT: 'There was an initialization error. Please, close the app (Ctrl+C or close the terminal window)',
-    INVALID_REWARD: 'Invalid MIDI command from reward, please review the configuration of this bot',
-    BAD_SETUP_PROCESS: 'Bad setup, try again',
-    DUPLICATE_REQUEST: 'This request is already queued, wait until the previous request is fulfilled',
-    BROADCASTER_USER_NOT_FOUND: 'Broadcaster not found'
+    BAD_ENV_VARIABLE_GENERIC: () => i18n.t('ERROR_BAD_ENV_VARIABLE_GENERIC'),
+    INIT_ENV_VARIABLES: () => i18n.t('ERROR_INIT_ENV_VARIABLES'),
+    BAD_ENV_VARIABLE: (keys: string) => `${i18n.t('ERROR_BAD_ENV_VARIABLE_1')} ${keys} ${i18n.t('ERROR_BAD_ENV_VARIABLE_2')}`,
+    BOT_PAUSED_DISCONNECTED: () => i18n.t('ERROR_BOT_PAUSED_DISCONNECTED'),
+    BOT_DISCONNECTED: () => i18n.t('ERROR_BOT_DISCONNECTED'),
+    BAD_MIDI_CHANNEL: () => i18n.t('ERROR_BAD_MIDI_CHANNEL'),
+    BAD_MIDI_MESSAGE: () => i18n.t('ERROR_BAD_MIDI_MESSAGE'),
+    BAD_MIDI_NOTE: () => i18n.t('ERROR_BAD_MIDI_NOTE'),
+    INVALID_VOLUME: () => i18n.t('ERROR_INVALID_VOLUME'),
+    INVALID_TEMPO: () =>
+        `${i18n.t('ERROR_INVALID_TEMPO_1')} ${CONFIG.MIN_TEMPO} ${i18n.t('ERROR_INVALID_TEMPO_2')} ${CONFIG.MAX_TEMPO} ${i18n.t('ERROR_INVALID_TEMPO_3')} ${
+            CONFIG.DEFAULT_TEMPO
+        }${i18n.t('ERROR_INVALID_TEMPO_4')}`,
+    CHORD_PROGRESSION_NOT_FOUND: () => i18n.t('ERROR_CHORD_PROGRESSION_NOT_FOUND'),
+    CHORD_PROGRESSION_BAD_INSERTION: () => i18n.t('ERROR_CHORD_PROGRESSION_BAD_INSERTION'),
+    INVALID_CHORD: (chord: string) => i18n.t('ERROR_INVALID_CHORD') + ' ' + chord,
+    MIDI_DISCONNECTION_ERROR: () => i18n.t('ERROR_MIDI_DISCONNECTION_ERROR'),
+    MIDI_CONNECTION_ERROR: () => i18n.t('ERROR_MIDI_CONNECTION_ERROR'),
+    BAD_CC_MESSAGE: () => i18n.t('ERROR_BAD_CC_MESSAGE'),
+    BAD_SWEEP_DELAY: () => i18n.t('ERROR_BAD_SWEEP_DELAY'),
+    BAD_PERMISSIONS: () => i18n.t('ERROR_BAD_PERMISSIONS'),
+    INVALID_SWEEP_RANGE: () => i18n.t('ERROR_INVALID_SWEEP_RANGE'),
+    INIT: () => i18n.t('ERROR_INIT'),
+    INVALID_REWARD: () => i18n.t('ERROR_INVALID_REWARD'),
+    BAD_SETUP_PROCESS: () => i18n.t('ERROR_BAD_SETUP_PROCESS'),
+    DUPLICATE_REQUEST: () => i18n.t('ERROR_DUPLICATE_REQUEST'),
+    BROADCASTER_USER_NOT_FOUND: () => i18n.t('ERROR_BROADCASTER_USER_NOT_FOUND')
 };
 
 export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };
@@ -71,28 +77,28 @@ export const GLOBAL = {
     MUSIC_REST_TOKEN: 'rest'
 } as const;
 
-export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], string> = {
-    midihelp: 'Shows all commands available and info about each command. Syntax: command (e.g "sendloop")',
-    midion: 'Turns on the bot',
-    midioff: 'Turns off the bot',
-    addchord: 'Adds a chord progression or loop with an alias. Syntax: name/chords(chord length in quarter notes) (e.g. "pop/C G(2) Amin(2) F")',
-    removechord: 'Removes a chord progression or loop with an alias. Syntax: alias (e.g. "pop")',
-    chordlist: 'Shows all saved chord progressions or loops that can be used',
-    sendnote: 'Sends a note, a set of notes building a chord or a melody. Syntax: note1 note2, note3 ... (e.g. "C4 E4 G4" or "C4, E4, G4")',
-    sendchord: 'Sends a chord progression with an alias or with chords. Syntax: chord1 chord2(chord length in quarter notes)... (e.g. "C(4) G Amin(2) F","pop")',
-    sendloop: 'Sends a loop with an alias or with chords. Syntax: chord1 chord2(chord length in quarter notes)... (e.g. "C G Amin F","pop")',
-    sendcc: 'Sends a MIDI CC message with an alias, code or value sweeps. Syntax: controller value,controller2 value2(delay_in_ms) (e.g. "43 100,43 60","cutoff sweep","cutoff 100,cutoff 60","cutoff 100,cutoff 10(10000)")',
-    cclist: 'Shows a list of available CC command macros (e.g. cutoff sweep)',
-    midivolume: 'Sets the velocity for the chords/notes/loops. Syntax: value between 0 and 100 (e.g. "50","100")',
-    stoploop: 'Stops the loop once it ends',
-    fullstopmidi: 'Stops all MIDI messages and sound',
-    settempo: 'Starts the MIDI clock and sets a tempo. Syntax: tempo (e.g. "120", "200")',
-    syncmidi: 'Restarts the MIDI clock and syncs loop and clock on the next repetition',
-    fetchdb: 'Refreshes aliases configuration',
-    midicurrentrequest: 'Shows the current request being played',
-    midirequestqueue: 'Shows the request queue for chord progressions and loops',
-    midipause: 'Pauses the requests but keeps playing whatever was already playing',
-    midiresume: 'Reactivates requests after they were paused with !midipause'
+export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], () => string> = {
+    midihelp: () => i18n.t('HELP_MIDIHELP'),
+    midion: () => i18n.t('HELP_MIDION'),
+    midioff: () => i18n.t('HELP_MIDIOFF'),
+    addchord: () => i18n.t('HELP_ADDCHORD'),
+    removechord: () => i18n.t('HELP_REMOVECHORD'),
+    chordlist: () => i18n.t('HELP_CHORDLIST'),
+    sendnote: () => i18n.t('HELP_SENDNOTE'),
+    sendchord: () => i18n.t('HELP_SENDCHORD'),
+    sendloop: () => i18n.t('HELP_SENDLOOP'),
+    sendcc: () => i18n.t('HELP_SENDCC'),
+    cclist: () => i18n.t('HELP_CCLIST'),
+    midivolume: () => i18n.t('HELP_MIDIVOLUME'),
+    stoploop: () => i18n.t('HELP_STOPLOOP'),
+    fullstopmidi: () => i18n.t('HELP_FULLSTOPMIDI'),
+    settempo: () => i18n.t('HELP_SETTEMPO'),
+    syncmidi: () => i18n.t('HELP_SYNCMIDI'),
+    fetchdb: () => i18n.t('HELP_FETCHDB'),
+    midicurrentrequest: () => i18n.t('HELP_MIDICURRENTREQUEST'),
+    midirequestqueue: () => i18n.t('HELP_MIDIREQUESTQUEUE'),
+    midipause: () => i18n.t('HELP_MIDIPAUSE'),
+    midiresume: () => i18n.t('HELP_MIDIRESUME')
 } as const;
 
 export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean> = {

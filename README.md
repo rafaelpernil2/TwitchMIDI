@@ -131,6 +131,7 @@ So far, this first version does all that, keep reading the features for more det
   * Commands only work for the streamer and mods
   * Allow VIPs to bypass rewards via VIP_REWARDS_MODE
 * Bundle optimized for different operating systems and no extra software required for execution
+* Internationalization with full support for English and Spanish as of right now
 * Update checking on startup, a message appears if there is a new version available
 
 ## Commands

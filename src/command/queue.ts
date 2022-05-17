@@ -21,7 +21,7 @@ let requestPlayingNow: { type: Command; request: string } | null;
 export function queue(request: string, type: Command): number {
     // Throw error on duplicate requests
     if (request === _getLastInQueue(type)) {
-        throw new Error(ERROR_MSG.DUPLICATE_REQUEST);
+        throw new Error(ERROR_MSG.DUPLICATE_REQUEST());
     }
 
     const turn = _getNewQueueTurn(type);

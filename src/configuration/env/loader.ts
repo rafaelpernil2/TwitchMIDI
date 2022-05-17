@@ -15,7 +15,7 @@ export async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvO
         const loadedVariables = await altSetupProcess?.();
         // We validate again, just in case
         if (loadedVariables == null || !_areVariablesValid(loadedVariables)) {
-            throw new Error(ERROR_MSG.BAD_SETUP_PROCESS);
+            throw new Error(ERROR_MSG.BAD_SETUP_PROCESS());
         }
         return loadedVariables;
     }
@@ -28,7 +28,7 @@ export async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvO
 function _getVariables(): EnvObject {
     const loadedVariables = Object.fromEntries(envVariables.map((key) => [key, process.env[key]]));
     if (!_areVariablesValid(loadedVariables)) {
-        throw new Error(ERROR_MSG.BAD_ENV_VARIABLE_GENERIC);
+        throw new Error(ERROR_MSG.BAD_ENV_VARIABLE_GENERIC());
     }
     return loadedVariables;
 }
@@ -46,7 +46,7 @@ function _areVariablesValid(loadedVariables: Record<string, string | undefined>)
 
     // If it's the first time running
     if (invalidVariables.length === Object.entries(loadedVariables).length) {
-        throw new Error(ERROR_MSG.INIT_ENV_VARIABLES);
+        throw new Error(ERROR_MSG.INIT_ENV_VARIABLES());
     }
     if (invalidVariables.length !== 0) {
         const invalidKeys = invalidVariables.map(([key]) => key).join(GLOBAL.COMMA_JOIN);
