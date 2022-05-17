@@ -50,6 +50,7 @@ export async function initializei18n(language?: string): Promise<void> {
 
 /**
  * Returns the language from a locale
+ * @param locale A locale
  * @returns Language name
  */
 function _getLanguageFromLocale(locale: string): string {

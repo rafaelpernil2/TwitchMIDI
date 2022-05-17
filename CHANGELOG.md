@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [2.5.2] - 2022-05-17
+## [2.5.3] - 2022-05-18
+### Fixed
+- Added missing parameter in JSDocs of getLanguagesFromLocale method
+
+## [2.5.2] - 2022-05-18
 ### Fixed
 - Added JSDocs to i18n init method
 
@@ -349,6 +353,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.2...v2.5.3
 [2.5.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.1...v2.5.2
 [2.5.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.4.0...v2.5.0
