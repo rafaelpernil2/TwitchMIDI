@@ -1,3 +1,4 @@
+import i18n from '../../i18n/loader';
 import { ERROR_MSG } from '../constants';
 
 /**
@@ -19,6 +20,6 @@ export function TARGET_MIDI_CHANNEL(value: string): boolean {
 function _validateMIDIChannel(message: string | number): void {
     const parsedMessage = Number(message);
     if (isNaN(parsedMessage) || parsedMessage < 1 || parsedMessage > 16) {
-        throw new Error(ERROR_MSG.BAD_MIDI_CHANNEL + ' // Your value was: ' + String(message));
+        throw new Error(ERROR_MSG.BAD_MIDI_CHANNEL() + ' ' + i18n.t('ERROR_YOUR_VALUE') + ' ' + String(message));
     }
 }

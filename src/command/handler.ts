@@ -21,6 +21,7 @@ import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jso
 import { ChatClient } from '@twurple/chat/lib/ChatClient';
 import { createRewards, toggleRewardsStatus } from '../rewards/handler';
 import { areRequestsOpen } from './guards';
+import i18n from '../i18n/loader';
 
 /**
  * Shows all available commands and explains how to use them
@@ -32,9 +33,9 @@ import { areRequestsOpen } from './guards';
 export function midihelp(...[message, , { chatClient, channel }]: CommandParams): void {
     const [commandToTest] = splitCommandArguments(message);
     if (isValidCommand(commandToTest)) {
-        chatClient.say(channel, `🟡Command info!🟡 !${commandToTest}: ${COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]}`);
+        chatClient.say(channel, `${i18n.t('MIDIHELP_VALID')} !${commandToTest}: ${COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()}`);
     } else {
-        chatClient.say(channel, '🟣TwitchMIDI available commands - Use "!midihelp yourcommand" for more info🟣: ' + Object.values(Command).join(GLOBAL.COMMA_JOIN));
+        chatClient.say(channel, i18n.t('MIDIHELP_INVALID') + ' ' + Object.values(Command).join(GLOBAL.COMMA_JOIN));
     }
 }
 
@@ -49,17 +50,17 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
     try {
         await connectMIDI(targetMIDIName);
         if (isRewardsMode) {
-            chatClient.say(channel, 'Activating rewards... This may take a few seconds');
+            chatClient.say(channel, i18n.t('MIDION_REWARDS'));
             await createRewards(authProvider, broadcasterUser);
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
         }
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         areRequestsOpen.set(true);
-        console.log('TwitchMIDI enabled!');
+        console.log(i18n.t('MIDION_LOG_ENABLED'));
     } catch (error) {
-        throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR);
+        throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR());
     }
-    chatClient.say(channel, 'TwitchMIDI enabled! - Tool developed by Rafael Pernil (@rafaelpernil2)');
+    chatClient.say(channel, `${i18n.t('MIDION_ENABLED')} Rafael Pernil (@rafaelpernil2)`);
 }
 
 /**
@@ -70,20 +71,20 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
  *         ]
  */
 export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
-    chatClient.say(channel, 'Disabling TwitchMIDI. Wait a few seconds...');
+    chatClient.say(channel, i18n.t('MIDIOFF_INIT'));
     try {
         await disconnectMIDI(targetMIDIChannel);
         if (isRewardsMode) {
-            chatClient.say(channel, 'De-activating rewards... This may take a few seconds');
+            chatClient.say(channel, i18n.t('MIDIOFF_REWARDS'));
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         areRequestsOpen.set(false);
-        console.log('TwitchMIDI disabled!');
+        console.log(i18n.t('MIDIOFF_LOG_DISABLED'));
     } catch (error) {
-        throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR);
+        throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
     }
-    chatClient.say(channel, 'TwitchMIDI disabled! - Tool developed by Rafael Pernil (@rafaelpernil2)');
+    chatClient.say(channel, i18n.t('MIDIOFF_DISABLED'));
 }
 
 /**
@@ -95,7 +96,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
  */
 export function midipause(...[, , { chatClient, channel }]: CommandParams): void {
     areRequestsOpen.set(false);
-    chatClient.say(channel, 'TwitchMIDI paused! - Now only the streamer can send commands and requests');
+    chatClient.say(channel, i18n.t('MIDIPAUSE'));
 }
 
 /**
@@ -107,7 +108,7 @@ export function midipause(...[, , { chatClient, channel }]: CommandParams): void
  */
 export function midiresume(...[, , { chatClient, channel }]: CommandParams): void {
     areRequestsOpen.set(true);
-    chatClient.say(channel, 'TwitchMIDI resumed! - Go crazy with your requests!!! :D ');
+    chatClient.say(channel, i18n.t('MIDIRESUME'));
 }
 /**
  * Saves a chord progresion with an alias to be used later
@@ -122,10 +123,10 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
 
     const insertStatus = ALIASES_DB.insertUpdate(CHORD_PROGRESSIONS, { [alias.toLowerCase()]: chordProgression });
     if (insertStatus === ResponseStatus.Error) {
-        throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION);
+        throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }
     await ALIASES_DB.commit();
-    chatClient.say(channel, 'Chord progression saved! ');
+    chatClient.say(channel, i18n.t('ADDCHORD'));
 }
 
 /**
@@ -139,10 +140,10 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
     const parsedAlias = message.toLowerCase();
     const status = ALIASES_DB.delete(CHORD_PROGRESSIONS, parsedAlias);
     if (status === ResponseStatus.Error) {
-        throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND);
+        throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND());
     }
     await ALIASES_DB.commit();
-    chatClient.say(channel, 'Chord progression removed! ');
+    chatClient.say(channel, i18n.t('REMOVECHORD'));
 }
 
 /**
@@ -162,7 +163,7 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
     }
     // Default case showing all
     const chordProgressionList = Object.entries(ALIASES_DB.value?.chordProgressions ?? {});
-    chatClient.say(channel, '🔵Here is the list of saved chord progresison/loop🔵:');
+    chatClient.say(channel, i18n.t('CHORDLIST_DEFAULT'));
     for (const [alias, chordProgression] of chordProgressionList) {
         chatClient.say(channel, `🎵${alias}🎵:🎼${chordProgression}🎼`);
     }
@@ -178,7 +179,7 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
 export async function sendnote(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
     checkMIDIConnection();
     const requestList = message.split(GLOBAL.COMMA_SEPARATOR).map((request) => _getNoteList(request));
-    chatClient.say(channel, 'Note sent! ');
+    chatClient.say(channel, i18n.t('SENDNOTE'));
     for (const request of requestList) {
         await triggerNoteList(request, targetMIDIChannel);
     }
@@ -201,7 +202,7 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
         clearQueue(Command.sendloop, { backup: true });
     }
     const myTurn = queue(message, Command.sendchord);
-    chatClient.say(channel, `Chord progression enqueued!`);
+    chatClient.say(channel, i18n.t('SENDCHORD'));
 
     await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
 
@@ -224,7 +225,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
     const chordProgression = _getChordProgression(message);
     const myTurn = queue(message, Command.sendloop);
 
-    chatClient.say(channel, `Loop enqueued!`);
+    chatClient.say(channel, i18n.t('SENDLOOP'));
     do {
         // Execute at least once to wait for your turn in the queue
         await triggerChordList(chordProgression, targetMIDIChannel, Command.sendloop, myTurn);
@@ -245,7 +246,7 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
     triggerCCCommandList(ccCommandList, targetMIDIChannel);
 
     const controllerList = removeDuplicates(ccCommandList.map(([controller]) => controller)).join(GLOBAL.COMMA_JOIN);
-    chatClient.say(channel, `Control Change (${controllerList}) message(s) sent! `);
+    chatClient.say(channel, `${i18n.t('SENDCC_1')}${controllerList}${i18n.t('SENDCC_2')}`);
 }
 
 /**
@@ -258,7 +259,7 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
 export function midicurrentrequest(...[, , { chatClient, channel }]: CommandParams): void {
     const currentRequestPlaying = getCurrentRequestPlaying();
     if (currentRequestPlaying == null) {
-        chatClient.say(channel, 'Nothing is playing now');
+        chatClient.say(channel, i18n.t('MIDICURRENTREQUEST_NOTHING'));
         return;
     }
     chatClient.say(channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
@@ -275,7 +276,7 @@ export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams
     const requestList = getRequestQueue()
         .map(([type, request]) => `!${type} "${request}"`)
         .join(GLOBAL.COMMA_JOIN);
-    chatClient.say(channel, '🟢Here is the request queue🟢: ' + (requestList.length === 0 ? 'There are no requests :P' : requestList));
+    chatClient.say(channel, i18n.t('MIDIREQUESTQUEUE_OK') + ': ' + (requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList));
 }
 
 /**
@@ -287,7 +288,7 @@ export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams
  */
 export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
     const commands = Object.keys(ALIASES_DB.value?.ccCommands ?? {});
-    chatClient.say(channel, '🟠Here is the list of saved Control Change (CC) actions🟠: ' + commands.join(GLOBAL.COMMA_JOIN));
+    chatClient.say(channel, i18n.t('CCLIST') + ': ' + commands.join(GLOBAL.COMMA_JOIN));
 }
 
 /**
@@ -301,9 +302,9 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
     const value = parseInt(splitCommandArguments(message)[0]);
     // Convert to range 0-127
     setMIDIVolume(value);
-    chatClient.say(channel, 'Volume set to ' + String(value) + '%');
+    chatClient.say(channel, i18n.t('MIDIVOLUME') + ' ' + String(value) + '%');
     if (value === 69) {
-        chatClient.say(channel, 'Nice! (～￣▽￣)～');
+        chatClient.say(channel, i18n.t('EASTEREGG_69'));
     }
 }
 
@@ -316,7 +317,7 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
  */
 export function stoploop(...[, , { chatClient, channel }]: CommandParams): void {
     clearQueueList(Command.sendchord, Command.sendloop);
-    chatClient.say(channel, 'Dequeuing loop.. Done! ');
+    chatClient.say(channel, i18n.t('STOPLOOP'));
 }
 
 /**
@@ -328,7 +329,7 @@ export function stoploop(...[, , { chatClient, channel }]: CommandParams): void 
  */
 export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
     stopAllMidi(targetMIDIChannel);
-    chatClient.say(channel, 'Stopping all MIDI... Done!');
+    chatClient.say(channel, i18n.t('FULLSTOPMIDI'));
 }
 
 /**
@@ -341,14 +342,14 @@ export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel 
 export function settempo(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
     const newTempo = Number(splitCommandArguments(message)[0]);
     if (isNaN(newTempo) || newTempo < CONFIG.MIN_TEMPO || newTempo > CONFIG.MAX_TEMPO) {
-        throw new Error(ERROR_MSG.INVALID_TEMPO);
+        throw new Error(ERROR_MSG.INVALID_TEMPO());
     }
     // Generates a MIDI clock
     triggerClock(targetMIDIChannel, newTempo);
 
-    chatClient.say(channel, 'Tempo set to ' + String(newTempo));
+    chatClient.say(channel, i18n.t('SETTEMPO') + ' ' + String(newTempo));
     if (Math.floor(newTempo) === 69) {
-        chatClient.say(channel, 'Nice! (～￣▽￣)～');
+        chatClient.say(channel, i18n.t('EASTEREGG_69'));
     }
 }
 
@@ -361,7 +362,7 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
  */
 export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
     triggerClock(targetMIDIChannel);
-    chatClient.say(channel, "Let's fix this mess... Done!");
+    chatClient.say(channel, i18n.t('SYNCMIDI'));
 }
 
 /**
@@ -375,7 +376,7 @@ export async function fetchdb(...[, , { chatClient, channel }]: CommandParams): 
     await ALIASES_DB.fetchDB();
     await REWARDS_DB.fetchDB();
     await PERMISSIONS_DB.fetchDB();
-    chatClient.say(channel, 'Configuration files reloaded!');
+    chatClient.say(channel, i18n.t('FETCHDB'));
 }
 
 /**
@@ -414,7 +415,7 @@ function _getCCCommandList(message: string): CCCommand[] {
     const aliasToLookup = message.toLowerCase();
     const ccCommandList = ALIASES_DB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
     if (ccCommandList.length < 1) {
-        throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE);
+        throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE());
     }
 
     const rawCCCommandList = ccCommandList.map(_parseCCCommand);
@@ -455,7 +456,7 @@ function _parseNote(note: string): [note: string, timeSubDivision: number] {
     const parsedNote = preparedNote + octave;
 
     if (!_isValidAndBounded(parsedNote, 1)) {
-        throw new Error(ERROR_MSG.BAD_MIDI_NOTE);
+        throw new Error(ERROR_MSG.BAD_MIDI_NOTE());
     }
 
     // Return
@@ -564,7 +565,7 @@ function _parseCCCommandList(rawCCCommandList: CCCommand[]): CCCommand[] {
 function _parseMIDIValue(midiValue: string | number): number {
     const parsedValue = Number(midiValue);
     if (isNaN(parsedValue) || parsedValue < 0 || parsedValue > 127) {
-        throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE + ': ' + String(midiValue));
+        throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE() + ': ' + String(midiValue));
     }
     return parsedValue;
 }
@@ -586,5 +587,5 @@ function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Co
  * @returns A message
  */
 function _buildPlayingNowMessage(type: Command, request: string): string {
-    return `🔊🎹Playing now - !${type} "${request}"`;
+    return `${i18n.t('MIDICURRENTREQUEST_OK')} !${type} "${request}"`;
 }

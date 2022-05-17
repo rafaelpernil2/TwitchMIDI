@@ -97,7 +97,7 @@ export async function getBroadcasterId(apiClient: ApiClient, username: string): 
 
     const broadcaster = await apiClient.users.getUserByName(username);
     if (broadcaster == null) {
-        throw new Error(ERROR_MSG.BROADCASTER_USER_NOT_FOUND);
+        throw new Error(ERROR_MSG.BROADCASTER_USER_NOT_FOUND());
     }
     broadcasterId = broadcaster.id;
     return broadcasterId;

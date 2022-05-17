@@ -3,7 +3,6 @@ import 'dotenv/config';
 
 import * as JZZ from 'jzz';
 
-import readline from 'readline';
 import chalk from 'chalk';
 import { getLoadedEnvVariables } from './configuration/env/loader';
 import { getAuthProvider } from './twitch/auth/provider';
@@ -21,19 +20,21 @@ import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
 import { MessageHandler, RequestSource } from './twitch/chat/types';
 import { promises as fs } from 'fs';
-import { httpsRequestPromise } from './utils/promise';
+import { askUserInput, httpsRequestPromise } from './utils/promise';
 import http from 'http';
+import i18n, { initializei18n } from './i18n/loader';
 
 /**
  * Initialization code
  */
 (async () => {
     try {
+        await initializei18n();
         const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
         const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
-        console.log(chalk.grey("Welcome! I'm loading stuff and making magic. Wait a few seconds..."));
+        console.log(chalk.grey(i18n.t('INIT_WELCOME')));
         await _showUpdateMessages();
 
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
@@ -53,7 +54,7 @@ import http from 'http';
         _showInitMessages(env);
     } catch (error) {
         console.log(chalk.red(String(error)));
-        _askUserInput(ERROR_MSG.INIT);
+        askUserInput(ERROR_MSG.INIT());
     }
 })();
 
@@ -77,7 +78,7 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
 
         // Invalid configuration
         if (parsedCommand == null) {
-            console.log(ERROR_MSG.INVALID_REWARD);
+            console.log(ERROR_MSG.INVALID_REWARD());
             return;
         }
 
@@ -130,42 +131,23 @@ function _parseEnvVariables(env: EnvObject): ParsedEnvVariables {
  */
 function _showInitMessages(env: ParsedEnvVariables): void {
     // Initial message
-    console.log(chalk.yellow('\nTwitchMIDI ready!'));
-    console.log(chalk.green('\nUse'), chalk.greenBright('!midion'), chalk.green('in your chat to enable this tool'));
-    console.log(chalk.green('Explore all available commands with'), chalk.greenBright('!midihelp'), chalk.green('and have fun!'));
-    console.log(chalk.green('...And whenever you want to disable it, use'), chalk.greenBright('!midioff'));
+    console.log(chalk.yellow(i18n.t('INIT_READY')));
+    console.log(chalk.green(i18n.t('INIT_USE_MIDION_1')), chalk.greenBright('!midion'), chalk.green(i18n.t('INIT_USE_MIDION_2')));
+    console.log(chalk.green(i18n.t('INIT_EXPLORE_MIDIHELP_1')), chalk.greenBright('!midihelp'), chalk.green(i18n.t('INIT_EXPLORE_MIDIHELP_2')));
+    console.log(chalk.green(i18n.t('INIT_USE_MIDIOFF')), chalk.greenBright('!midioff'));
 
     // Flags
-    console.log(chalk.gray('\nCurrent flags:'));
-    console.log(chalk.magenta('\tRewards/Channel Points mode:'), chalk.magentaBright(String(env.REWARDS_MODE)));
-    console.log(chalk.magenta('\tVIP can use commands in Rewards Mode:'), chalk.magentaBright(String(env.VIP_REWARDS_MODE)));
+    console.log(chalk.gray(i18n.t('INIT_CURRENT_FLAGS')));
+    console.log(chalk.magenta(i18n.t('INIT_REWARDS_CHANNELPOINTS_MODE')), chalk.magentaBright(String(env.REWARDS_MODE)));
+    console.log(chalk.magenta(i18n.t('INIT_VIP_REWARDS_CHANNELPOINTS_MODE')), chalk.magentaBright(String(env.VIP_REWARDS_MODE)));
 
     // Support message
-    console.log(chalk.blueBright('\n***************\n'));
-    console.log(chalk.cyan('This software is free and maintained in my spare time.'));
-    console.log(chalk.cyan('If you want to support my work, please contribute on Paypal:\n'));
-    console.log(chalk.cyanBright('https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN'));
-    console.log(chalk.cyan('\nThank you! ♥'));
-    console.log(chalk.blueBright('\n***************\n'));
-}
-
-/**
- * Asks for user input
- * @param question Question
- * @returns
- */
-function _askUserInput(question: string): Promise<string> {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-
-    return new Promise((resolve) =>
-        rl.question(question, (answer) => {
-            rl.close();
-            resolve(answer);
-        })
-    );
+    console.log(chalk.blueBright(i18n.t('INIT_SEPARATOR')));
+    console.log(chalk.cyan(i18n.t('INIT_SPONSOR_1')));
+    console.log(chalk.cyan(i18n.t('INIT_SPONSOR_2')));
+    console.log(chalk.cyanBright(CONFIG.SPONSOR_PAYPAL_LINK));
+    console.log(chalk.cyan(i18n.t('INIT_SPONSOR_THANKS')));
+    console.log(chalk.blueBright(i18n.t('INIT_SEPARATOR')));
 }
 
 /**
@@ -197,7 +179,7 @@ async function _checkUpdates(): Promise<[localVersion: string, remoteVersion: st
 async function _showUpdateMessages(): Promise<void> {
     const [localVersion, remoteVersion] = await _checkUpdates();
     if (localVersion !== remoteVersion) {
-        console.log(chalk.bgBlue.bold(`\nHey, there is an update! Latest available version is v${remoteVersion}, you have v${localVersion}.`));
-        console.log(chalk.bgBlue.bold('Download latest version at https://github.com/rafaelpernil2/TwitchMIDI\n'));
+        console.log(chalk.bgBlue.bold(`${i18n.t('INIT_UPDATE_1')}${remoteVersion}${i18n.t('INIT_UPDATE_2')}${localVersion}.`));
+        console.log(chalk.bgBlue.bold(`${i18n.t('INIT_UPDATE_3')} ${CONFIG.REPOSITORY_LINK}\n`));
     }
 }

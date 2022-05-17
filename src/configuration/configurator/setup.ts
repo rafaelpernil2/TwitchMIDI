@@ -8,32 +8,13 @@ import { getBooleanByString } from '../../utils/generic';
 import { AccessToken } from '@twurple/auth/lib';
 import { CONFIG } from '../constants';
 import chalk from 'chalk';
+import i18n from '../../i18n/loader';
 
 const localHTTPServerEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 const NEW_CODE = 'newCode';
 
 export async function setupConfiguration(): Promise<EnvObject> {
-    console.log(
-        chalk.yellow(`
-        _______       _ _       _     __  __ _____ _____ _____
-        |__   __|     (_) |     | |   |  \\/  |_   _|  __ \\_   _|
-           | |_      ___| |_ ___| |__ | \\  / | | | | |  | || |
-           | \\ \\ /\\ / / | __/ __| '_ \\| |\\/| | | | | |  | || |
-           | |\\ V  V /| | || (__| | | | |  | |_| |_| |__| || |_
-           |_| \\_/\\_/ |_|\\__\\___|_| |_|_|  |_|_____|_____/_____|
-                                               by rafaelpernil2
-
-    If you are seeing this, it means this is your first time
-    running this software (or some setting was wrong). Welcome! :)
-
-    We are going to generate a .env file with all the credentials
-    and configurations, but don't worry about specifics, this will be easy.
-
-    Please note that you can modify the .env file manually and this setup
-    will only show up when some setting is wrong. This process aims to help
-    make sure every setting is correct.
-    `)
-    );
+    console.log(chalk.yellow(i18n.t('SETUP_1')));
     // Arbitrary delay for usability
     await setTimeoutPromise(5_000_000_000);
     // This executes when there is not a valid .env file
@@ -41,63 +22,18 @@ export async function setupConfiguration(): Promise<EnvObject> {
         input: process.stdin,
         output: process.stdout
     });
-    console.log(
-        chalk.greenBright(`
-    STEP 1 - Create a Twitch Bot and get the ClientID and Client Secret
-    `)
-    );
-    console.log(
-        chalk.magenta(`
-    Let's start by opening Twitch Development console
-        (Ctrl+click/Double click select + Right click copy): https://dev.twitch.tv/console/apps
+    console.log(chalk.greenBright(i18n.t('SETUP_STEP_1')));
+    console.log(chalk.magenta(i18n.t('SETUP_STEP_1_TEXT')));
 
-    Now click on "Register your Application" and fill out the following information:
+    const CLIENT_ID = await _makeQuestion(rl, i18n.t('SETUP_STEP_1_CLIENT_ID_QUESTION'));
+    const CLIENT_SECRET = await _makeQuestion(rl, i18n.t('SETUP_STEP_1_CLIENT_SECRET_QUESTION'));
 
-        -Name: Choose any name you like, this will only be shown when asking for permissions later
-        -OAuth Redirect URLs: http://localhost:8000 (VERY IMPORTANT STEP)
-        -Category: Chat Bot
-
-    Once it is created, a table with all applications will appear. Click on "Manage"
-
-    Here come the important steps:
-
-        -Copy your Client ID and save it somewhere for later steps
-
-        -Click on "New Secret", accept the alert and save that value somewhere
-        safe.This value will only be shown once
-
-    You will have a Client ID and a Client Secret ready to go!
-
-    `)
-    );
-
-    const CLIENT_ID = await _makeQuestion(rl, '*********** Paste your Client ID and press enter\n');
-    const CLIENT_SECRET = await _makeQuestion(rl, '*********** Paste your Client Secret and press enter\n');
-
-    console.log(
-        chalk.greenBright(`
-    STEP 2 - Authorize your streamer user to work in your stream
-    `)
-    );
-    console.log(
-        chalk.magenta(`
-    We create an authorization request from previous information.
-    Once the code is received, another petition will be automatically submitted
-    to retrieve the Access Token and Refresh Token. It's all automatic, don't worry :)
-
-    Login to your streamer channel, go to the following page and click on "Authorize".
-
-    If it all went well, you will see a page that says "Authentication successful!"
-    `)
-    );
+    console.log(chalk.greenBright(i18n.t('SETUP_STEP_2')));
+    console.log(chalk.magenta(i18n.t('SETUP_STEP_2_TEXT')));
     // This server awaits the response from the URL
     const server = _createAuthServer(CONFIG.LOCAL_SERVER_HOST, CONFIG.LOCAL_SERVER_PORT);
     const authUrl = await _createAuthURL(CLIENT_ID);
-    console.log(
-        chalk.magenta(`
-        Go to (Ctrl+click/Double click select + Right click copy):\n\t\t${authUrl}
-    `)
-    );
+    console.log(chalk.magenta(i18n.t('SETUP_STEP_2_LINK') + authUrl));
 
     // Wait until user clicks and authorizes
     const BROADCASTER_CODE = await _getAuthCode();
@@ -106,21 +42,12 @@ export async function setupConfiguration(): Promise<EnvObject> {
     const BROADCASTER_ACCESS_TOKEN = access_token;
     const BROADCASTER_REFRESH_TOKEN = refresh_token;
 
-    const isBotDifferent = getBooleanByString((await _makeQuestion(rl, 'Do you want to use a different user for your bot? (Y/n)\n')) || 'Y');
+    const isBotDifferent = getBooleanByString((await _makeQuestion(rl, i18n.t('SETUP_STEP_2_BOT_QUESTION'))) || 'Y');
     let BOT_ACCESS_TOKEN = BROADCASTER_ACCESS_TOKEN;
     let BOT_REFRESH_TOKEN = BROADCASTER_REFRESH_TOKEN;
     if (isBotDifferent) {
-        console.log(
-            chalk.greenBright(`
-        Authorize your Bot account to work in your stream
-        `)
-        );
-        console.log(
-            chalk.magenta(`
-        Let's repeat but, before, login to your bot account.
-        Then go to (Ctrl+click/Double click select + Right click copy):\n\t\t${authUrl}
-        `)
-        );
+        console.log(chalk.greenBright(i18n.t('SETUP_STEP_2_BOT_TEXT_1')));
+        console.log(chalk.magenta(i18n.t('SETUP_STEP_2_BOT_TEXT_2') + authUrl));
         // Wait until user clicks and authorizes
         const BOT_CODE = await _getAuthCode();
         const { access_token, refresh_token } = await _requestTokenByCode(CLIENT_ID, CLIENT_SECRET, BOT_CODE);
@@ -129,50 +56,19 @@ export async function setupConfiguration(): Promise<EnvObject> {
         BOT_REFRESH_TOKEN = refresh_token;
     }
 
-    console.log(
-        chalk.greenBright(`
-    STEP 3 - Customizations
-    `)
-    );
-    console.log(
-        chalk.magenta(`
-    At this point we already have access to Twitch API but we need some extra information:
-
-    -Target Channel - The channel where this bot will be used, where you stream
-
-    -Rewards/Channel Points mode - This mode restricts the bot commands for streamer and
-     mods and only allows actions to be sent via custom Rewards
-
-
-    `)
-    );
-    const TARGET_CHANNEL = await _makeQuestion(rl, '*********** Enter the Twitch channel where you stream\n');
-    const rewardsModeFlag = (await _makeQuestion(rl, '*********** Do you want to use Rewards/Channel Points mode instead of chat? (Y/n)\n')) || 'Y';
+    console.log(chalk.greenBright(i18n.t('SETUP_STEP_3')));
+    console.log(chalk.magenta(i18n.t('SETUP_STEP_3_TEXT')));
+    const TARGET_CHANNEL = await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TARGET_CHANNEL_QUESTION'));
+    const rewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_REWARDS_MODE_QUESTION'))) || 'Y';
     const REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
 
-    const vipRewardsModeFlag =
-        (await _makeQuestion(rl, '*********** For Rewards Mode, do you want VIP members to use commands freely and not need to redeem rewards? (Y/n)\n')) || 'Y';
+    const vipRewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_VIP_REWARDS_MODE_QUESTION'))) || 'Y';
     const VIP_REWARDS_MODE = String(getBooleanByString(vipRewardsModeFlag));
 
-    console.log(
-        chalk.greenBright(`
-    STEP 4 - MIDI 
-    `)
-    );
-    console.log(
-        chalk.magenta(`
-    For this application to work, you need a virtual MIDI device. If you use Windows, either
-    one of these two should work flawlessly:
-
-    loopMIDI (Default/ What I use) - https://www.tobias-erichsen.de/software/loopmidi.html
-
-    LoopBe1 - https://nerds.de/en/loopbe1.html
-
-
-    `)
-    );
-    const TARGET_MIDI_NAME = (await _makeQuestion(rl, '*********** Enter the name of the Virtual MIDI device to use (Default: loopMIDI Port)\n')) || 'loopMIDI Port';
-    const TARGET_MIDI_CHANNEL = (await _makeQuestion(rl, '*********** Enter the MIDI channel to use with your Virtual MIDI device (Default: 1)\n')) || '1';
+    console.log(chalk.greenBright(i18n.t('SETUP_STEP_4')));
+    console.log(chalk.magenta(i18n.t('SETUP_STEP_4_TEXT')));
+    const TARGET_MIDI_NAME = (await _makeQuestion(rl, i18n.t('SETUP_STEP_4_TARGET_MIDI_NAME_QUESTION'))) || 'loopMIDI Port';
+    const TARGET_MIDI_CHANNEL = (await _makeQuestion(rl, i18n.t('SETUP_STEP_4_TARGET_MIDI_CHANNEL_QUESTION'))) || '1';
 
     // Delete the original file first
     try {
@@ -194,20 +90,11 @@ export async function setupConfiguration(): Promise<EnvObject> {
 
     rl.close();
     server.close();
-    console.log(
-        chalk.greenBright(`
-    STEP ???? - Profit
-    `)
-    );
-    console.log(
-        chalk.magenta(`
-    Everything is ready, have fun!
-    Feel free to modify the .env file at any time
-    `)
-    );
+    console.log(chalk.greenBright(i18n.t('SETUP_STEP_END')));
+    console.log(chalk.magenta(i18n.t('SETUP_STEP_END_READY')));
     console.log(
         chalk.yellowBright(`
-    ***** Software developed by Rafael Pernil (@rafaelpernil2) ***** 
+    ***** ${i18n.t('SETUP_STEP_END_CREDITS')} Rafael Pernil (@rafaelpernil2) ***** 
     `)
     );
 
@@ -247,12 +134,12 @@ function _createAuthServer(host: string, port: number): http.Server {
         const code = new URLSearchParams(req.url).get('/?code');
         if (code == null) {
             res.writeHead(300);
-            res.end('Bad authentication!');
+            res.end(i18n.t('AUTH_SERVER_OK'));
             return;
         }
         localHTTPServerEmitter.emit(NEW_CODE, code);
         res.writeHead(200);
-        res.end('Authentication successful!');
+        res.end(i18n.t('AUTH_SERVER_OK'));
     };
     const server = http.createServer(requestListener);
     server.listen(port, host);

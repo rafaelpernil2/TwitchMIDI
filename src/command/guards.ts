@@ -40,7 +40,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
  */
 function _checkRequestsOpen(): void {
     if (!areRequestsOpen.get()) {
-        throw new Error(ERROR_MSG.BOT_PAUSED_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_PAUSED_DISCONNECTED());
     }
 }
 
@@ -59,7 +59,7 @@ function _checkRequirements(source: RequestSource, requirements: Array<keyof Use
     }
     const isValid = requirements.some((requirement) => userRoles[requirement]);
     if (!isValid) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS);
+        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
 
@@ -77,7 +77,7 @@ function _checkBlacklist(blacklist: string[], user: string): void {
     }
     const isInBlacklist = blacklist.find((bannedUser) => user === bannedUser);
     if (isInBlacklist) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS);
+        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
 
@@ -95,7 +95,7 @@ function _checkWhitelist(whitelist: string[], user: string): void {
     }
     const isInWhitelist = whitelist.find((allowedUser) => user === allowedUser);
     if (!isInWhitelist) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS);
+        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
 
@@ -108,7 +108,7 @@ function _checkWhitelist(whitelist: string[], user: string): void {
  */
 function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvVariables, { isMod, isVip }: UserRoles): void {
     if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS);
+        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
 
@@ -120,7 +120,7 @@ function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_
 function _getPermissionsTable(command: Command): PermissionsTable {
     const permissionTable = PERMISSIONS_DB.select(PERMISSIONS_MAP, command);
     if (permissionTable == null) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS);
+        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
     return permissionTable;
 }

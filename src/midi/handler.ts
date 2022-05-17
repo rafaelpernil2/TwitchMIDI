@@ -44,7 +44,7 @@ export async function disconnectMIDI(targetMIDIChannel: number): Promise<void> {
  */
 export function checkMIDIConnection(): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
 }
 
@@ -54,7 +54,7 @@ export function checkMIDIConnection(): void {
  */
 export function setMIDIVolume(value: number): void {
     if (isNaN(value) || value < 0 || value > 100) {
-        throw new Error(ERROR_MSG.INVALID_VOLUME);
+        throw new Error(ERROR_MSG.INVALID_VOLUME());
     }
     // Convert to range 0-127
     globalVolume = Math.round(value * 1.27);
@@ -123,7 +123,7 @@ export async function triggerChordList(
 export function triggerCCCommandList(rawCCCommandList: CCCommand[], targetMIDIChannel: number): void {
     const ccCommandList = _processCCCommandList(rawCCCommandList);
     if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
     for (const [controller, value, time] of ccCommandList) {
         output.wait(time).control(targetMIDIChannel, controller, value);
@@ -137,7 +137,7 @@ export function triggerCCCommandList(rawCCCommandList: CCCommand[], targetMIDICh
  */
 export function triggerClock(targetMIDIChannel: number, newTempo?: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
     if (newTempo != null) {
         globalTempo = newTempo;
@@ -151,7 +151,7 @@ export function triggerClock(targetMIDIChannel: number, newTempo?: number): void
  */
 export function stopAllMidi(targetMIDIChannel: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
     output.stop();
     output.allNotesOff(targetMIDIChannel);
@@ -177,7 +177,7 @@ function _initVariables(): void {
  */
 async function _sendMIDINoteListPromise(noteList: number | string | string[], release: number, channels: number): Promise<void> {
     if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
     const parsedNoteList = !Array.isArray(noteList) ? [noteList] : noteList;
     if (parsedNoteList.length === 1 && parsedNoteList[0] === GLOBAL.MUSIC_REST_TOKEN) {
@@ -226,7 +226,7 @@ function _processChordProgression(chordProgressionList: Array<[noteList: string[
  */
 function _processCCCommandList(rawCCCommandList: CCCommand[]): Array<CCCommand> {
     if (rawCCCommandList.length < 1) {
-        throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE);
+        throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE());
     }
     // First command
     let ccCommandList: CCCommand[] = [rawCCCommandList[0]];
@@ -284,7 +284,7 @@ function _sweep(
     frequency = CONFIG.DEFAULT_SWEEP_FREQUENCY
 ): Array<[value: number, time: number]> {
     if (startTime > endTime) {
-        throw new Error(ERROR_MSG.BAD_SWEEP_DELAY);
+        throw new Error(ERROR_MSG.BAD_SWEEP_DELAY());
     }
     const stepCount = ((endTime - startTime) / 1000) * frequency;
 
@@ -308,7 +308,7 @@ function _sweep(
  */
 function _autoStartClock(targetMIDIChannel: number): void {
     if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED);
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
     if (!isClockActive()) {
         startClock(targetMIDIChannel, output, globalTempo);
