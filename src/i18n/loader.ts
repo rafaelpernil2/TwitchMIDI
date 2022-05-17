@@ -25,7 +25,11 @@ i18next.init({
     fallbackLng: 'en'
 });
 
-export async function initializei18n(language?: string) {
+/**
+ * Loads i18n based on user language an preferences
+ * @param language Locale language
+ */
+export async function initializei18n(language?: string): Promise<void> {
     let lng = language;
     // If language is not default
     if (systemLanguage !== 'en') {
@@ -42,7 +46,6 @@ export async function initializei18n(language?: string) {
         }
     }
     await i18next.init({ lng, resources, fallbackLng: 'en' });
-    return i18next;
 }
 
 /**
