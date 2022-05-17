@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.1] - 2022-05-17
+### Fixed
+- Added missing credits on !midioff
+
 ## [2.5.0] - 2022-05-17
 ### Added
 - Internacionalization (i18n) and full Spanish translation
@@ -341,6 +345,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.0...v2.5.1
 [2.5.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.2.3...v2.3.0

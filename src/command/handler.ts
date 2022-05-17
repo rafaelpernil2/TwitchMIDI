@@ -84,7 +84,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
     }
-    chatClient.say(channel, i18n.t('MIDIOFF_DISABLED'));
+    chatClient.say(channel, `${i18n.t('MIDIOFF_DISABLED')} Rafael Pernil (@rafaelpernil2)`);
 }
 
 /**
