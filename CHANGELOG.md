@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.4] - 2022-05-19
+### Fixed
+- !midipause->!midiresume queue forwarding bugs. Now request repetition only applies to loops, as it should.
+- Simplified !sendchord vs !sendloop request priority management.
+
 ## [2.5.3] - 2022-05-18
 ### Fixed
 - Added missing parameter in JSDocs of getLanguagesFromLocale method
@@ -353,6 +358,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.3...v2.5.4
 [2.5.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.2...v2.5.3
 [2.5.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.1...v2.5.2
 [2.5.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.0...v2.5.1

@@ -1,6 +1,6 @@
 import { ResponseStatus } from '../database/interface';
 import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { clearQueue, queue, clearQueueList, currentTurnMap, isQueueEmpty, rollbackClearQueue, getCurrentRequestPlaying, getRequestQueue } from './queue';
+import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue';
 import { isValidCommand, deAliasCommand, splitCommandArguments } from './utils';
 import { CommandParams } from '../twitch/chat/types';
 import { removeDuplicates } from '../utils/generic';
@@ -197,19 +197,10 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
     // Lookup previously saved chord progressions
     const chordProgression = _getChordProgression(message);
 
-    // If a chord progression is requested, we clear the loop queue
-    if (isQueueEmpty(Command.sendchord)) {
-        clearQueue(Command.sendloop, { backup: true });
-    }
     const myTurn = queue(message, Command.sendchord);
     chatClient.say(channel, i18n.t('SENDCHORD'));
 
     await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
-
-    // Once the chord queue is empty, we go back to the loop queue
-    if (isQueueEmpty(Command.sendchord)) {
-        rollbackClearQueue(Command.sendloop);
-    }
 }
 
 /**
