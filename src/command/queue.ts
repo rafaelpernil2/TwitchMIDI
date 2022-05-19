@@ -236,7 +236,10 @@ function _isCollisionFree(type: Command): boolean {
  * @returns If queue can progress
  */
 function _mustRepeatRequest(type: Command, turn: number): boolean {
-    return (syncMode.is(Sync.REPEAT) && type === Command.sendloop) || (syncMode.is(Sync.OFF) && (_isLoopingAlone(type, turn) || !areRequestsOpen.get() || isQueueEmpty(type)));
+    return (
+        type === Command.sendloop &&
+        (syncMode.is(Sync.REPEAT) || (syncMode.is(Sync.OFF) && (_isLoopingAlone(type, turn) || !areRequestsOpen.get() || !isQueueEmpty(Command.sendchord))))
+    );
 }
 
 /**
