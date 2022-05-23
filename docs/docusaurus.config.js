@@ -24,7 +24,7 @@ const config = {
     // to replace "en" with "zh-Hans".
     i18n: {
         defaultLocale: 'en',
-        locales: ['en']
+        locales: ['en', 'es']
     },
 
     presets: [
@@ -56,14 +56,11 @@ const config = {
                 },
                 items: [
                     {
-                        type: 'doc',
-                        docId: 'intro',
-                        position: 'left',
-                        label: 'Tutorial'
+                        type: 'localeDropdown',
+                        position: 'left'
                     },
-                    { to: '/blog', label: 'Blog', position: 'left' },
                     {
-                        href: 'https://github.com/facebook/docusaurus',
+                        href: 'https://github.com/rafaelpernil2/TwitchMIDI',
                         label: 'GitHub',
                         position: 'right'
                     }
@@ -77,7 +74,7 @@ const config = {
                         items: [
                             {
                                 label: 'Tutorial',
-                                to: '/docs/intro'
+                                to: 'https://github.com/rafaelpernil2/TwitchMIDI/blob/master/README.md'
                             }
                         ]
                     },
@@ -85,16 +82,8 @@ const config = {
                         title: 'Community',
                         items: [
                             {
-                                label: 'Stack Overflow',
-                                href: 'https://stackoverflow.com/questions/tagged/docusaurus'
-                            },
-                            {
-                                label: 'Discord',
-                                href: 'https://discordapp.com/invite/docusaurus'
-                            },
-                            {
                                 label: 'Twitter',
-                                href: 'https://twitter.com/docusaurus'
+                                href: 'https://twitter.com/rafaelpernil'
                             }
                         ]
                     },
@@ -103,21 +92,22 @@ const config = {
                         items: [
                             {
                                 label: 'Blog',
-                                to: '/blog'
+                                to: 'https://blog.rafaelpernil.com'
                             },
                             {
                                 label: 'GitHub',
-                                href: 'https://github.com/facebook/docusaurus'
+                                href: 'https://github.com/rafaelpernil2'
                             }
                         ]
                     }
                 ],
-                copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`
+                copyright: `Copyright © ${new Date().getFullYear()} TwitchMIDI, Inc. Built with Docusaurus.`
             },
             prism: {
                 theme: lightCodeTheme,
                 darkTheme: darkCodeTheme
-            }
+            },
+            metadata: [{ name: 'keywords', content: 'Twitch, MIDI, music, software, bot, tool, documentation' }]
         })
 };
 
