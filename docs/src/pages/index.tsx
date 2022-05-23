@@ -29,7 +29,7 @@ function HomepageHeader() {
             <Translate>Download now!</Translate>
           </Link>
           <Link
-            className="button button--lg margin-left--xs"
+            className="button button--lg"
             href="https://youtu.be/3JK5JukHRn0">
             <Translate>Or watch a demo</Translate>
           </Link>
