@@ -120,7 +120,7 @@ So far, this first version does all that, keep reading the features for more det
   * Control Change controller names - Put a name to your Control Change controllers (e.g sustain: 64)
   * Control Change commands - Assign a set of cc commands
     * Sweep functionality, specify two values and the time in milliseconds to get from one value to other (e.g "cutoff 20(5000),cutoff 120(10000)")
-    * List all added chord progressions with their name with [!cclist](#cclist)
+    * List all added Control Change commands with their name via [!cclist](#cclist)
   * Reload [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json), [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json) and [config/rewards.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/rewards.json) file while using the bot with [!fetchdb](#fetchdb)
 * Commands explanation with examples via [!midihelp](#midihelp) commandname
 * Fine-grained command access control with role check, whitelist and blackist on [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json)

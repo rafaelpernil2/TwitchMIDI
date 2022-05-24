@@ -230,17 +230,20 @@
     "message": "Expandir barra lateral",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
   },
-  "Download now!": {
-    "message": "Descárgalo ya!"
-  },
   "Allow your viewers to be part of your musical creations!": {
     "message": "Permite que tus viewers sean parte de tus creaciones musicales!",
     "description": "Head meta tag"
   },
-  "Or watch a demo": {
-    "message": "O mira la demo"
-  },
   "TwitchMIDI": {
     "message": "TwitchMIDI"
+  },
+  "by rafaelpernil": {
+    "message": "de rafaelpernil"
+  },
+  "Get Started": {
+    "message": "Empezar"
+  },
+  "Watch a Demo": {
+    "message": "Mira una demo"
   }
 }

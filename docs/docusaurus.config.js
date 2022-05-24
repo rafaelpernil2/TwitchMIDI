@@ -60,6 +60,12 @@ const config = {
                         position: 'left'
                     },
                     {
+                        type: 'doc',
+                        docId: 'intro',
+                        position: 'left',
+                        label: 'Get Started'
+                    },
+                    {
                         href: 'https://github.com/rafaelpernil2/TwitchMIDI',
                         label: 'GitHub',
                         position: 'right'
@@ -73,7 +79,7 @@ const config = {
                         title: 'Docs',
                         items: [
                             {
-                                label: 'Tutorial',
+                                label: 'ReadMe',
                                 to: 'https://github.com/rafaelpernil2/TwitchMIDI/blob/master/README.md'
                             }
                         ]
@@ -101,12 +107,13 @@ const config = {
                         ]
                     }
                 ],
-                copyright: `Copyright © ${new Date().getFullYear()} TwitchMIDI, Inc. Built with Docusaurus.`
+                copyright: `Copyright © ${new Date().getFullYear()} TwitchMIDI - Rafael Pernil. Built with Docusaurus.`
             },
             prism: {
                 theme: lightCodeTheme,
                 darkTheme: darkCodeTheme
             },
+            colorMode: { respectPrefersColorScheme: true },
             metadata: [{ name: 'keywords', content: 'Twitch, MIDI, music, software, bot, tool, documentation' }]
         })
 };
