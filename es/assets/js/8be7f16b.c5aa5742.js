@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunktwitch_midi_web=self.webpackChunktwitch_midi_web||[]).push([[277],{1021:function(e){e.exports=JSON.parse('{"permalink":"/es/blog/tags/facebook","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

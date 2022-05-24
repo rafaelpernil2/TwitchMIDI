@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunktwitch_midi_web=self.webpackChunktwitch_midi_web||[]).push([[199],{2682:function(e){e.exports=JSON.parse('{"label":"hello","permalink":"/es/blog/tags/hello","allTagsPath":"/es/blog/tags","count":2}')}}]);

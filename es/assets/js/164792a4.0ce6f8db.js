@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunktwitch_midi_web=self.webpackChunktwitch_midi_web||[]).push([[2446],{3769:function(e){e.exports=JSON.parse('{"name":"docusaurus-plugin-content-docs","id":"default"}')}}]);
