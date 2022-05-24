@@ -6,5 +6,9 @@
   "item.label.GitHub": {
     "message": "GitHub",
     "description": "Navbar item with label GitHub"
+  },
+  "item.label.Get Started": {
+    "message": "Empezar",
+    "description": "Navbar item with label Get Started"
   }
 }

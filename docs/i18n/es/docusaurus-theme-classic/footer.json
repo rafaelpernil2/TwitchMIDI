@@ -24,11 +24,11 @@
     "description": "The label of footer link with label=GitHub linking to https://github.com/rafaelpernil2"
   },
   "copyright": {
-    "message": "Copyright © 2022 TwitchMIDI por @rafaelpernil2. Hecho con Docusaurus.",
+    "message": "Copyright © 2022 TwitchMIDI - Rafael Pernil. Hecho con Docusaurus.",
     "description": "The footer copyright"
   },
-  "link.item.label.Tutorial": {
-    "message": "Tutorial",
-    "description": "The label of footer link with label=Tutorial linking to https://github.com/rafaelpernil2/TwitchMIDI/blob/master/README.md"
+  "link.item.label.ReadMe": {
+    "message": "Léeme",
+    "description": "The label of footer link with label=ReadMe linking to https://github.com/rafaelpernil2/TwitchMIDI/blob/master/README.md"
   }
 }

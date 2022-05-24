@@ -18,6 +18,9 @@ function HomepageHeader() {
         </div>
         <h1 className="hero__title">
           <Translate>TwitchMIDI</Translate>
+          <p className="hero__subtitle">
+            <Translate>by rafaelpernil</Translate>
+          </p>
         </h1>
         <p className="hero__subtitle">
           <Translate>Allow your viewers to be part of your musical creations!</Translate>
@@ -25,13 +28,13 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            href="https://github.com/rafaelpernil2/TwitchMIDI/releases/latest/download/TwitchMIDI.zip">
-            <Translate>Download now!</Translate>
+            to="docs/intro">
+            <Translate>Get Started</Translate>
           </Link>
           <Link
             className="button button--lg"
             href="https://youtu.be/3JK5JukHRn0">
-            <Translate>Or watch a demo</Translate>
+            <Translate>Watch a Demo</Translate>
           </Link>
         </div>
       </div>
