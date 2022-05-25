@@ -29,7 +29,7 @@ function HomepageHeader() {
             <Translate>Get Started</Translate>
           </Link>
           <Link
-            className="button button--lg"
+            className="button button--primary button--lg"
             href="https://youtu.be/3JK5JukHRn0">
             <Translate>Watch a Demo</Translate>
           </Link>
