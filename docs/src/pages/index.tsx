@@ -18,9 +18,6 @@ function HomepageHeader() {
         </div>
         <h1 className="hero__title">
           <Translate>TwitchMIDI</Translate>
-          <p className="hero__subtitle">
-            <Translate>by rafaelpernil</Translate>
-          </p>
         </h1>
         <p className="hero__subtitle">
           <Translate>Allow your viewers to be part of your musical creations!</Translate>
