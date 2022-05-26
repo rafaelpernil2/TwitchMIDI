@@ -103,7 +103,7 @@
         "MIDIOFF_LOG_DISABLED": "TwitchMIDI disabled!",
         "MIDIOFF_DISABLED": "TwitchMIDI disabled! - Tool developed by",
         "MIDIPAUSE": "TwitchMIDI paused! - Now only the streamer can send commands and requests",
-        "MIDIRESUME": "TwitchMIDI resumed! - Go crazy with your requests!!! :D ",
+        "MIDIRESUME": "TwitchMIDI resumed! - Go crazy with your requests!!! :D",
         "ADDCHORD": "Chord progression saved!",
         "REMOVECHORD": "Chord progression removed!",
         "CHORDLIST_DEFAULT": "🔵Here is the list of saved chord progresison/loop🔵:",
@@ -121,7 +121,7 @@
         "EASTEREGG_69": "Nice! (～￣▽￣)～",
         "STOPLOOP": "Dequeuing loop.. Done!",
         "FULLSTOPMIDI": "Stopping all MIDI... Done!",
-        "SETTEMPO": "Tempo set to ",
+        "SETTEMPO": "Tempo set to",
         "SYNCMIDI": "Let's fix this mess... Done!",
         "FETCHDB": "Configuration files reloaded!"
     }

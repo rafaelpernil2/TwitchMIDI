@@ -103,7 +103,7 @@
         "MIDIOFF_LOG_DISABLED": "TwitchMIDI desactivado!",
         "MIDIOFF_DISABLED": "TwitchMIDI desactivado! - Aplicación desarrollada por",
         "MIDIPAUSE": "TwitchMIDI pausado! - Ahora sólo el streamer puede lanzar comandos y peticiones",
-        "MIDIRESUME": "TwitchMIDI reanudado! - Volveos locos con las peticiones!!! :D ",
+        "MIDIRESUME": "TwitchMIDI reanudado! - Volveos locos con las peticiones!!! :D",
         "ADDCHORD": "Progresión de acordes guardada!",
         "REMOVECHORD": "Progresión de acordes eliminada!",
         "CHORDLIST_DEFAULT": "🔵Aquí está la lista de progresiones de acordes/loops guardados🔵:",
@@ -121,7 +121,7 @@
         "EASTEREGG_69": "Nice! (～￣▽￣)～",
         "STOPLOOP": "Desencolando loops y vaciando la lista... Hecho!",
         "FULLSTOPMIDI": "Parando todo el MIDI... Hecho!",
-        "SETTEMPO": "Tempo a ",
+        "SETTEMPO": "Tempo a",
         "SYNCMIDI": "Vamos a arreglar este desastre... Hecho!",
         "FETCHDB": "Archivos de configuración re-cargados!"
     }
