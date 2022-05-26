@@ -54,6 +54,7 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
             await createRewards(authProvider, broadcasterUser);
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
         }
+        EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         areRequestsOpen.set(true);
         console.log(i18n.t('MIDION_LOG_ENABLED'));
