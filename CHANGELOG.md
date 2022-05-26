@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.6] - 2022-05-26
+### Fixed
+- Trailing space in !settempo and !midiresume messages
+
 ## [2.5.5] - 2022-05-26
 ### Fixed
 - Playing now notification messages repeat in chat when enabling the bot (!midion) several times
@@ -362,6 +366,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.5...v2.5.6
 [2.5.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.4...v2.5.5
 [2.5.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.3...v2.5.4
 [2.5.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.2...v2.5.3
