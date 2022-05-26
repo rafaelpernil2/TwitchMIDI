@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.5] - 2022-05-26
+### Fixed
+- Playing now notification messages repeat in chat when enabling the bot (!midion) several times
+
 ## [2.5.4] - 2022-05-19
 ### Fixed
 - !midipause->!midiresume queue forwarding bugs. Now request repetition only applies to loops, as it should.
@@ -358,6 +362,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.4...v2.5.5
 [2.5.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.3...v2.5.4
 [2.5.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.2...v2.5.3
 [2.5.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.1...v2.5.2
