@@ -31,7 +31,7 @@ export function startClock(targetMIDIChannel: number, output: ReturnType<JZZType
  * Stops the clock
  */
 export function stopClock(): void {
-    syncMode.set(Sync.REPEAT);
+    syncMode.set(Sync.FORWARD);
     initClockData();
     timer = new NanoTimer();
 }
