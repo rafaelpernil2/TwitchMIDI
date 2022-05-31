@@ -121,9 +121,6 @@ export function clearQueue(type: Command, { backup = false } = {}): void {
         queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
     } else {
         queueCommitMap[type] = {};
-        if (type === Command.sendchord || type === Command.sendloop) {
-            syncMode.set(Sync.FORWARD);
-        }
     }
 
     queueMap[type] = {};
@@ -200,16 +197,6 @@ function _nextTurn(turn: number): number {
 }
 
 /**
- * Checks if there's only one looping request and it should keep going
- * @param type
- * @param nextTurn
- * @returns
- */
-function _isLoopingAlone(type: Command, nextTurn: number): boolean {
-    return type === Command.sendloop && queueMap[type][currentTurnMap[type]] != null && queueMap[type]?.[nextTurn] == null;
-}
-
-/**
  * Checks if it's your turn
  * @param turn Queue position
  * @param type Type of queue
@@ -232,13 +219,14 @@ function _isCollisionFree(type: Command): boolean {
 /**
  * Checks if the queue needs to repeat the current request
  * @param type Queue type
- * @param turn New turn
+ * @param nextTurn New turn
  * @returns If queue can progress
  */
-function _mustRepeatRequest(type: Command, turn: number): boolean {
+function _mustRepeatRequest(type: Command, nextTurn: number): boolean {
     return (
-        type === Command.sendloop &&
-        (syncMode.is(Sync.REPEAT) || (syncMode.is(Sync.OFF) && (_isLoopingAlone(type, turn) || !areRequestsOpen.get() || !isQueueEmpty(Command.sendchord))))
+        type === Command.sendloop && // Is a !sendloop request
+        queueMap.sendloop[currentTurnMap.sendloop] != null && // Current !sendloop request still exists
+        (syncMode.is(Sync.REPEAT) || (syncMode.is(Sync.OFF) && (queueMap.sendloop?.[nextTurn] == null || !areRequestsOpen.get() || !isQueueEmpty(Command.sendchord))))
     );
 }
 

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.7] - 2022-05-31
+### Changed
+- Now !stoploop allows the current loop to finish and !fullstopmidi stops the sound at the moment.
+- Simplified queue forwarding skip conditions
+
 ## [2.5.6] - 2022-05-26
 ### Fixed
 - Trailing space in !settempo and !midiresume messages
@@ -366,6 +371,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.6...v2.5.7
 [2.5.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.5...v2.5.6
 [2.5.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.4...v2.5.5
 [2.5.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.3...v2.5.4
