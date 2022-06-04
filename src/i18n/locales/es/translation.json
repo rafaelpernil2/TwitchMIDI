@@ -123,6 +123,11 @@
         "FULLSTOPMIDI": "Parando todo el MIDI... Hecho!",
         "SETTEMPO": "Tempo a",
         "SYNCMIDI": "Vamos a arreglar este desastre... Hecho!",
-        "FETCHDB": "Archivos de configuración re-cargados!"
+        "FETCHDB": "Archivos de configuración re-cargados!",
+        "API_ERROR_FILE": "Archivo a refrescar no encontrado",
+        "API_ERROR_NOT_A_METHOD": "No expuesto en la API",
+        "API_OK_1": "Archivo",
+        "API_OK_2": "refrescado con éxito!",
+        "API_SERVER_CONNECTION": "TwitchMIDI Config API escuchando en el puerto"
     }
 }

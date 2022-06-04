@@ -13,6 +13,7 @@ export const CONFIG = {
     PERMISSIONS_DB: './config/permissions.json',
     PACKAGE_JSON_PATH: './package.json',
     DOT_ENV_PATH: '.env',
+    DOT_API_PORT: '.apiPort',
     DEFAULT_OCTAVE: '5',
     DEFAULT_VOLUME: 64,
     MIN_TEMPO: 35,

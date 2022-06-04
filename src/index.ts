@@ -23,6 +23,7 @@ import { promises as fs } from 'fs';
 import { askUserInput, httpsRequestPromise } from './utils/promise';
 import http from 'http';
 import i18n, { initializei18n } from './i18n/loader';
+import { initiateConfigAPI } from './configuration/api/handler';
 
 /**
  * Initialization code
@@ -36,6 +37,7 @@ import i18n, { initializei18n } from './i18n/loader';
 
         console.log(chalk.grey(i18n.t('INIT_WELCOME')));
         await _showUpdateMessages();
+        initiateConfigAPI();
 
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
