@@ -1,5 +1,7 @@
+import { ChatClient } from '@twurple/chat/lib';
 import { ALIASES_DB, GLOBAL } from '../configuration/constants';
 import { COMMANDS_KEY } from '../database/jsondb/types';
+import { buildTwitchMessage } from '../utils/generic';
 import { Command } from './types';
 
 /**
@@ -41,4 +43,17 @@ export function deAliasCommand(command: string): Command {
  */
 export function splitCommandArguments(commandArguments: string): string[] {
     return commandArguments.split(GLOBAL.SPACE_SEPARATOR).filter((value) => value !== GLOBAL.EMPTY_MESSAGE);
+}
+
+/**
+ * Splits and says in as many messages as needed the full message, even if it exceeds the 500 character limit
+ * @param chatClient Twitch Chat Client
+ * @param channel Twitch Chat channel
+ * @param messageData [leading, content, trailing] Data for the message
+ */
+export function sayLongTwitchChatMessage(chatClient: ChatClient, channel: string, [leading = '', content = '', trailing = ''] = []) {
+    const messageList = buildTwitchMessage([leading, content, trailing]);
+    for (const twitchMessage of messageList) {
+        chatClient.say(channel, twitchMessage);
+    }
 }

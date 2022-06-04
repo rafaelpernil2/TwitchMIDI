@@ -1,7 +1,7 @@
 import { ResponseStatus } from '../database/interface';
 import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
 import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue';
-import { isValidCommand, deAliasCommand, splitCommandArguments } from './utils';
+import { isValidCommand, deAliasCommand, splitCommandArguments, sayLongTwitchChatMessage } from './utils';
 import { CommandParams } from '../twitch/chat/types';
 import { removeDuplicates } from '../utils/generic';
 import {
@@ -33,9 +33,9 @@ import i18n from '../i18n/loader';
 export function midihelp(...[message, , { chatClient, channel }]: CommandParams): void {
     const [commandToTest] = splitCommandArguments(message);
     if (isValidCommand(commandToTest)) {
-        chatClient.say(channel, `${i18n.t('MIDIHELP_VALID')} !${commandToTest}: ${COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()}`);
+        sayLongTwitchChatMessage(chatClient, channel, [`${i18n.t('MIDIHELP_VALID')} !${commandToTest}: `, COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()]);
     } else {
-        chatClient.say(channel, i18n.t('MIDIHELP_INVALID') + ' ' + Object.values(Command).join(GLOBAL.COMMA_JOIN));
+        sayLongTwitchChatMessage(chatClient, channel, [i18n.t('MIDIHELP_INVALID') + ' ', Object.values(Command).join(GLOBAL.COMMA_JOIN)]);
     }
 }
 
@@ -164,9 +164,10 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
     }
     // Default case showing all
     const chordProgressionList = Object.entries(ALIASES_DB.value?.chordProgressions ?? {});
+    if (chordProgressionList.length === 0) return;
     chatClient.say(channel, i18n.t('CHORDLIST_DEFAULT'));
     for (const [alias, chordProgression] of chordProgressionList) {
-        chatClient.say(channel, `🎵${alias}🎵:🎼${chordProgression}🎼`);
+        sayLongTwitchChatMessage(chatClient, channel, [`🎵${alias}🎵:🎼`, chordProgression, '🎼']);
     }
 }
 
@@ -254,7 +255,7 @@ export function midicurrentrequest(...[, , { chatClient, channel }]: CommandPara
         chatClient.say(channel, i18n.t('MIDICURRENTREQUEST_NOTHING'));
         return;
     }
-    chatClient.say(channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
+    sayLongTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
 }
 
 /**
@@ -268,7 +269,7 @@ export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams
     const requestList = getRequestQueue()
         .map(([type, request]) => `!${type} "${request}"`)
         .join(GLOBAL.COMMA_JOIN);
-    chatClient.say(channel, i18n.t('MIDIREQUESTQUEUE_OK') + ': ' + (requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList));
+    sayLongTwitchChatMessage(chatClient, channel, [i18n.t('MIDIREQUESTQUEUE_OK') + ': ', requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList]);
 }
 
 /**
@@ -280,7 +281,8 @@ export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams
  */
 export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
     const commands = Object.keys(ALIASES_DB.value?.ccCommands ?? {});
-    chatClient.say(channel, i18n.t('CCLIST') + ': ' + commands.join(GLOBAL.COMMA_JOIN));
+    if (commands.length === 0) return;
+    sayLongTwitchChatMessage(chatClient, channel, [i18n.t('CCLIST') + ': ', commands.join(GLOBAL.COMMA_JOIN)]);
 }
 
 /**
@@ -569,15 +571,15 @@ function _parseMIDIValue(midiValue: string | number): number {
  * @returns An event handler
  */
 function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Command, request: string) => void {
-    return (type, request) => chatClient.say(channel, _buildPlayingNowMessage(type, request));
+    return (type, request) => sayLongTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request));
 }
 
 /**
  * Creates a message to show the request being played right now
  * @param type
  * @param request
- * @returns A message
+ * @returns A message splitted in leading and content parts
  */
-function _buildPlayingNowMessage(type: Command, request: string): string {
-    return `${i18n.t('MIDICURRENTREQUEST_OK')} !${type} "${request}"`;
+function _buildPlayingNowMessage(type: Command, request: string): [leading: string, content: string] {
+    return [`${i18n.t('MIDICURRENTREQUEST_OK')} !${type} `, `"${request}"`];
 }

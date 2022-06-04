@@ -6,9 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [2.5.8] - 2022-06-01
+## [2.5.8] - 2022-06-04
 ### Added
 - Local REST API to refresh configuration files on demand
+- Support for longer response messages (for !cclist, !chordlist, !midihelp, !midicurrentrequest, !midirequestqueue)
+### Changed
+- Now, if the list of saved chord progressions/cc macros is empty, !chordlist and !cclist respectively don't output a message
+
 
 ## [2.5.7] - 2022-05-31
 ### Changed
