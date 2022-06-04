@@ -1,3 +1,5 @@
+import { ERROR_MSG, GLOBAL } from '../configuration/constants';
+
 /**
  * Checks if the argument is an empty object
  * @param obj
@@ -52,4 +54,50 @@ export function isJsonString(str: string): boolean {
  */
 export function removeDuplicates<T>(list: T[]): T[] {
     return [...new Set(list)];
+}
+
+/**
+ * Builds a set of valid Twitch messages given the 500 characters limitation
+ * @param messageData [leading, content, trailing] Text always appended before content, The content itself, Text appended always after the content
+ * @param limit Character limitation, 500 by default
+ */
+export function buildTwitchMessage([leading = '', content = '', trailing = ''] = [], limit = 500): string[] {
+    const [leadingLength, trailingLength] = [leading.length, trailing.length];
+
+    if (leadingLength > limit || trailingLength > limit) {
+        throw new Error(ERROR_MSG.INVALID_AFFIXES());
+    }
+
+    const [first, ...restOfChunks] = splitMessage(content, limit - leadingLength - trailingLength - GLOBAL.ETC.length * 2).map((chunk) => chunk.trim());
+
+    if (restOfChunks.length === 0) {
+        return [[leading, first, trailing].join(GLOBAL.EMPTY_MESSAGE)];
+    }
+
+    const splittedContent = [first + GLOBAL.ETC, ...restOfChunks.slice(0, -1).map((chunk) => GLOBAL.ETC + chunk + GLOBAL.ETC), GLOBAL.ETC + restOfChunks[restOfChunks.length - 1]];
+    return splittedContent.map((contentChunk) => [leading, contentChunk, trailing].join(GLOBAL.EMPTY_MESSAGE));
+}
+
+/**
+ * Splits a message in fixed size chunks
+ * Except for the last one, which can be smaller
+ * @param message Full message
+ * @param blockSize Size of each chunk
+ * @returns Splitted message
+ */
+export function splitMessage(message: string, blockSize: number): string[] {
+    const messageLength = message.length;
+    const [blockChunkCount, extraChunkLength] = [Math.floor(messageLength / blockSize), messageLength % blockSize];
+
+    const splittedMessage = [];
+    // Process chunks with full blockSize length
+    for (let index = 0; index < blockChunkCount; index++) {
+        splittedMessage.push(message.substring(index * blockSize, (index + 1) * blockSize));
+    }
+    // Add all what's left in the last chunk
+    if (extraChunkLength > 0) {
+        splittedMessage.push(message.substring(blockChunkCount * blockSize, blockChunkCount * blockSize + extraChunkLength));
+    }
+
+    return splittedMessage;
 }

@@ -13,6 +13,7 @@ export const CONFIG = {
     PERMISSIONS_DB: './config/permissions.json',
     PACKAGE_JSON_PATH: './package.json',
     DOT_ENV_PATH: '.env',
+    DOT_API_PORT: '.apiPort',
     DEFAULT_OCTAVE: '5',
     DEFAULT_VOLUME: 64,
     MIN_TEMPO: 35,
@@ -58,7 +59,8 @@ export const ERROR_MSG = {
     INVALID_REWARD: () => i18n.t('ERROR_INVALID_REWARD'),
     BAD_SETUP_PROCESS: () => i18n.t('ERROR_BAD_SETUP_PROCESS'),
     DUPLICATE_REQUEST: () => i18n.t('ERROR_DUPLICATE_REQUEST'),
-    BROADCASTER_USER_NOT_FOUND: () => i18n.t('ERROR_BROADCASTER_USER_NOT_FOUND')
+    BROADCASTER_USER_NOT_FOUND: () => i18n.t('ERROR_BROADCASTER_USER_NOT_FOUND'),
+    INVALID_AFFIXES: () => i18n.t('ERROR_INVALID_AFFIXES')
 };
 
 export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };
@@ -74,7 +76,8 @@ export const GLOBAL = {
     OPEN_PARENTHESIS_SEPARATOR: '(',
     CLOSE_PARENTHESIS_SEPARATOR: ')',
     CC_CONTROLLER: 'CC#',
-    MUSIC_REST_TOKEN: 'rest'
+    MUSIC_REST_TOKEN: 'rest',
+    ETC: '...'
 } as const;
 
 export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], () => string> = {

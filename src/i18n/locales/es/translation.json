@@ -72,6 +72,7 @@
         "ERROR_BAD_SETUP_PROCESS": "El configurador no funcionó correctamente. Prueba de nuevo",
         "ERROR_DUPLICATE_REQUEST": "Esta petición ya está en la cola, espera a que dicha petición termine",
         "ERROR_BROADCASTER_USER_NOT_FOUND": "Cuenta de streamer no encontrada",
+        "ERROR_INVALID_AFFIXES": "Mensaje con caracteres previos y finales excesivos. El mensaje es demasiado largo",
         "HELP_MIDIHELP": "Muestra todos los comandos disponibles e información de cada comando. Sintaxis: comando (e.g \"sendloop\")",
         "HELP_MIDION": "Activa el bot",
         "HELP_MIDIOFF": "Desactiva el bot",
@@ -123,6 +124,11 @@
         "FULLSTOPMIDI": "Parando todo el MIDI... Hecho!",
         "SETTEMPO": "Tempo a",
         "SYNCMIDI": "Vamos a arreglar este desastre... Hecho!",
-        "FETCHDB": "Archivos de configuración re-cargados!"
+        "FETCHDB": "Archivos de configuración re-cargados!",
+        "API_ERROR_FILE": "Archivo a refrescar no encontrado",
+        "API_ERROR_NOT_A_METHOD": "No expuesto en la API",
+        "API_OK_1": "Archivo",
+        "API_OK_2": "refrescado con éxito!",
+        "API_SERVER_CONNECTION": "TwitchMIDI Config API escuchando en el puerto"
     }
 }

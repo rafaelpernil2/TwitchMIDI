@@ -6,5 +6,6 @@ dist/
 package/
 !.env.template
 .env*
+.apiPort
 # Bundles
 TwitchMIDI*
