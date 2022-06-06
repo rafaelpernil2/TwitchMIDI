@@ -2,6 +2,8 @@ import http from 'http';
 import { ALIASES_DB, REWARDS_DB, PERMISSIONS_DB, GLOBAL, CONFIG } from '../constants';
 import i18n from '../../i18n/loader';
 import { promises as fs } from 'fs';
+import { RefreshingAuthProvider } from '@twurple/auth/lib';
+import { reloadRewards } from '../../rewards/handler';
 
 // Map of file name with the correspondent DB
 const configFileMap = {
@@ -13,9 +15,15 @@ const configFileMap = {
 /**
  * Creates an HTTP server that implements Configuration API
  */
-export function initiateConfigAPI(): void {
+
+/**
+ * Creates an HTTP server that implements Configuration API
+ * @param authProvider Authentication provider
+ * @param broadcasterUser Broadcaster username
+ */
+export function initiateConfigAPI(authProvider: RefreshingAuthProvider, broadcasterUser: string): void {
     // Create server
-    const server = http.createServer(_onRequest);
+    const server = http.createServer(_onRequest(authProvider, broadcasterUser));
     // Listen from server
     server.listen(() => {
         const address = server.address();
@@ -31,32 +39,41 @@ export function initiateConfigAPI(): void {
 /**
  * Exposes a REST API via /refreshConfig with a "file" as query param to refresh
  * config files on demand
- * @returns An HTTP server
+ * @param authProvider Authentication provider
+ * @param broadcasterUser Broadcaster username
+ * @returns A request listener for a HTTP server
  */
-async function _onRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-    const url = new URL(req.url ?? '', `http://${req.headers.host ?? ''}`);
+function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: string): (req: http.IncomingMessage, res: http.ServerResponse) => Promise<void> {
+    return async (req, res) => {
+        const url = new URL(req.url ?? '', `http://${req.headers.host ?? ''}`);
 
-    // Only allow get requests
-    if (req.method !== 'GET') return _buildResponse(res, 405);
+        // Only allow get requests
+        if (req.method !== 'GET') return _buildResponse(res, 405);
 
-    switch (url.pathname) {
-        // RefreshConfig API
-        case '/refreshConfig': {
-            // Obtain name of file to refresh
-            const queryFile = (url.searchParams.get('file') ?? GLOBAL.EMPTY_MESSAGE) as keyof typeof configFileMap;
+        switch (url.pathname) {
+            // RefreshConfig API
+            case '/refreshConfig': {
+                // Obtain name of file to refresh
+                const queryFile = (url.searchParams.get('file') ?? GLOBAL.EMPTY_MESSAGE) as keyof typeof configFileMap;
 
-            // Check file exists
-            if (configFileMap[queryFile] == null) return _buildResponse(res, 400, i18n.t('API_ERROR_FILE'));
+                // Check file exists
+                if (configFileMap[queryFile] == null) return _buildResponse(res, 400, i18n.t('API_ERROR_FILE'));
 
-            // Refresh the file
-            await configFileMap[queryFile].fetchDB();
+                // If it is a reward, reload them
+                if (queryFile === 'rewards') {
+                    await reloadRewards(authProvider, broadcasterUser);
+                } else {
+                    // Refresh the file
+                    await configFileMap[queryFile].fetchDB();
+                }
 
-            // Happy path, all OK! :)
-            return _buildResponse(res, 200, `${i18n.t('API_OK_1')} "${queryFile}" ${i18n.t('API_OK_2')}`);
+                // Happy path, all OK! :)
+                return _buildResponse(res, 200, `${i18n.t('API_OK_1')} "${queryFile}" ${i18n.t('API_OK_2')}`);
+            }
+            default:
+                return _buildResponse(res, 400, i18n.t('API_ERROR_NOT_A_METHOD'));
         }
-        default:
-            return _buildResponse(res, 400, i18n.t('API_ERROR_NOT_A_METHOD'));
-    }
+    };
 }
 
 /**

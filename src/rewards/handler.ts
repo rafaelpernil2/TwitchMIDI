@@ -102,3 +102,19 @@ export async function getBroadcasterId(apiClient: ApiClient, username: string): 
     broadcasterId = broadcaster.id;
     return broadcasterId;
 }
+
+/**
+ * Reloads the rewards from the rewards file
+ * @param authProvider Authentication provider
+ * @param broadcasterUser Broadcaster username
+ */
+export async function reloadRewards(authProvider: RefreshingAuthProvider, broadcasterUser: string): Promise<void> {
+    // First deactivate all
+    await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
+    // Then update the rewards
+    await REWARDS_DB.fetchDB();
+    // If the reward is new, create it!
+    await createRewards(authProvider, broadcasterUser);
+    // Now re-enable
+    await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
+}
