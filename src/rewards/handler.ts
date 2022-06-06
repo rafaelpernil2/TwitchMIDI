@@ -20,7 +20,7 @@ export async function createRewards(authProvider: RefreshingAuthProvider, userna
         apiClient.channelPoints.createCustomReward(userId, { title, cost, userInputRequired: true, autoFulfill: false })
     );
     try {
-        await Promise.all(createPromiseMap);
+        await Promise.allSettled(createPromiseMap);
     } catch (error) {
         // Implement if needed
     }
