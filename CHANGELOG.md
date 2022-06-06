@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.5.9] - 2022-06-06
+### Added
+- Automatic rewards disable on close, now closing the app without !midioff deactivates the rewards
+- Extended Config API for rewards, now they reload in Twitch too!
+
 ## [2.5.8] - 2022-06-04
 ### Added
 - Local REST API to refresh configuration files on demand
@@ -379,6 +384,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.5.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.8...v2.5.9
 [2.5.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.7...v2.5.8
 [2.5.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.6...v2.5.7
 [2.5.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.5...v2.5.6

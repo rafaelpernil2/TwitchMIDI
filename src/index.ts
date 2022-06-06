@@ -37,7 +37,7 @@ import { initiateConfigAPI } from './configuration/api/handler';
 
         console.log(chalk.grey(i18n.t('INIT_WELCOME')));
         await _showUpdateMessages();
-        initiateConfigAPI();
+        initiateConfigAPI(broadcasterAuthProvider, env.TARGET_CHANNEL);
 
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
@@ -87,6 +87,8 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
         const callCommand = onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env, RequestSource.REWARD);
         await _callCommandByRedeemption(callCommand, broadcasterAuthProvider, { env, args, command }, { redemptionId, userName, rewardId });
     });
+    process.on('SIGHUP', _disableRewardsExit(broadcasterAuthProvider, env));
+    process.on('SIGINT', _disableRewardsExit(broadcasterAuthProvider, env));
 }
 
 /**
@@ -184,4 +186,16 @@ async function _showUpdateMessages(): Promise<void> {
         console.log(chalk.bgBlue.bold(`${i18n.t('INIT_UPDATE_1')}${remoteVersion}${i18n.t('INIT_UPDATE_2')}${localVersion}.`));
         console.log(chalk.bgBlue.bold(`${i18n.t('INIT_UPDATE_3')} ${CONFIG.REPOSITORY_LINK}\n`));
     }
+}
+
+/**
+ * Disables all rewards and exits. It is used for sudden application closes
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param env Environment variables
+ */
+function _disableRewardsExit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
+    return async () => {
+        await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
+        process.exit();
+    };
 }
