@@ -19,19 +19,23 @@ export const areRequestsOpen = new SharedVariable(false);
 export function checkCommandAccess(command: Command, { userRoles, user }: TwitchParams, source: RequestSource, env: ParsedEnvVariables): void {
     const { blacklist, whitelist, requirements } = _getPermissionsTable(command);
 
-    // Full access: If it is broadcaster or is a safe command, access is allowed
-    if (userRoles.isBroadcaster || SAFE_COMMANDS[command]) {
+    // Full access: If it is broadcaster, access is allowed
+    if (userRoles.isBroadcaster) {
         return;
     }
 
-    // Check if requests are open
-    _checkRequestsOpen();
-
-    // Restricted access: Active and chat requests
-    _checkRequestSource(source, env, userRoles);
     _checkBlacklist(blacklist, user);
     _checkWhitelist(whitelist, user);
-    _checkRequirements(source, requirements, userRoles);
+    _checkRequirements(source, requirements, userRoles, whitelist);
+
+    // If it is not a safe command, check requests open and source (reward/chat)
+    if (!SAFE_COMMANDS[command]) {
+        // Check if requests are open
+        _checkRequestsOpen();
+
+        // Restricted access: Active and chat requests
+        _checkRequestSource(source, env, userRoles);
+    }
 }
 
 /**
@@ -49,12 +53,14 @@ function _checkRequestsOpen(): void {
  * @param source Request source
  * @param requirements Role requirements
  * @param userRoles Roles of user
+ * @param whitelist Whitelist
  * @returns
  */
-function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles): void {
+function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles, whitelist: string[]): void {
     // If no data, that means everyone is allowed
+    // If whitelist is active, do not check requirements. A whitelist implies full access for those users in the list
     // Also, we can't obtain user info from rewards, so they are trusted
-    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD) {
+    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD || whitelist.length > 0) {
         return;
     }
     const isValid = requirements.some((requirement) => userRoles[requirement]);

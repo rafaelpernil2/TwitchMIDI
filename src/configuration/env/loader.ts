@@ -7,12 +7,13 @@ import * as VALIDATORS from './validators';
  * @param altSetupProcess Setup process called if some variable is missing
  * @returns All environment variables ready to go
  */
-export async function getLoadedEnvVariables(altSetupProcess?: () => Promise<EnvObject>): Promise<EnvObject> {
+export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables: EnvObject) => Promise<EnvObject>): Promise<EnvObject> {
     try {
         return _getVariables();
     } catch (error) {
         console.log(String(error));
-        const loadedVariables = await altSetupProcess?.();
+        const currentVariables = Object.fromEntries(envVariables.map((key) => [key, process.env[key]])) as EnvObject;
+        const loadedVariables = await altSetupProcess?.(currentVariables);
         // We validate again, just in case
         if (loadedVariables == null || !_areVariablesValid(loadedVariables)) {
             throw new Error(ERROR_MSG.BAD_SETUP_PROCESS());

@@ -1,5 +1,5 @@
 import { ChatClient } from '@twurple/chat';
-import { CONFIG, GLOBAL } from '../../configuration/constants';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../../configuration/constants';
 import { CommandHandlerType, MessageHandler, RequestSource, TwitchParams } from './types';
 import { getCommand } from '../../command/utils';
 import * as CommandHandlers from '../../command/handler';
@@ -35,7 +35,10 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
             checkCommandAccess(command, twitch, source, env);
             await commandHandler(args, { targetMIDIChannel: env.TARGET_MIDI_CHANNEL, targetMIDIName: env.TARGET_MIDI_NAME, isRewardsMode: env.REWARDS_MODE }, twitch);
         } catch (error) {
-            chatClient.say(channel, String(error));
+            // Skip error notification if SEND_UNAUTHORIZED_MESSAGE is false
+            if (!(error instanceof Error) || error.message !== ERROR_MSG.BAD_PERMISSIONS() || env.SEND_UNAUTHORIZED_MESSAGE) {
+                chatClient.say(channel, String(error));
+            }
             // Raise error if it's a reward to handle the redemption status
             if (source === RequestSource.REWARD) throw error;
         }

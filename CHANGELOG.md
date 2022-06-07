@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.6.0] - 2022-06-07
+### Added
+- Incremental setup process. Now only invalid or not configured environment variables are prompted on setup
+- Environment variable to toggle showing authorization errors, it always showed them before
+- Safe commands now also follow requirements/whitelist/blacklist. "Safe" means they can be requested via chat while requests are paused or with rewards mode on
+
+### Fixed
+- .env recreation without removing token JSONs, it gave authentication errors
+
+### Changed
+- Now users in whitelist do not need to comply to role restrictions. Makes more sense now
+
 ## [2.5.9] - 2022-06-06
 ### Added
 - Automatic rewards disable on close, now closing the app without !midioff deactivates the rewards
@@ -384,6 +396,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.6.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.9...v2.6.0
+[2.5.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.8...v2.5.9
 [2.5.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.8...v2.5.9
 [2.5.8]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.7...v2.5.8
 [2.5.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.6...v2.5.7
