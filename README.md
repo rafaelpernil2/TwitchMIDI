@@ -36,6 +36,7 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
       - [!settempo](#settempo)
       - [!syncmidi](#syncmidi)
       - [!fetchdb](#fetchdb)
+  - [Troubleshooting](#troubleshooting)
   - [Contributing](#contributing)
   - [Support](#support)
   - [Credits](#credits)
@@ -63,7 +64,7 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 ### Overriding custom settings
 
-* Extract and replace all files except .env into your folder
+* Extract and replace all files into your folder
 
 ### Safe method
 
@@ -252,7 +253,13 @@ So far, this first version does all that, keep reading the features for more det
 #### !fetchdb
 &nbsp;&nbsp;&nbsp;&nbsp;Refreshes aliases, rewards and permissions configurations from the respective files.
 
+## Troubleshooting
 
+Question: I get authentication errors each time I open the app. What can I do?
+
+Answer:
+
+>Delete `bot-tokens.json` and `broadcaster-tokens.json` from your `config` folder. If that does not work, remove BROADCASTER_REFRESH_TOKEN, BROADCASTER_ACCESS_TOKEN, BOT_REFRESH_TOKEN and BOT_ACCESS_TOKEN from your `.env` file and re-configure it again
 
 ## Contributing
 There is no plan regarding contributions in this project.

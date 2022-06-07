@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.6.1] - 2022-06-07
+
+### Added
+- Troubleshooting section for auth errors
+
+### Changed
+- Removed .env from bundle, it is not required and creates confusion
+
 ## [2.6.0] - 2022-06-07
 ### Added
 - Incremental setup process. Now only invalid or not configured environment variables are prompted on setup
@@ -396,6 +404,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.6.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.9...v2.6.0
 [2.5.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.8...v2.5.9
 [2.5.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.8...v2.5.9
