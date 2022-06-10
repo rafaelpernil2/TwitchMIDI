@@ -212,8 +212,8 @@ function _isMyTurn(turn: number, type: Command): boolean {
  * @returns If next petition can be started without collision
  */
 function _isCollisionFree(type: Command): boolean {
-    // In any case, the queue for the type must not be empty, otherwise, if it has "sendloop" type, it has to wait until "sendchord" queue is empty
-    return !isQueueEmpty(type) && (type !== Command.sendloop || isQueueEmpty(Command.sendchord));
+    // If it has "sendloop" type, it has to wait until "sendchord" queue is empty
+    return type !== Command.sendloop || isQueueEmpty(Command.sendchord);
 }
 
 /**
@@ -235,13 +235,14 @@ function _mustRepeatRequest(type: Command, nextTurn: number): boolean {
  * @param type Command type
  * @param request Request content
  */
-function _setRequestPlayingNow(type: Command, request: string): void {
+async function _setRequestPlayingNow(type: Command, request: string): Promise<void> {
     // If it keeps playing the same, do nothing
     if (request === GLOBAL.EMPTY_MESSAGE || (requestPlayingNow?.request === request && requestPlayingNow?.type === type)) {
         return;
     }
     requestPlayingNow = { request, type };
     EVENT_EMITTER.emit(EVENT.PLAYING_NOW, type, request);
+    return Promise.resolve();
 }
 
 /**

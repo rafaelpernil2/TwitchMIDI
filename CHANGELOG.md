@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.6.2] - 2022-06-10
+### Changed
+- Minor refactors in barLoopChange event listener, removed unused logic and reduced synchronous code
+- Now MIDI is stopped automatically when closing the app
+
 ## [2.6.1] - 2022-06-07
 
 ### Added
@@ -404,6 +409,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.6.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.1...v2.6.2
 [2.6.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.0...v2.6.1
 [2.6.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.9...v2.6.0
 [2.5.9]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.5.8...v2.5.9
