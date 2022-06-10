@@ -212,8 +212,8 @@ function _isMyTurn(turn: number, type: Command): boolean {
  * @returns If next petition can be started without collision
  */
 function _isCollisionFree(type: Command): boolean {
-    // In any case, the queue for the type must not be empty, otherwise, if it has "sendloop" type, it has to wait until "sendchord" queue is empty
-    return !isQueueEmpty(type) && (type !== Command.sendloop || isQueueEmpty(Command.sendchord));
+    // If it has "sendloop" type, it has to wait until "sendchord" queue is empty
+    return type !== Command.sendloop || isQueueEmpty(Command.sendchord);
 }
 
 /**

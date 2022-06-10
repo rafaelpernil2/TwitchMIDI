@@ -24,6 +24,7 @@ import { askUserInput, httpsRequestPromise } from './utils/promise';
 import http from 'http';
 import i18n, { initializei18n } from './i18n/loader';
 import { initiateConfigAPI } from './configuration/api/handler';
+import { stopAllMidi } from './midi/handler';
 
 /**
  * Initialization code
@@ -196,6 +197,11 @@ async function _showUpdateMessages(): Promise<void> {
  */
 function _disableRewardsExit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
     return async () => {
+        try {
+            stopAllMidi(env.TARGET_MIDI_CHANNEL);
+        } catch (error) {
+            // Do nothing
+        }
         await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
         process.exit();
     };
