@@ -241,7 +241,7 @@ async function _setRequestPlayingNow(type: Command, request: string): Promise<vo
         return;
     }
     requestPlayingNow = { request, type };
-    EVENT_EMITTER.emit(EVENT.PLAYING_NOW, [type, request]);
+    EVENT_EMITTER.emit(EVENT.PLAYING_NOW, type, request);
     return Promise.resolve();
 }
 
