@@ -6,6 +6,8 @@ import { REWARD_TITLE_COMMAND } from '../database/jsondb/types';
 let broadcasterId: HelixUser['id'];
 let apiClient: ApiClient;
 
+let areRewardsOn = false;
+
 /**
  * Creates a set of rewards with the content provided in rewards file
  * @param authProvider Authentication Provider
@@ -48,6 +50,7 @@ export async function toggleRewardsStatus(authProvider: RefreshingAuthProvider, 
     } catch (error) {
         // Implement if needed
     }
+    areRewardsOn = isEnabled;
 }
 
 /**
@@ -109,12 +112,14 @@ export async function getBroadcasterId(apiClient: ApiClient, username: string): 
  * @param broadcasterUser Broadcaster username
  */
 export async function reloadRewards(authProvider: RefreshingAuthProvider, broadcasterUser: string): Promise<void> {
+    // Check if rewards were enabled before
+    const wereRewardsOn = areRewardsOn;
     // First deactivate all
     await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
     // Then update the rewards
     await REWARDS_DB.fetchDB();
     // If the reward is new, create it!
     await createRewards(authProvider, broadcasterUser);
-    // Now re-enable
-    await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
+    // Now re-enable only if rewards were enabled before, otherwise, disable them again
+    await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: wereRewardsOn });
 }
