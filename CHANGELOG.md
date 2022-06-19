@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.6.4] - 2022-06-19
+### Fixed
+- Requests with no arguments. Now requests that require arguments throw an error if those are not provided
+
 ## [2.6.3] - 2022-06-18
 ### Fixed
 - Rewards were re-enabled on Config API /refreshConfig regardless if bot is on or off. Now only re-enables them if they were enabled before
@@ -413,6 +417,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.6.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.3...v2.6.4
 [2.6.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.2...v2.6.3
 [2.6.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.1...v2.6.2
 [2.6.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.0...v2.6.1

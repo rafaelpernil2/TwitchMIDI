@@ -119,6 +119,7 @@ export function midiresume(...[, , { chatClient, channel }]: CommandParams): voi
  *         ]
  */
 export async function addchord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
+    _checkMessageNotEmpty(message);
     const [alias, ...chordProgressionTokens] = message.split(GLOBAL.SLASH_SEPARATOR).map((str) => str.trim());
     const chordProgression = chordProgressionTokens.join(GLOBAL.SLASH_SEPARATOR);
 
@@ -138,6 +139,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
  *         ]
  */
 export async function removechord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
+    _checkMessageNotEmpty(message);
     const parsedAlias = message.toLowerCase();
     const status = ALIASES_DB.delete(CHORD_PROGRESSIONS, parsedAlias);
     if (status === ResponseStatus.Error) {
@@ -179,6 +181,7 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
  *         ]
  */
 export async function sendnote(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+    _checkMessageNotEmpty(message);
     checkMIDIConnection();
     const requestList = message.split(GLOBAL.COMMA_SEPARATOR).map((request) => _getNoteList(request));
     chatClient.say(channel, i18n.t('SENDNOTE'));
@@ -195,6 +198,7 @@ export async function sendnote(...[message, { targetMIDIChannel }, { chatClient,
  *         ]
  */
 export async function sendchord(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+    _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Lookup previously saved chord progressions
     const chordProgression = _getChordProgression(message);
@@ -213,6 +217,7 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
  *         ]
  */
 export async function sendloop(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+    _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Queue chord progression petition
     const chordProgression = _getChordProgression(message);
@@ -233,6 +238,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
  *         ]
  */
 export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+    _checkMessageNotEmpty(message);
     checkMIDIConnection();
     const ccCommandList = _getCCCommandList(message);
 
@@ -582,4 +588,14 @@ function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Co
  */
 function _buildPlayingNowMessage(type: Command, request: string): [leading: string, content: string] {
     return [`${i18n.t('MIDICURRENTREQUEST_OK')} !${type} `, `"${request}"`];
+}
+
+/**
+ * Checks if the message provided as command arguments is empty and throws an error in that case
+ * @param message Command arguments
+ */
+function _checkMessageNotEmpty(message: string): void {
+    if (message === GLOBAL.EMPTY_MESSAGE) {
+        throw new Error(ERROR_MSG.COMMAND_MESSAGE_EMPTY());
+    }
 }
