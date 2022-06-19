@@ -75,6 +75,7 @@
         "ERROR_DUPLICATE_REQUEST": "Esta petición ya está en la cola, espera a que dicha petición termine",
         "ERROR_BROADCASTER_USER_NOT_FOUND": "Cuenta de streamer no encontrada",
         "ERROR_INVALID_AFFIXES": "Mensaje con caracteres previos y finales excesivos. El mensaje es demasiado largo",
+        "ERROR_COMMAND_MESSAGE_EMPTY": "Petición inválida, por favor, proporciona más datos para usar este comando. Usa !midihelp para más info",
         "HELP_MIDIHELP": "Muestra todos los comandos disponibles e información de cada comando. Sintaxis: comando (e.g \"sendloop\")",
         "HELP_MIDION": "Activa el bot",
         "HELP_MIDIOFF": "Desactiva el bot",
