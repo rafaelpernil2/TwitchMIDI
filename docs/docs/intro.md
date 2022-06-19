@@ -24,7 +24,7 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 ### Overriding custom settings
 
-* Extract and replace all files except .env into your folder
+* Extract and replace all files
 
 ### Safe method
 

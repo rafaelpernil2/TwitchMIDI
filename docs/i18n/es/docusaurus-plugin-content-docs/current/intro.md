@@ -24,7 +24,7 @@ sidebar_position: 1
 
 ### Sobreescribiendo configuración personalizada
 
-* Descomprime y reemplaza todos los archivos excepto el .env en tu carpeta
+* Descomprime y reemplaza todos los archivos
 
 ### Método seguro
 
