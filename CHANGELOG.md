@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.6.6] - 2022-07-05
+### Fixed
+- Typo in spanish text for !midihelp sendcc
+
 ## [2.6.5] - 2022-06-28
 ### Changed
 - !addchord now validates the chord progression before adding it
@@ -421,6 +425,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.6.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.5...v2.6.6
 [2.6.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.4...v2.6.5
 [2.6.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.3...v2.6.4
 [2.6.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.2...v2.6.3

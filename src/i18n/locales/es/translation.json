@@ -85,7 +85,7 @@
         "HELP_SENDNOTE": "Manda una nota, un conjunto de notas/silencios (rest) formando un acorde o una melodía. Sintaxis: nota1 nota2, rest, nota3 ... (e.g. \"C4 E4 G4\" o \"C4, E4, G4\")",
         "HELP_SENDCHORD": "Manda una progresión de acordes con un alias o con acordes/silencios (rest). Sintaxis: acorde1 rest acorde2(longitud del acorde en negras)... (e.g. \"C(4) G Amin(2) F\",\"pop\")",
         "HELP_SENDLOOP": "Manda un loop con un alias o con acordes/silencios (rest). Sintaxis: acorde1 acorde2(longitud del acorde en negras)... (e.g. \"C G Amin F\",\"pop\")",
-        "HELP_SENDCC": "Manda un mensaje MIDI CC con un alias, valor fijo o barriado de valores. Sintaxis: controlador valor,controlador2 valor2(delay_in_ms) (e.g. \"43 100,43 60\",\"cutoff sweep\",\"cutoff 100,cutoff 60\",\"cutoff 100,cutoff 10(10000)\")",
+        "HELP_SENDCC": "Manda un mensaje MIDI CC con un alias, valor fijo o barrido de valores. Sintaxis: controlador valor,controlador2 valor2(delay_in_ms) (e.g. \"43 100,43 60\",\"cutoff sweep\",\"cutoff 100,cutoff 60\",\"cutoff 100,cutoff 10(10000)\")",
         "HELP_CCLIST": "Muestra la lista de macros de mensajes CC disponible (e.g. cutoff sweep)",
         "HELP_MIDIVOLUME": "Ajusta el volumen para los acordes/notas/loops. Sintaxis: valor entre 0 y 100 (e.g. \"50\",\"100\")",
         "HELP_STOPLOOP": "Limpia la lista de loops y para",
