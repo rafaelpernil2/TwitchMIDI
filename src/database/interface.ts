@@ -25,12 +25,21 @@ export interface Database<T extends CustomObject<T>> {
     select<P extends keyof T, S extends keyof T[P]>(path: P, key: S): T[P][S] | undefined;
 
     /**
+     * Inserts data in DB[path][key] and throws an error if the same key exists
+     * @param path Path in DB
+     * @param key Key in DB
+     * @param value New value to save
+     * @returns ResponseStatus: Ok or Error
+     */
+    insert<P extends keyof T, S extends keyof T[P]>(path: P, key: S, value: T[P][S]): ResponseStatus;
+
+    /**
      * Overrides data in DB[path] with a new value
      * @param path Path in DB
      * @param value New value to save
      * @returns ResponseStatus: Ok or Error
      */
-    insertUpdate<P extends keyof T>(path: P, value: T[P]): ResponseStatus;
+    upsert<P extends keyof T>(path: P, value: T[P]): ResponseStatus;
 
     /**
      * Removes data in DB[path][key]

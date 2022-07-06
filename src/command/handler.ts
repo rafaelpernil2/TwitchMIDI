@@ -126,7 +126,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
     // Validate chord progression
     _parseChordProgression(chordProgression);
 
-    const insertStatus = ALIASES_DB.insertUpdate(CHORD_PROGRESSIONS, { [alias.toLowerCase()]: chordProgression });
+    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS, alias.toLowerCase(), chordProgression);
     if (insertStatus === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }

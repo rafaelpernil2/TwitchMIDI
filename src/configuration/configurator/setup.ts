@@ -95,7 +95,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         console.log(chalk.magenta(i18n.t('SETUP_STEP_3_TEXT')));
         TARGET_CHANNEL = await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TARGET_CHANNEL_QUESTION'), TARGET_CHANNEL);
 
-        const sendUnauthorizedMessage = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_UNAUTHORIZED_MESSAGE_QUESTION', SEND_UNAUTHORIZED_MESSAGE))) || 'Y';
+        const sendUnauthorizedMessage = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_UNAUTHORIZED_MESSAGE_QUESTION', SEND_UNAUTHORIZED_MESSAGE))) || 'N';
         SEND_UNAUTHORIZED_MESSAGE = String(getBooleanByString(sendUnauthorizedMessage));
         const rewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_REWARDS_MODE_QUESTION'), REWARDS_MODE)) || 'Y';
         REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
