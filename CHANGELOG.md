@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.7.0] - 2022-07-06
+### Added
+- !addchord update validation. If a chord progression is already saved with the same alias, an error is thrown
+- Database "insert" method interface and implementation
+### Changed
+- !sendchord disabled (only available for broadcaster) by default to avoid confusion with !sendloop
+- !removechord default permissions restricted to only Moderators and Broadcaster
+- Removed default !sendchord and !removechord rewards
+- Lowered price for default !sendloop reward from 100 points to 50 points
+- Default value for "SEND_UNAUTHORIZED_MESSAGE" variable changed to false
+- Database interface method renames
+
 ## [2.6.6] - 2022-07-05
 ### Fixed
 - Typo in spanish text for !midihelp sendcc
@@ -425,6 +437,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.6.7]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.6...v2.6.7
 [2.6.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.5...v2.6.6
 [2.6.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.4...v2.6.5
 [2.6.4]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.3...v2.6.4

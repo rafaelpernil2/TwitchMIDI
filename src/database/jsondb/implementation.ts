@@ -54,12 +54,27 @@ export class JSONDatabase<T> implements Database<T> {
     }
 
     /**
+     * Inserts data in DB[path][key] and throws an error if the same key exists
+     * @param path Path in DB
+     * @param key Key in DB
+     * @param value New value to save
+     * @returns ResponseStatus: Ok or Error
+     */
+    insert<P extends keyof T, S extends keyof T[P]>(path: P, key: S, value: T[P][S]): ResponseStatus {
+        if (this.dbCommit == null || this.dbCommit[path][key] != null) {
+            return ResponseStatus.Error;
+        }
+        this.dbCommit[path][key] = value;
+        return ResponseStatus.Ok;
+    }
+
+    /**
      * Overrides data in DB[path] with a new value
      * @param path Path in DB
      * @param value New value to save
      * @returns ResponseStatus: Ok or Error
      */
-    insertUpdate<P extends keyof T>(path: P, value: T[P]): ResponseStatus {
+    upsert<P extends keyof T>(path: P, value: T[P]): ResponseStatus {
         if (this.dbCommit == null) {
             return ResponseStatus.Error;
         }

@@ -27,7 +27,10 @@
             "blacklist": []
         },
         "removechord": {
-            "requirements": [],
+            "requirements": [
+                "isBroadcaster",
+                "isMod"
+            ],
             "whitelist": [],
             "blacklist": []
         },
@@ -42,7 +45,9 @@
             "blacklist": []
         },
         "sendchord": {
-            "requirements": [],
+            "requirements": [
+                "isBroadcaster"
+            ],
             "whitelist": [],
             "blacklist": []
         },
