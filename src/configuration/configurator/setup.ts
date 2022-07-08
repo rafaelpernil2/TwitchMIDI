@@ -4,7 +4,7 @@ import EventEmitter from 'events';
 import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise';
 import { promises as fs } from 'fs';
 import { EnvObject } from '../env/types';
-import { getBooleanByString } from '../../utils/generic';
+import { getBooleanByString, isNullish } from '../../utils/generic';
 import { AccessToken } from '@twurple/auth/lib';
 import { CONFIG } from '../constants';
 import chalk from 'chalk';
@@ -93,9 +93,9 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     if (isStep3Invalid(targetEnv)) {
         console.log(chalk.greenBright(i18n.t('SETUP_STEP_3')));
         console.log(chalk.magenta(i18n.t('SETUP_STEP_3_TEXT')));
-        TARGET_CHANNEL = await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TARGET_CHANNEL_QUESTION'), TARGET_CHANNEL);
+        TARGET_CHANNEL = ((await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TARGET_CHANNEL_QUESTION'), TARGET_CHANNEL)) || '').toLowerCase();
 
-        const sendUnauthorizedMessage = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_UNAUTHORIZED_MESSAGE_QUESTION', SEND_UNAUTHORIZED_MESSAGE))) || 'N';
+        const sendUnauthorizedMessage = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_UNAUTHORIZED_MESSAGE_QUESTION'), SEND_UNAUTHORIZED_MESSAGE)) || 'N';
         SEND_UNAUTHORIZED_MESSAGE = String(getBooleanByString(sendUnauthorizedMessage));
         const rewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_REWARDS_MODE_QUESTION'), REWARDS_MODE)) || 'Y';
         REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
@@ -182,7 +182,7 @@ function validateEnv(env: EnvObject): EnvObject {
  * @returns If it is invalid or not configurated
  */
 function isStep1Invalid({ CLIENT_ID, CLIENT_SECRET }: EnvObject): boolean {
-    return CLIENT_ID == null || CLIENT_SECRET == null;
+    return isNullish(CLIENT_ID) || isNullish(CLIENT_SECRET);
 }
 
 /**
@@ -191,7 +191,7 @@ function isStep1Invalid({ CLIENT_ID, CLIENT_SECRET }: EnvObject): boolean {
  * @returns If it is invalid or not configurated
  */
 function isStep2Invalid({ BROADCASTER_ACCESS_TOKEN, BROADCASTER_REFRESH_TOKEN, BOT_ACCESS_TOKEN, BOT_REFRESH_TOKEN }: EnvObject): boolean {
-    return BROADCASTER_ACCESS_TOKEN == null || BROADCASTER_REFRESH_TOKEN == null || BOT_ACCESS_TOKEN == null || BOT_REFRESH_TOKEN == null;
+    return isNullish(BROADCASTER_ACCESS_TOKEN) || isNullish(BROADCASTER_REFRESH_TOKEN) || isNullish(BOT_ACCESS_TOKEN) || isNullish(BOT_REFRESH_TOKEN);
 }
 
 /**
@@ -200,7 +200,7 @@ function isStep2Invalid({ BROADCASTER_ACCESS_TOKEN, BROADCASTER_REFRESH_TOKEN, B
  * @returns If it is invalid or not configurated
  */
 function isStep3Invalid({ REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_UNAUTHORIZED_MESSAGE }: EnvObject): boolean {
-    return REWARDS_MODE == null || VIP_REWARDS_MODE == null || TARGET_CHANNEL == null || SEND_UNAUTHORIZED_MESSAGE == null;
+    return isNullish(REWARDS_MODE) || isNullish(VIP_REWARDS_MODE) || isNullish(TARGET_CHANNEL) || isNullish(SEND_UNAUTHORIZED_MESSAGE);
 }
 
 /**
@@ -209,7 +209,7 @@ function isStep3Invalid({ REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_U
  * @returns If it is invalid or not configurated
  */
 function isStep4Invalid({ TARGET_MIDI_NAME, TARGET_MIDI_CHANNEL }: EnvObject): boolean {
-    return TARGET_MIDI_NAME == null || TARGET_MIDI_CHANNEL == null;
+    return isNullish(TARGET_MIDI_NAME) || isNullish(TARGET_MIDI_CHANNEL);
 }
 
 /**
@@ -232,7 +232,7 @@ async function deleteTokenJSONs() {
  * @returns Response from question
  */
 function _makeQuestion(rl: readline.Interface, question: string, preConfiguredValue?: unknown): Promise<string> {
-    if (preConfiguredValue != null) {
+    if (!isNullish(preConfiguredValue)) {
         return Promise.resolve(String(preConfiguredValue));
     }
     return new Promise<string>((resolve) => {

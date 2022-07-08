@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.7.1] - 2022-07-08
+### Fixed
+- Re-configuration of step 3 (REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_UNAUTHORIZED_MESSAGE) always re-applied SEND_UNAUTHORIZED_MESSAGE even when properly configured
+- Empty .env variable validation
+### Changed
+- Convert TARGET_CHANNEL to lowercase since all Twitch usernames must be lowercase (the display name can have case sensitivity but does not apply here)
+
 ## [2.7.0] - 2022-07-06
 ### Added
 - !addchord update validation. If a chord progression is already saved with the same alias, an error is thrown
@@ -437,6 +444,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.7.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.6...v2.7.0
 [2.6.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.5...v2.6.6
 [2.6.5]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.4...v2.6.5

@@ -101,3 +101,12 @@ export function splitMessage(message: string, blockSize: number): string[] {
 
     return splittedMessage;
 }
+
+/**
+ * Checks if a value is null, undefined or empty string.
+ * It differs from !!value because 0 is a valid value
+ * @param value A value to check
+ */
+export function isNullish(value: unknown): boolean {
+    return value == null || value === GLOBAL.EMPTY_MESSAGE;
+}
