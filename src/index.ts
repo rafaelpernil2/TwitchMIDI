@@ -54,6 +54,7 @@ import { stopAllMidi } from './midi/handler';
             await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
+        _attachOnExitProcessCallbacks(broadcasterAuthProvider, env);
         _showInitMessages(env);
     } catch (error) {
         console.log(chalk.red(String(error)));
@@ -88,8 +89,16 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
         const callCommand = onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env, RequestSource.REWARD);
         await _callCommandByRedeemption(callCommand, broadcasterAuthProvider, { env, args, command }, { redemptionId, userName, rewardId });
     });
-    process.on('SIGHUP', _disableRewardsExit(broadcasterAuthProvider, env));
-    process.on('SIGINT', _disableRewardsExit(broadcasterAuthProvider, env));
+}
+
+/**
+ * Attaches a callback to exit process signals
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param env Environment variables
+ */
+function _attachOnExitProcessCallbacks(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
+    process.on('SIGHUP', _onExitProcess(broadcasterAuthProvider, env));
+    process.on('SIGINT', _onExitProcess(broadcasterAuthProvider, env));
 }
 
 /**
@@ -191,18 +200,20 @@ async function _showUpdateMessages(): Promise<void> {
 }
 
 /**
- * Disables all rewards and exits. It is used for sudden application closes
+ * Disables all rewards (if enabled) and exits. It is used for sudden closes of this application
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param env Environment variables
  */
-function _disableRewardsExit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
+function _onExitProcess(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
     return async () => {
         try {
             stopAllMidi(env.TARGET_MIDI_CHANNEL);
         } catch (error) {
             // Do nothing
         }
-        await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
+        if (env.REWARDS_MODE) {
+            await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
+        }
         process.exit();
     };
 }

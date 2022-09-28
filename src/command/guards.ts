@@ -81,7 +81,7 @@ function _checkBlacklist(blacklist: string[], user: string): void {
     if (blacklist == null || blacklist.length === 0) {
         return;
     }
-    const isInBlacklist = blacklist.find((bannedUser) => user === bannedUser);
+    const isInBlacklist = blacklist.indexOf(user) !== -1;
     if (isInBlacklist) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
@@ -99,7 +99,7 @@ function _checkWhitelist(whitelist: string[], user: string): void {
     if (whitelist == null || whitelist.length === 0) {
         return;
     }
-    const isInWhitelist = whitelist.find((allowedUser) => user === allowedUser);
+    const isInWhitelist = whitelist.indexOf(user) !== -1;
     if (!isInWhitelist) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
