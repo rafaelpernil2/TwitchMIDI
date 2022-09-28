@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [2.7.2] - 2022-09-28
+### Fixed
+- Callback executed on close to disable rewards and stop MIDI was only applied with rewards mode enabled. MIDI has to stop too with rewards mode disabled
+### Changed
+- Improved blacklist and whitelist search performance. It was using "find" when an "indexOf" is simpler and can provide faster results
+
 ## [2.7.1] - 2022-07-08
 ### Fixed
 - Re-configuration of step 3 (REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_UNAUTHORIZED_MESSAGE) always re-applied SEND_UNAUTHORIZED_MESSAGE even when properly configured
@@ -444,6 +450,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[2.7.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.6...v2.7.0
 [2.6.6]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.5...v2.6.6
