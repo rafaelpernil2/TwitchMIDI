@@ -6,7 +6,7 @@ export interface AliasesType {
     ccCommands: Record<string, string[]>;
     ccControllers: Record<string, number>;
     commands: Record<string, Command>;
-    macros: Record<string, Array<[command: string, timeout: number]>>;
+    macros: Record<string, Array<[command: string, delay: number]>>;
 }
 
 export const CHORD_PROGRESSIONS_KEY = 'chordProgressions';
