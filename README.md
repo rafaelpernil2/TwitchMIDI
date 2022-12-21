@@ -76,7 +76,7 @@ Okay, this can get a little more complicated, but if you are using custom settin
 * That's it!
 
 > Note: You do not need to replace the entire config folder unless there is a major version change (e.g, from 1.x.x to 2.x.x).
-> In case of doubt, compare old with new versions of config files and re-apply your changes. See [CHANGELOG.md](CHANGELOG.md) for more info.
+> In case of doubt, compare old with new versions of config files and re-apply your changes. See [CHANGELOG.md](CHANGELOG.md) and search "BREAKING CHANGE" for more details.
 
 
 ## Why?
@@ -114,6 +114,7 @@ So far, this first version does all that, keep reading the features for more det
   * Pause requests with [!midipause](#midipause) and resume with [!midiresume](#midiresume)
 * Configurable aliases on [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json)
   * Commands - Add as many command aliases as you want
+  * Macros - Launch a set of actions from a single command
   * Chord progressions/loops - Add an alias for a chord progresion to play or loop using "name/chords" syntax
     * Add chord progressions via [!addchord](#addchord)
     * Remove chord progression via [!removechord](#removechord)
@@ -132,6 +133,7 @@ So far, this first version does all that, keep reading the features for more det
   * Commands only work for the streamer and mods
   * Allow VIPs to bypass rewards via VIP_REWARDS_MODE
 * Bundle optimized for different operating systems and no extra software required for execution
+* HTTP API to interact with the bot behind the scenes with an alternative UI (like TwitchMIDI+ Control Panel)
 * Internationalization with full support for English and Spanish as of right now
 * Update checking on startup, a message appears if there is a new version available
 
