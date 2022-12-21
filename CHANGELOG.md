@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.0.0] - 2022-12-21
+### Added
+- Macro feature: Now you can trigger a set of commands with different timeouts just using a single command or "macro"
+- Revamped and extended API. Now you can query what's in the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
+### Changed
+- /refreshConfig API now works via POST
+- Minor naming refactors
+- Improved setTimeoutPromise with a default case for 0ns
+- BREAKING CHANGE: aliases.json has a new section called "macros". You need to update your aliases.json file
+
 ## [2.7.2] - 2022-09-28
 ### Fixed
 - Callback executed on close to disable rewards and stop MIDI was only applied with rewards mode enabled. MIDI has to stop too with rewards mode disabled
@@ -450,6 +460,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.2...v3.0.0
 [2.7.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.6...v2.7.0

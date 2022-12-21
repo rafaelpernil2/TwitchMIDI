@@ -17,7 +17,7 @@ import {
 } from '../midi/handler';
 import { CCCommand, Command } from './types';
 import { inlineChord } from 'harmonics';
-import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
+import { CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, CHORD_PROGRESSIONS_KEY } from '../database/jsondb/types';
 import { ChatClient } from '@twurple/chat/lib/ChatClient';
 import { createRewards, toggleRewardsStatus } from '../rewards/handler';
 import { areRequestsOpen } from './guards';
@@ -126,7 +126,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
     // Validate chord progression
     _parseChordProgression(chordProgression);
 
-    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS, alias.toLowerCase(), chordProgression);
+    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS_KEY, alias.toLowerCase(), chordProgression);
     if (insertStatus === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }
@@ -144,7 +144,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
 export async function removechord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     const parsedAlias = message.toLowerCase();
-    const status = ALIASES_DB.delete(CHORD_PROGRESSIONS, parsedAlias);
+    const status = ALIASES_DB.delete(CHORD_PROGRESSIONS_KEY, parsedAlias);
     if (status === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND());
     }
@@ -162,7 +162,7 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
 export function chordlist(...[message, , { chatClient, channel }]: CommandParams): void {
     // Case with alias to lookup
     const aliasToLookup = message.toLowerCase();
-    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS, message);
+    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, message);
     if (aliasToLookup !== GLOBAL.EMPTY_MESSAGE && chordProgression != null) {
         chatClient.say(channel, `🎵${aliasToLookup}🎵:🎼${chordProgression}🎼`);
         return;
@@ -404,7 +404,7 @@ function _getNoteList(message: string): Array<[note: string, timeSubDivision: nu
  */
 function _getChordProgression(message: string): Array<[noteList: string[], timeSubDivision: number]> {
     const aliasToLookup = message.toLowerCase();
-    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS, aliasToLookup) ?? message;
+    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, aliasToLookup) ?? message;
     // Check everything is okay
     return _parseChordProgression(chordProgression);
 }
@@ -416,7 +416,7 @@ function _getChordProgression(message: string): Array<[noteList: string[], timeS
  */
 function _getCCCommandList(message: string): CCCommand[] {
     const aliasToLookup = message.toLowerCase();
-    const ccCommandList = ALIASES_DB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
+    const ccCommandList = ALIASES_DB.select(CC_COMMANDS_KEY, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
     if (ccCommandList.length < 1) {
         throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE());
     }
@@ -534,7 +534,7 @@ function _parseChordProgression(chordProgression: string): Array<[noteList: stri
 function _parseCCCommand(ccCommand: string): [controller: number, value: number, time: number] {
     const [rawController, rawValue] = ccCommand.toLowerCase().trim().split(GLOBAL.SPACE_SEPARATOR);
     // Controller
-    const parsedController = ALIASES_DB.select(CC_CONTROLLERS, rawController) ?? rawController.replace(GLOBAL.CC_CONTROLLER, '');
+    const parsedController = ALIASES_DB.select(CC_CONTROLLERS_KEY, rawController) ?? rawController.replace(GLOBAL.CC_CONTROLLER, '');
     const controller = _parseMIDIValue(parsedController);
 
     // Value

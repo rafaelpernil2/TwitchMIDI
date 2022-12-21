@@ -4,6 +4,8 @@ import i18n from '../../i18n/loader';
 import { promises as fs } from 'fs';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
 import { reloadRewards } from '../../rewards/handler';
+import { favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue';
+import { Command } from '../../command/types';
 
 // Map of file name with the correspondent DB
 const configFileMap = {
@@ -47,12 +49,12 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
     return async (req, res) => {
         const url = new URL(req.url ?? '', `http://${req.headers.host ?? ''}`);
 
-        // Only allow get requests
-        if (req.method !== 'GET') return _buildResponse(res, 405);
-
         switch (url.pathname) {
             // RefreshConfig API
             case '/refreshConfig': {
+                // Only allow get requests
+                if (req.method !== 'POST') return _buildResponse(res, 405);
+
                 // Obtain name of file to refresh
                 const queryFile = (url.searchParams.get('file') ?? GLOBAL.EMPTY_MESSAGE) as keyof typeof configFileMap;
 
@@ -69,6 +71,75 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
 
                 // Happy path, all OK! :)
                 return _buildResponse(res, 200, `${i18n.t('API_OK_1')} "${queryFile}" ${i18n.t('API_OK_2')}`);
+            }
+            case '/queue': {
+                // Obtain name of command to check
+                const commandName = url.searchParams.get('command') as Command | null;
+                const turn = url.searchParams.get('turn');
+
+                switch (req.method) {
+                    case 'GET': {
+                        // Obtain queue details
+                        const queueData = commandName != null ? queueMap[commandName] : queueMap;
+                        // Happy path, all OK! :)
+                        res.setHeader('Content-Type', 'application/json');
+                        return _buildResponse(res, 200, JSON.stringify(queueData));
+                    }
+                    case 'DELETE': {
+                        if (commandName == null || turn == null) {
+                            return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
+                        }
+
+                        // Obtain queue details
+                        removeFromQueue(commandName, Number(turn));
+                        // Happy path, all OK! :)
+                        return _buildResponse(res, 200, i18n.t('API_OK'));
+                    }
+                    default:
+                        break;
+                }
+                break;
+            }
+
+            case '/favorite': {
+                // Obtain name of command to check
+                const commandName = url.searchParams.get('command') as Command | null;
+                const turn = url.searchParams.get('turn');
+
+                switch (req.method) {
+                    case 'GET': {
+                        // Obtain favoriteIdMap details
+                        const favoriteData = commandName != null ? favoriteIdMap[commandName] : favoriteIdMap;
+                        // Happy path, all OK! :)
+                        res.setHeader('Content-Type', 'text/plain');
+                        return _buildResponse(res, 200, JSON.stringify(favoriteData));
+                    }
+                    case 'PUT': {
+                        if (commandName == null || turn == null) {
+                            return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
+                        }
+
+                        // Populate change
+                        markAsFavorite(commandName, Number(turn));
+
+                        // Happy path, all OK! :)
+                        return _buildResponse(res, 200, i18n.t('API_OK'));
+                    }
+                    case 'DELETE': {
+                        if (commandName == null) {
+                            return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
+                        }
+
+                        // Populate change
+                        unmarkFavorite(commandName);
+
+                        // Happy path, all OK! :)
+                        return _buildResponse(res, 200, i18n.t('API_OK'));
+                    }
+                    default:
+                        break;
+                }
+                break;
             }
             default:
                 return _buildResponse(res, 400, i18n.t('API_ERROR_NOT_A_METHOD'));

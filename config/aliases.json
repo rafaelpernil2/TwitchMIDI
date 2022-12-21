@@ -146,5 +146,63 @@
         "modulation": 92,
         "delay": 93,
         "reverb": 94
+    },
+    "macros": {
+        "bossanova": [
+            [
+                "!loop bossa nova",
+                0
+            ]
+        ],
+        "giant": [
+            [
+                "!loop giant steps",
+                0
+            ]
+        ],
+        "cutoff": [
+            [
+                "!cc cutoff sweep",
+                0
+            ]
+        ],
+        "fadeout": [
+            [
+                "!midivolume 10",
+                0
+            ],
+            [
+                "!midivolume 20",
+                2000
+            ],
+            [
+                "!midivolume 30",
+                2000
+            ],
+            [
+                "!midivolume 40",
+                2000
+            ],
+            [
+                "!midivolume 50",
+                2000
+            ],
+            [
+                "!loop bossa nova",
+                2500
+            ],
+            [
+                "!loop giant steps",
+                5000
+            ],
+            [
+                "!loop autumn leaves",
+                5000
+            ],
+            [
+                "!loopqueue",
+                5000
+            ]
+        ]
     }
 }

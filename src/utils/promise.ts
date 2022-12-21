@@ -12,6 +12,11 @@ import { GLOBAL } from '../configuration/constants';
  * @returns
  */
 export async function setTimeoutPromise(timeout: number): Promise<void> {
+    // No timeout
+    if (timeout === 0) {
+        return;
+    }
+
     const timer = new NanoTimer();
     return new Promise((resolve) => {
         timer.setTimeout(resolve, '', String(timeout) + 'n');

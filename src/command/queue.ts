@@ -5,9 +5,10 @@ import { isEmptyObject } from '../utils/generic';
 import { areRequestsOpen } from './guards';
 import { Command } from './types';
 
-const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
+export const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const queueCommitMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
+export const favoriteIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
 export const currentTurnMap = Object.fromEntries(Object.values(Command).map((key) => [key, 0])) as Record<Command, number>;
 
 let requestPlayingNow: { type: Command; request: string } | null;
@@ -35,15 +36,16 @@ export function queue(request: string, type: Command): number {
  * @param type
  */
 export function forwardQueue(type: Command): void {
-    const turn = _nextTurn(currentTurnMap[type]);
+    const currentTurn = currentTurnMap[type];
+    const nextTurn = _nextTurn(currentTurn);
 
-    // Skip if it's looping alone, requests are closed, queue is empty, or synchronization with repetition is active
-    if (_mustRepeatRequest(type, turn)) {
+    // Do not forward queue if it's looping alone, requests are closed, queue is empty, or synchronization with repetition is active
+    if (_mustRepeatRequest(type, currentTurn, nextTurn)) {
         return;
     }
 
-    delete queueMap[type][currentTurnMap[type]];
-    currentTurnMap[type] = turn;
+    delete queueMap[type][currentTurn];
+    currentTurnMap[type] = nextTurn;
 
     // If there's no chord progression or loop next, let's clear requestPlayingNow
     if (isQueueEmpty(Command.sendchord) && isQueueEmpty(Command.sendloop)) {
@@ -62,12 +64,12 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
     return new Promise((resolve, reject) => {
         const onCommandTurn = () => {
             // If request was removed from queue
-            if (!isInQueue(turn, type)) {
+            if (!isInQueue(type, turn)) {
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 reject();
             }
             // If it is in queue and is your turn
-            else if (_isMyTurn(turn, type) && _isCollisionFree(type)) {
+            else if (_isMyTurn(type, turn) && _isCollisionFree(type)) {
                 _setRequestPlayingNow(type, queueMap[type][turn] ?? GLOBAL.EMPTY_MESSAGE);
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
@@ -79,12 +81,12 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
 
 /**
  * Checks if a request is still in queue
- * @param turn
  * @param type
+ * @param turn
  * @returns If the queued request is not null
  */
-export function isInQueue(turn: number, type: Command): boolean {
-    return queueMap[type][turn] != null;
+export function isInQueue(type: Command, turn: number): boolean {
+    return queueMap[type][turn] != null || queueMap[type][turn] !== GLOBAL.EMPTY_MESSAGE;
 }
 
 /**
@@ -160,6 +162,43 @@ export function rollbackClearQueue(type: Command): void {
 }
 
 /**
+ * Removes item from queue
+ * @param type
+ * @param turn
+ * @returns
+ */
+export function removeFromQueue(type: Command, turn: number): void {
+    queueMap[type][turn] = GLOBAL.EMPTY_MESSAGE;
+}
+
+/**
+ * Marks item as favorite
+ * @param type
+ * @param turn
+ */
+export function markAsFavorite(type: Command, turn: number): void {
+    favoriteIdMap[type] = turn;
+}
+
+/**
+ * Marks item as favorite
+ * @param type
+ */
+export function unmarkFavorite(type: Command): void {
+    favoriteIdMap[type] = -1;
+}
+
+/**
+ * Checks if the given request turn is the favorite one
+ * @param type
+ * @param turn
+ * @returns
+ */
+export function isFavoriteRequest(type: Command, turn: number): boolean {
+    return favoriteIdMap[type] === turn;
+}
+
+/**
  * Gets the last turn in queue
  * @param type
  * @returns
@@ -202,7 +241,7 @@ function _nextTurn(turn: number): number {
  * @param type Type of queue
  * @returns boolean
  */
-function _isMyTurn(turn: number, type: Command): boolean {
+function _isMyTurn(type: Command, turn: number): boolean {
     return turn === currentTurnMap[type];
 }
 
@@ -219,14 +258,28 @@ function _isCollisionFree(type: Command): boolean {
 /**
  * Checks if the queue needs to repeat the current request
  * @param type Queue type
- * @param nextTurn New turn
+ * @param currentTurn Current turn
+ * @param nextTurn Current turn
  * @returns If queue can progress
  */
-function _mustRepeatRequest(type: Command, nextTurn: number): boolean {
+function _mustRepeatRequest(type: Command, currentTurn: number, nextTurn: number): boolean {
     return (
         type === Command.sendloop && // Is a !sendloop request
-        queueMap.sendloop[currentTurnMap.sendloop] != null && // Current !sendloop request still exists
-        (syncMode.is(Sync.REPEAT) || (syncMode.is(Sync.OFF) && (queueMap.sendloop?.[nextTurn] == null || !areRequestsOpen.get() || !isQueueEmpty(Command.sendchord))))
+        isInQueue(type, currentTurn) && // Current !sendloop request still exists
+        // eslint-disable-next-line prettier/prettier
+        (
+            syncMode.is(Sync.REPEAT) ||
+            // eslint-disable-next-line prettier/prettier
+            (
+                syncMode.is(Sync.OFF) &&
+                (
+                    !isInQueue(type, nextTurn) ||
+                    !areRequestsOpen.get() ||
+                    !isQueueEmpty(Command.sendchord) ||
+                    isFavoriteRequest(type, currentTurn)
+                )
+            )
+        )
     );
 }
 
