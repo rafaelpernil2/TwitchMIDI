@@ -112,6 +112,7 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
  * @param env Environment variables
  */
 function _attachExitCallbacksBeforeInit(): void {
+    process.on('exit', _onExitProcessBeforeInit());
     process.on('SIGHUP', _onExitProcessBeforeInit());
     process.on('SIGINT', _onExitProcessBeforeInit());
 }
@@ -122,6 +123,7 @@ function _attachExitCallbacksBeforeInit(): void {
  * @param env Environment variables
  */
 function _attachExitCallbacksAfterInit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
+    process.on('exit', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGINT', _onExitProcessAfterInit(broadcasterAuthProvider, env));
 }
