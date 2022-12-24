@@ -240,5 +240,5 @@ function _acquireLock(): Promise<void> {
  * @returns 
  */
 function _releaseLock(): Promise<void> {
-    return fs.rm(CONFIG.DOT_API_PORT);
+    return fs.rm(CONFIG.DOT_LOCK);
 }
