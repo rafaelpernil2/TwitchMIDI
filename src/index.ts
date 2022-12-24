@@ -280,5 +280,5 @@ function _acquireLock(): Promise<void> {
  * @returns 
  */
 function _releaseLock(): Promise<void> {
-    return fs.rm(CONFIG.DOT_LOCK);
+    return fs.rm(CONFIG.DOT_LOCK, { force: true });
 }
