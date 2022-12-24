@@ -31,19 +31,31 @@ import { stopAllMidi } from './midi/handler';
  */
 (async () => {
     try {
+        // Language detection and prompt
         await initializei18n();
+
+        // Acquire lock and attach lock release on exit
         await _acquireLock();
+        _attachExitCallbacksBeforeInit();
+
+        // Load config data
         const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
         const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
         console.log(chalk.grey(i18n.t('INIT_WELCOME')));
+
+        // Check for updates
         await _showUpdateMessages();
+
+        // Initialize Config REST API
         initiateConfigAPI(broadcasterAuthProvider, env.TARGET_CHANNEL);
 
+        // Connect to Twitch
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
 
+        // Open MIDI connection
         await JZZ.requestMIDIAccess();
 
         // Chat code
@@ -55,7 +67,9 @@ import { stopAllMidi } from './midi/handler';
             await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
-        _attachOnExitProcessCallbacks(broadcasterAuthProvider, env);
+
+        // Finish initialization and handle exit signals
+        _attachExitCallbacksAfterInit(broadcasterAuthProvider, env);
         _showInitMessages(env);
     } catch (error) {
         console.log(chalk.red(String(error)));
@@ -93,13 +107,23 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
 }
 
 /**
- * Attaches a callback to exit process signals
+ * Attaches a callback before initialization to exit process signals
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param env Environment variables
  */
-function _attachOnExitProcessCallbacks(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
-    process.on('SIGHUP', _onExitProcess(broadcasterAuthProvider, env));
-    process.on('SIGINT', _onExitProcess(broadcasterAuthProvider, env));
+function _attachExitCallbacksBeforeInit(): void {
+    process.on('SIGHUP', _onExitProcessBeforeInit());
+    process.on('SIGINT', _onExitProcessBeforeInit());
+}
+
+/**
+ * Attaches a callback after initialization to exit process signals
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param env Environment variables
+ */
+function _attachExitCallbacksAfterInit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
+    process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    process.on('SIGINT', _onExitProcessAfterInit(broadcasterAuthProvider, env));
 }
 
 /**
@@ -205,7 +229,21 @@ async function _showUpdateMessages(): Promise<void> {
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param env Environment variables
  */
-function _onExitProcess(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
+function _onExitProcessBeforeInit(): () => Promise<void> {
+    // Before initialization only check lock
+    return async () => {
+        await _releaseLock();
+        process.exit();
+    };
+}
+
+/**
+ * Disables all rewards (if enabled) and exits. It is used for sudden closes of this application
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param env Environment variables
+ */
+function _onExitProcessAfterInit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
+    // After initialization check everything
     return async () => {
         try {
             stopAllMidi(env.TARGET_MIDI_CHANNEL);
