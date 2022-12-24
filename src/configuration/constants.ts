@@ -14,6 +14,7 @@ export const CONFIG = {
     PACKAGE_JSON_PATH: './package.json',
     DOT_ENV_PATH: '.env',
     DOT_API_PORT: '.apiPort',
+    DOT_LOCK: '.lock',
     DEFAULT_OCTAVE: '5',
     DEFAULT_VOLUME: 64,
     MIN_TEMPO: 35,
@@ -61,7 +62,8 @@ export const ERROR_MSG = {
     DUPLICATE_REQUEST: () => i18n.t('ERROR_DUPLICATE_REQUEST'),
     BROADCASTER_USER_NOT_FOUND: () => i18n.t('ERROR_BROADCASTER_USER_NOT_FOUND'),
     INVALID_AFFIXES: () => i18n.t('ERROR_INVALID_AFFIXES'),
-    COMMAND_MESSAGE_EMPTY: () => i18n.t('ERROR_COMMAND_MESSAGE_EMPTY')
+    COMMAND_MESSAGE_EMPTY: () => i18n.t('ERROR_COMMAND_MESSAGE_EMPTY'),
+    INSTANCE_ALREADY_RUNNING: () => i18n.t('ERROR_INSTANCE_ALREADY_RUNNING')
 };
 
 export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };

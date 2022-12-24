@@ -76,6 +76,7 @@
         "ERROR_BROADCASTER_USER_NOT_FOUND": "Broadcaster not found",
         "ERROR_INVALID_AFFIXES": "Bad message leading or trailing content, it exceeds maximum length",
         "ERROR_COMMAND_MESSAGE_EMPTY": "Bad request, please provide additional data to use this command. Use !midihelp for more info",
+        "ERROR_INSTANCE_ALREADY_RUNNING": "An instance of TwitchMIDI is already running. Only one instance can run at any given time",
         "HELP_MIDIHELP": "Shows all commands available and info about each command. Syntax: command (e.g \"sendloop\")",
         "HELP_MIDION": "Turns on the bot",
         "HELP_MIDIOFF": "Turns off the bot",

@@ -7,5 +7,6 @@ package/
 !.env.template
 .env*
 .apiPort
+.lock
 # Bundles
 TwitchMIDI*

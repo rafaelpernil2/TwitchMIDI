@@ -19,7 +19,7 @@ import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
 import { MessageHandler, RequestSource } from './twitch/chat/types';
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync } from 'fs';
 import { askUserInput, httpsRequestPromise } from './utils/promise';
 import http from 'http';
 import i18n, { initializei18n } from './i18n/loader';
@@ -32,6 +32,7 @@ import { stopAllMidi } from './midi/handler';
 (async () => {
     try {
         await initializei18n();
+        await _acquireLock();
         const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
         const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
@@ -214,6 +215,30 @@ function _onExitProcess(broadcasterAuthProvider: RefreshingAuthProvider, env: Pa
         if (env.REWARDS_MODE) {
             await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
         }
+        await _releaseLock();
         process.exit();
     };
+}
+
+/**
+ * Deletes the execution lock to indicate that the program has exited
+ * @returns 
+ */
+function _acquireLock(): Promise<void> {
+    // Check if another instance is running. 
+    // If so, the stored API port will no longer link with the original instance
+    if (existsSync(CONFIG.DOT_LOCK)) {
+        throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING())
+    }
+
+    return fs.writeFile(CONFIG.DOT_LOCK, GLOBAL.EMPTY_MESSAGE);
+}
+
+
+/**
+ * Deletes the execution lock to indicate that the program has exited
+ * @returns 
+ */
+function _releaseLock(): Promise<void> {
+    return fs.rm(CONFIG.DOT_API_PORT);
 }
