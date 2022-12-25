@@ -19,7 +19,7 @@ import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
 import { MessageHandler, RequestSource } from './twitch/chat/types';
-import { promises as fs } from 'fs';
+import { promises as fs, existsSync } from 'fs';
 import { askUserInput, httpsRequestPromise } from './utils/promise';
 import http from 'http';
 import i18n, { initializei18n } from './i18n/loader';
@@ -31,18 +31,31 @@ import { stopAllMidi } from './midi/handler';
  */
 (async () => {
     try {
+        // Language detection and prompt
         await initializei18n();
+
+        // Acquire lock and attach lock release on exit
+        await _acquireLock();
+        _attachExitCallbacksBeforeInit();
+
+        // Load config data
         const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
         const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
         console.log(chalk.grey(i18n.t('INIT_WELCOME')));
+
+        // Check for updates
         await _showUpdateMessages();
+
+        // Initialize Config REST API
         initiateConfigAPI(broadcasterAuthProvider, env.TARGET_CHANNEL);
 
+        // Connect to Twitch
         const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
         await chatClient.connect();
 
+        // Open MIDI connection
         await JZZ.requestMIDIAccess();
 
         // Chat code
@@ -54,7 +67,9 @@ import { stopAllMidi } from './midi/handler';
             await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
             await _initializeRewardsMode(broadcasterAuthProvider, chatClient, env);
         }
-        _attachOnExitProcessCallbacks(broadcasterAuthProvider, env);
+
+        // Finish initialization and handle exit signals
+        _attachExitCallbacksAfterInit(broadcasterAuthProvider, env);
         _showInitMessages(env);
     } catch (error) {
         console.log(chalk.red(String(error)));
@@ -92,13 +107,25 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
 }
 
 /**
- * Attaches a callback to exit process signals
+ * Attaches a callback before initialization to exit process signals
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param env Environment variables
  */
-function _attachOnExitProcessCallbacks(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
-    process.on('SIGHUP', _onExitProcess(broadcasterAuthProvider, env));
-    process.on('SIGINT', _onExitProcess(broadcasterAuthProvider, env));
+function _attachExitCallbacksBeforeInit(): void {
+    process.on('exit', _onExitProcessBeforeInit());
+    process.on('SIGHUP', _onExitProcessBeforeInit());
+    process.on('SIGINT', _onExitProcessBeforeInit());
+}
+
+/**
+ * Attaches a callback after initialization to exit process signals
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param env Environment variables
+ */
+function _attachExitCallbacksAfterInit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
+    process.on('exit', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    process.on('SIGINT', _onExitProcessAfterInit(broadcasterAuthProvider, env));
 }
 
 /**
@@ -204,7 +231,21 @@ async function _showUpdateMessages(): Promise<void> {
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param env Environment variables
  */
-function _onExitProcess(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
+function _onExitProcessBeforeInit(): () => Promise<void> {
+    // Before initialization only check lock
+    return async () => {
+        await _releaseLock();
+        process.exit();
+    };
+}
+
+/**
+ * Disables all rewards (if enabled) and exits. It is used for sudden closes of this application
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param env Environment variables
+ */
+function _onExitProcessAfterInit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): () => Promise<void> {
+    // After initialization check everything
     return async () => {
         try {
             stopAllMidi(env.TARGET_MIDI_CHANNEL);
@@ -214,6 +255,30 @@ function _onExitProcess(broadcasterAuthProvider: RefreshingAuthProvider, env: Pa
         if (env.REWARDS_MODE) {
             await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
         }
+        await _releaseLock();
         process.exit();
     };
+}
+
+/**
+ * Deletes the execution lock to indicate that the program has exited
+ * @returns 
+ */
+function _acquireLock(): Promise<void> {
+    // Check if another instance is running. 
+    // If so, the stored API port will no longer link with the original instance
+    if (existsSync(CONFIG.DOT_LOCK)) {
+        throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING())
+    }
+
+    return fs.writeFile(CONFIG.DOT_LOCK, GLOBAL.EMPTY_MESSAGE);
+}
+
+
+/**
+ * Deletes the execution lock to indicate that the program has exited
+ * @returns 
+ */
+function _releaseLock(): Promise<void> {
+    return fs.rm(CONFIG.DOT_LOCK, { force: true });
 }
