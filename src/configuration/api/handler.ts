@@ -7,13 +7,6 @@ import { reloadRewards } from '../../rewards/handler';
 import { favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue';
 import { Command } from '../../command/types';
 
-// Map of file name with the correspondent DB
-const configFileMap = {
-    aliases: ALIASES_DB,
-    rewards: REWARDS_DB,
-    permissions: PERMISSIONS_DB
-} as const;
-
 /**
  * Creates an HTTP server that implements Configuration API
  */
@@ -46,31 +39,40 @@ export function initiateConfigAPI(authProvider: RefreshingAuthProvider, broadcas
  * @returns A request listener for a HTTP server
  */
 function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: string): (req: http.IncomingMessage, res: http.ServerResponse) => Promise<void> {
+    // Map of file name with the correspondent DB
+    const configFileMap = {
+        aliases: ALIASES_DB,
+        rewards: REWARDS_DB,
+        permissions: PERMISSIONS_DB
+    } as const;
+
     return async (req, res) => {
         const url = new URL(req.url ?? '', `http://${req.headers.host ?? ''}`);
 
         switch (url.pathname) {
             // RefreshConfig API
             case '/refreshConfig': {
-                // Only allow get requests
-                if (req.method !== 'POST') return _buildResponse(res, 405);
-
                 // Obtain name of file to refresh
                 const queryFile = (url.searchParams.get('file') ?? GLOBAL.EMPTY_MESSAGE) as keyof typeof configFileMap;
 
-                // Check file exists
-                if (configFileMap[queryFile] == null) return _buildResponse(res, 400, i18n.t('API_ERROR_FILE'));
+                switch (req.method) {
+                    case 'POST': {
+                        // Validate request
+                        if (configFileMap[queryFile] == null) return _buildResponse(res, 400, i18n.t('API_ERROR_FILE'));
 
-                // If it is a reward, reload them
-                if (queryFile === 'rewards') {
-                    await reloadRewards(authProvider, broadcasterUser);
-                } else {
-                    // Refresh the file
-                    await configFileMap[queryFile].fetchDB();
+                        // If it is a reward, reload them, otherwise, refresh the file
+                        if (queryFile === 'rewards') {
+                            await reloadRewards(authProvider, broadcasterUser);
+                        } else {
+                            await configFileMap[queryFile].fetchDB();
+                        }
+
+                        // Happy path, all OK! :)
+                        return _buildResponse(res, 200, `${i18n.t('API_OK_1')} "${queryFile}" ${i18n.t('API_OK_2')}`);
+                    }
+                    default:
+                        return _buildResponse(res, 405);
                 }
-
-                // Happy path, all OK! :)
-                return _buildResponse(res, 200, `${i18n.t('API_OK_1')} "${queryFile}" ${i18n.t('API_OK_2')}`);
             }
             case '/queue': {
                 // Obtain name of command to check
@@ -80,25 +82,25 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
                 switch (req.method) {
                     case 'GET': {
                         // Obtain queue details
-                        const queueData = commandName != null ? queueMap[commandName] : queueMap;
+                        const queueData = commandName != null ? { [commandName]: queueMap[commandName] } : queueMap;
+                        const jsonData = JSON.stringify(queueData);
+
                         // Happy path, all OK! :)
                         res.setHeader('Content-Type', 'application/json');
-                        return _buildResponse(res, 200, JSON.stringify(queueData));
+                        return _buildResponse(res, 200, jsonData);
                     }
                     case 'DELETE': {
-                        if (commandName == null || turn == null) {
-                            return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
-                        }
+                        // Validate request
+                        if (commandName == null || turn == null || isNaN(Number(turn))) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
 
-                        // Obtain queue details
                         removeFromQueue(commandName, Number(turn));
+
                         // Happy path, all OK! :)
                         return _buildResponse(res, 200, i18n.t('API_OK'));
                     }
                     default:
-                        break;
+                        return _buildResponse(res, 405);
                 }
-                break;
             }
 
             case '/favorite': {
@@ -109,37 +111,34 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
                 switch (req.method) {
                     case 'GET': {
                         // Obtain favoriteIdMap details
-                        const favoriteData = commandName != null ? favoriteIdMap[commandName] : favoriteIdMap;
+                        const favoriteData = commandName != null ? { [commandName]: favoriteIdMap[commandName] } : favoriteIdMap;
+                        const jsonData = JSON.stringify(favoriteData);
+
                         // Happy path, all OK! :)
-                        res.setHeader('Content-Type', 'text/plain');
-                        return _buildResponse(res, 200, JSON.stringify(favoriteData));
+                        res.setHeader('Content-Type', 'application/json');
+                        return _buildResponse(res, 200, jsonData);
                     }
                     case 'PUT': {
-                        if (commandName == null || turn == null) {
-                            return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
-                        }
+                        // Validate request
+                        if (commandName == null || turn == null) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
 
-                        // Populate change
                         markAsFavorite(commandName, Number(turn));
 
                         // Happy path, all OK! :)
                         return _buildResponse(res, 200, i18n.t('API_OK'));
                     }
                     case 'DELETE': {
-                        if (commandName == null) {
-                            return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
-                        }
+                        // Validate request
+                        if (commandName == null) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
 
-                        // Populate change
                         unmarkFavorite(commandName);
 
                         // Happy path, all OK! :)
                         return _buildResponse(res, 200, i18n.t('API_OK'));
                     }
                     default:
-                        break;
+                        return _buildResponse(res, 405);
                 }
-                break;
             }
             default:
                 return _buildResponse(res, 400, i18n.t('API_ERROR_NOT_A_METHOD'));
