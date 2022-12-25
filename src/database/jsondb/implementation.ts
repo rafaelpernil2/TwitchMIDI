@@ -2,30 +2,49 @@ import { Database, ResponseStatus } from '../interface';
 import { promises as fs, readFileSync } from 'fs';
 
 export class JSONDatabase<T> implements Database<T> {
-    private filePath: string;
-    private db: T | undefined;
-    private dbCommit: T | undefined;
+    private _filePath: string;
+    private _fileName: string;
+    private _db: T | undefined;
+    private _dbCommit: T | undefined;
 
     /**
      * Given the file DB path, the contents are loaded into this.db
      * @param filePath File DB path
      */
-    constructor(filePath: string) {
-        this.filePath = filePath;
-        this.syncFetchDB();
+    constructor(filePath: string, { ignoreFileNotFound = false } = {}) {
+        this._filePath = filePath;
+        this._fileName = this._filePath.slice(this._filePath.lastIndexOf('/') + 1);
+        try {
+            this.syncFetchDB();
+        } catch (error) {
+            if (error instanceof Error && error.message.startsWith('ENOENT') && ignoreFileNotFound) {
+                this._db = {} as T;
+                this._dbCommit = {} as T;
+                return;
+            }
+            throw error;
+        }
     }
 
     /**
      * Retrieves the full DB data
      */
     get value(): T | undefined {
-        return this.db;
+        return this._db;
     }
     /**
      * Sets a DB
      */
     set value(newDB: T | undefined) {
-        this.db = newDB;
+        this._db = newDB;
+    }
+
+    /**
+     * Retrieves the file name
+     * @returns File name
+     */
+    get fileName(): string {
+        return this._fileName;
     }
 
     /**
@@ -34,10 +53,10 @@ export class JSONDatabase<T> implements Database<T> {
      * @returns Data in path
      */
     selectAll<P extends keyof T>(path: P): T[P] | undefined {
-        if (this.db == null) {
+        if (this._db == null) {
             return;
         }
-        return this.db[path];
+        return this._db[path];
     }
 
     /**
@@ -47,10 +66,10 @@ export class JSONDatabase<T> implements Database<T> {
      * @returns Data in path
      */
     select<P extends keyof T, S extends keyof T[P]>(path: P, key: S): T[P][S] | undefined {
-        if (this.db == null) {
+        if (this._db == null) {
             return;
         }
-        return this.db[path]?.[key];
+        return this._db[path]?.[key];
     }
 
     /**
@@ -61,10 +80,10 @@ export class JSONDatabase<T> implements Database<T> {
      * @returns ResponseStatus: Ok or Error
      */
     insert<P extends keyof T, S extends keyof T[P]>(path: P, key: S, value: T[P][S]): ResponseStatus {
-        if (this.dbCommit == null || this.dbCommit[path][key] != null) {
+        if (this._dbCommit == null || this._dbCommit[path][key] != null) {
             return ResponseStatus.Error;
         }
-        this.dbCommit[path][key] = value;
+        this._dbCommit[path][key] = value;
         return ResponseStatus.Ok;
     }
 
@@ -75,10 +94,10 @@ export class JSONDatabase<T> implements Database<T> {
      * @returns ResponseStatus: Ok or Error
      */
     upsert<P extends keyof T>(path: P, value: T[P]): ResponseStatus {
-        if (this.dbCommit == null) {
+        if (this._dbCommit == null) {
             return ResponseStatus.Error;
         }
-        this.dbCommit[path] = { ...this.dbCommit[path], ...value };
+        this._dbCommit[path] = { ...this._dbCommit[path], ...value };
         return ResponseStatus.Ok;
     }
 
@@ -89,10 +108,10 @@ export class JSONDatabase<T> implements Database<T> {
      * @returns ResponseStatus: Ok or Error
      */
     delete<P extends keyof T>(path: P, key: keyof T[P]): ResponseStatus {
-        if (this.dbCommit == null || this.dbCommit?.[path]?.[key] == null) {
+        if (this._dbCommit == null || this._dbCommit?.[path]?.[key] == null) {
             return ResponseStatus.Error;
         }
-        delete this.dbCommit?.[path]?.[key];
+        delete this._dbCommit?.[path]?.[key];
         return ResponseStatus.Ok;
     }
 
@@ -102,7 +121,7 @@ export class JSONDatabase<T> implements Database<T> {
      */
     async commit(): Promise<ResponseStatus> {
         try {
-            await fs.writeFile(this.filePath, JSON.stringify(this.dbCommit, null, 4), { encoding: 'utf-8' });
+            await fs.writeFile(this._filePath, JSON.stringify(this._dbCommit, null, 4), { encoding: 'utf-8' });
             await this.fetchDB();
             return ResponseStatus.Ok;
         } catch (error) {
@@ -115,7 +134,7 @@ export class JSONDatabase<T> implements Database<T> {
      * @returns ResponseStatus: Ok or Error
      */
     rollback(): ResponseStatus {
-        this.dbCommit = JSON.parse(JSON.stringify(this.db)) as T;
+        this._dbCommit = JSON.parse(JSON.stringify(this._db)) as T;
         return ResponseStatus.Ok;
     }
 
@@ -123,15 +142,15 @@ export class JSONDatabase<T> implements Database<T> {
      * Fetches data from persistent DB asynchronously
      */
     async fetchDB(): Promise<void> {
-        this.db = JSON.parse(await fs.readFile(this.filePath, { encoding: 'utf-8' })) as T;
-        this.dbCommit = JSON.parse(JSON.stringify(this.db)) as T;
+        this._db = JSON.parse(await fs.readFile(this._filePath, { encoding: 'utf-8' })) as T;
+        this._dbCommit = JSON.parse(JSON.stringify(this._db)) as T;
     }
 
     /**
      * Fetches data from persistent DB synchronously
      */
     syncFetchDB(): void {
-        this.db = JSON.parse(readFileSync(this.filePath, { encoding: 'utf-8' })) as T;
-        this.dbCommit = JSON.parse(JSON.stringify(this.db)) as T;
+        this._db = JSON.parse(readFileSync(this._filePath, { encoding: 'utf-8' })) as T;
+        this._dbCommit = JSON.parse(JSON.stringify(this._db)) as T;
     }
 }

@@ -1,12 +1,12 @@
 export class SharedVariable<T> {
-    private innerValue: T;
+    private _innerValue: T;
 
     /**
      * Given a default value, it creates a SharedVariable instance
      * @param value Initial value
      */
     constructor(value: T) {
-        this.innerValue = value;
+        this._innerValue = value;
     }
 
     /**
@@ -14,7 +14,7 @@ export class SharedVariable<T> {
      * @returns Value
      */
     public get(): T {
-        return this.innerValue;
+        return this._innerValue;
     }
 
     /**
@@ -22,7 +22,7 @@ export class SharedVariable<T> {
      * @param v Value
      */
     public set(v: T): void {
-        this.innerValue = v;
+        this._innerValue = v;
     }
 
     /**
@@ -31,6 +31,6 @@ export class SharedVariable<T> {
      * @returns Is equals
      */
     public is(v: T): boolean {
-        return this.innerValue === v;
+        return this._innerValue === v;
     }
 }

@@ -1,10 +1,28 @@
 {
     "rewardTitleCommandMap": {
-        "MIDI - Loop": ["!sendloop", 50],
-        "MIDI - Change tempo": ["!settempo", 100],
-        "MIDI - Add chord progression": ["!addchord", 1000],
-        "MIDI - Send notes": ["!sendnote", 50],
-        "MIDI - Send MIDI CC": ["!sendcc", 100],
-        "MIDI - Change volume": ["!midivolume", 10]
+        "MIDI - Loop": [
+            "!sendloop",
+            50
+        ],
+        "MIDI - Change tempo": [
+            "!settempo",
+            100
+        ],
+        "MIDI - Add chord progression": [
+            "!addchord",
+            1000
+        ],
+        "MIDI - Send notes": [
+            "!sendnote",
+            50
+        ],
+        "MIDI - Send MIDI CC": [
+            "!sendcc",
+            100
+        ],
+        "MIDI - Change volume": [
+            "!midivolume",
+            10
+        ]
     }
 }

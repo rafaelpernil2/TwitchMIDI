@@ -25,6 +25,7 @@ import http from 'http';
 import i18n, { initializei18n } from './i18n/loader';
 import { initiateConfigAPI } from './configuration/api/handler';
 import { stopAllMidi } from './midi/handler';
+import { validateConfigFiles } from './configuration/configurator/config-handler';
 
 /**
  * Initialization code
@@ -45,6 +46,7 @@ import { stopAllMidi } from './midi/handler';
 
         console.log(chalk.grey(i18n.t('INIT_WELCOME')));
 
+        await validateConfigFiles();
         // Check for updates
         await _showUpdateMessages();
 
@@ -262,22 +264,21 @@ function _onExitProcessAfterInit(broadcasterAuthProvider: RefreshingAuthProvider
 
 /**
  * Deletes the execution lock to indicate that the program has exited
- * @returns 
+ * @returns
  */
 function _acquireLock(): Promise<void> {
-    // Check if another instance is running. 
+    // Check if another instance is running.
     // If so, the stored API port will no longer link with the original instance
     if (existsSync(CONFIG.DOT_LOCK)) {
-        throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING())
+        throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING());
     }
 
     return fs.writeFile(CONFIG.DOT_LOCK, GLOBAL.EMPTY_MESSAGE);
 }
 
-
 /**
  * Deletes the execution lock to indicate that the program has exited
- * @returns 
+ * @returns
  */
 function _releaseLock(): Promise<void> {
     return fs.rm(CONFIG.DOT_LOCK, { force: true });

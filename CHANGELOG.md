@@ -10,11 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Macro feature: Now you can trigger a set of commands with different timeouts just using a single command or "macro"
 - Revamped and extended API. Now you can query what's in the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
+- Automatic config file (re)generation and integrity checks. The config files are downloaded and merged from the master branch to fix any compatibility issues while keeping your settings. Updates are now as simple as getting the latest binary!
+- Single-instance enforcement through .lock file: Now you can only run one instance of TwitchMIDI at any time to avoid undefined behaviour
+- Embedded README.txt inside binary zip
 ### Changed
-- /refreshConfig API now works via POST
+- Removed all config files from artifact
+- Removed unnecessary template files
+- Minor refactors for easier translations
 - Minor naming refactors
 - Improved setTimeoutPromise with a default case for 0ns
-- BREAKING CHANGE: aliases.json has a new section called "macros". You need to update your aliases.json file
+- aliases.json has a new section called "macros". Not a breaking change because it is fixed automatically by this update
+- BREAKING CHANGE: /refreshConfig API now works via POST
 
 ## [2.7.2] - 2022-09-28
 ### Fixed

@@ -13,12 +13,10 @@ export async function getAuthProvider(
     [envAccessToken, envRefreshToken]: [envAccessToken: string, envRefreshToken: string],
     kind: 'BOT' | 'BROADCASTER'
 ): Promise<RefreshingAuthProvider> {
-    const template = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;
-
     // Load latest available tokens
     const [accessToken, refreshToken] = await _loadLatestTokens([envAccessToken, envRefreshToken], kind);
 
-    const tokenData: AccessToken = { ...template, accessToken, refreshToken };
+    const tokenData: AccessToken = { ...CONFIG.TOKENS_TEMPLATE, accessToken, refreshToken };
     const tokensPath = kind === 'BOT' ? CONFIG.BOT_TOKENS_PATH : CONFIG.BROADCASTER_TOKENS_PATH;
     return new RefreshingAuthProvider(
         { clientId, clientSecret, onRefresh: async (newTokenData) => await fs.writeFile(tokensPath, JSON.stringify(newTokenData, null, 4), { encoding: 'utf-8' }) },

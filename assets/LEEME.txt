@@ -1,0 +1,26 @@
+Bienvenido a
+
+    _______       _ _       _     __  __ _____ _____ _____
+   |__   __|     (_) |     | |   |  \/  |_   _|  __ \_   _|
+      | |_      ___| |_ ___| |__ | \  / | | | | |  | || |
+      | \ \ /\ / / | __/ __|  _ \| |\/| | | | | |  | || |
+      | |\ V  V /| | || (__| | | | |  | |_| |_| |__| || |_
+      |_| \_/\_/ |_|\__\___|_| |_|_|  |_|_____|_____/_____|
+
+                                por Rafael Pernil (@rafaelpernil2)
+
+*************************
+Si quieres apoyar mi trabajo, por favor contribuye vía [Paypal](https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN)
+
+Gracias! ♥
+*************************
+
+****
+Installation:
+****
+1. Descomprime todos los contenidos de este zip en una carpeta nueva
+2. Lanza la versión adecuada de TwitchMIDI según tu sistema operativo
+    - Si usas Windows: Doble click en "TwitchMIDI-win.exe"
+    - Si usas Linux: Abre una terminal y lanza ./TwitchMIDI-linux
+    - Si usas Mac OS: Abre una terminal y lanza ./TwitchMIDI-macos
+3. A divertirse!

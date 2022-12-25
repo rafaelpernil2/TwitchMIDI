@@ -21,6 +21,20 @@
             "whitelist": [],
             "blacklist": []
         },
+        "midipause": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midiresume": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
         "addchord": {
             "requirements": [],
             "whitelist": [],
@@ -57,6 +71,16 @@
             "blacklist": []
         },
         "sendcc": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midicurrentrequest": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midirequestqueue": {
             "requirements": [],
             "whitelist": [],
             "blacklist": []
@@ -102,30 +126,6 @@
             "blacklist": []
         },
         "fetchdb": {
-            "requirements": [
-                "isBroadcaster"
-            ],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midicurrentrequest": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midirequestqueue": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midipause": {
-            "requirements": [
-                "isBroadcaster"
-            ],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midiresume": {
             "requirements": [
                 "isBroadcaster"
             ],

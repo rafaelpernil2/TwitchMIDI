@@ -15,7 +15,7 @@
     "clean": "del-cli dist package",
     "ncc": "ncc build src/index.ts -m -o dist -e jazz-midi",
     "package": "pkg . -o package/TwitchMIDI",
-    "prezip": "cpy config package && cpy package.json package",
+    "prezip": "cpy assets/* package && cpy package.json package",
     "zip": "cd package && bestzip ../TwitchMIDI.zip *",
     "bundle": "npm run clean && npm run ncc && npm run package && npm run zip"
   },

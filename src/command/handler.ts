@@ -61,7 +61,7 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR());
     }
-    chatClient.say(channel, `${i18n.t('MIDION_ENABLED')} Rafael Pernil (@rafaelpernil2)`);
+    chatClient.say(channel, `${i18n.t('MIDION_ENABLED')} ${CONFIG.OP_SIGNATURE}`);
 }
 
 /**
@@ -85,7 +85,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
     }
-    chatClient.say(channel, `${i18n.t('MIDIOFF_DISABLED')} Rafael Pernil (@rafaelpernil2)`);
+    chatClient.say(channel, `${i18n.t('MIDIOFF_DISABLED')} ${CONFIG.OP_SIGNATURE}`);
 }
 
 /**

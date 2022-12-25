@@ -5,7 +5,6 @@ import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise';
 import { promises as fs } from 'fs';
 import { EnvObject } from '../env/types';
 import { getBooleanByString, isNullish } from '../../utils/generic';
-import { AccessToken } from '@twurple/auth/lib';
 import { CONFIG } from '../constants';
 import chalk from 'chalk';
 import i18n from '../../i18n/loader';
@@ -20,6 +19,9 @@ const NEW_CODE = 'newCode';
  * @returns
  */
 export async function setupConfiguration(currentVariables: EnvObject): Promise<EnvObject> {
+    // TwitchMIDI logo
+    console.log(chalk.yellow(CONFIG.TWITCH_MIDI_ASCII));
+    // Initial text
     console.log(chalk.yellow(i18n.t('SETUP_1')));
     // Arbitrary delay for usability
     await setTimeoutPromise(5_000_000_000);
@@ -61,7 +63,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         console.log(chalk.magenta(i18n.t('SETUP_STEP_2_TEXT')));
         // This server awaits the response from the URL
         const server = _createAuthServer(CONFIG.LOCAL_SERVER_HOST, CONFIG.LOCAL_SERVER_PORT);
-        const authUrl = await _createAuthURL(CLIENT_ID);
+        const authUrl = _createAuthURL(CLIENT_ID);
         console.log(chalk.magenta(i18n.t('SETUP_STEP_2_LINK') + authUrl));
 
         // Wait until user clicks and authorizes
@@ -136,7 +138,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     console.log(chalk.magenta(i18n.t('SETUP_STEP_END_READY')));
     console.log(
         chalk.yellowBright(`
-    ***** ${i18n.t('SETUP_STEP_END_CREDITS')} Rafael Pernil (@rafaelpernil2) ***** 
+    ***** ${i18n.t('SETUP_STEP_END_CREDITS')} ${CONFIG.OP_SIGNATURE} ***** 
     `)
     );
 
@@ -282,10 +284,9 @@ function _createAuthServer(host: string, port: number): http.Server {
  * @param client_id Twitch bot Client ID
  * @returns Authorization URL
  */
-async function _createAuthURL(client_id: string): Promise<string> {
+function _createAuthURL(client_id: string): string {
     // Obtains the scopes from the template file
-    const accessTokenTemplate = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;
-    const scope = accessTokenTemplate.scope.reduce((acc, curr) => (acc += '+' + curr));
+    const scope = CONFIG.TOKENS_TEMPLATE.scope.reduce((acc, curr) => (acc += '+' + curr));
     const authParams = new URLSearchParams({
         response_type: 'code',
         client_id,

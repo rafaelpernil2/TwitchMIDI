@@ -3,10 +3,18 @@ import { AliasesType, PermissionsType, RewardsType } from '../database/jsondb/ty
 import EventEmitter from 'events';
 import { Command } from '../command/types';
 import i18n from '../i18n/loader';
+import { AccessToken } from '@twurple/auth/lib';
 
 export const CONFIG = {
     ALIASES_DB_PATH: './config/aliases.json',
-    TOKENS_TEMPLATE_PATH: './config/tokens.template.json',
+    TOKENS_TEMPLATE: {
+        accessToken: '',
+        refreshToken: '',
+        scope: ['chat:read', 'chat:edit', 'channel:read:redemptions', 'channel:manage:redemptions'],
+        expiresIn: 0,
+        obtainmentTimestamp: 0
+    } as AccessToken,
+    CONFIG_FOLDER_PATH: './config',
     BOT_TOKENS_PATH: './config/bot-tokens.json',
     BROADCASTER_TOKENS_PATH: './config/broadcaster-tokens.json',
     REWARDS_PATH: './config/rewards.json',
@@ -28,8 +36,19 @@ export const CONFIG = {
     TWITCH_BASE_AUTH_URL: 'https://id.twitch.tv/oauth2/',
     GITHUB_CONTENT_BASE_URL: 'raw.githubusercontent.com',
     REMOTE_PACKAGE_JSON_PATH: '/rafaelpernil2/TwitchMIDI/master/package.json',
+    REMOTE_CONFIG_JSON_FOLDER_PATH: '/rafaelpernil2/TwitchMIDI/master/config',
     SPONSOR_PAYPAL_LINK: 'https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN',
     REPOSITORY_LINK: 'https://github.com/rafaelpernil2/TwitchMIDI',
+    OP_SIGNATURE: 'Rafael Pernil (@rafaelpernil2)',
+    TWITCH_MIDI_ASCII: `
+    _______       _ _       _     __  __ _____ _____ _____
+   |__   __|     (_) |     | |   |  \\/  |_   _|  __ \\_   _|
+      | |_      ___| |_ ___| |__ | \\  / | | | | |  | || |
+      | \\ \\ /\\ / / | __/ __|  _ \\| |\\/| | | | | |  | || |
+      | |\\ V  V /| | || (__| | | | |  | |_| |_| |__| || |_
+      |_| \\_/\\_/ |_|\\__\\___|_| |_|_|  |_|_____|_____/_____|
+
+                                - Rafael Pernil (@rafaelpernil2)`,
     DEFAULT_USER_ROLES: { isBroadcaster: false, isMod: false, isSubscriber: false, isVip: false, isFounder: false }
 };
 
@@ -63,7 +82,8 @@ export const ERROR_MSG = {
     BROADCASTER_USER_NOT_FOUND: () => i18n.t('ERROR_BROADCASTER_USER_NOT_FOUND'),
     INVALID_AFFIXES: () => i18n.t('ERROR_INVALID_AFFIXES'),
     COMMAND_MESSAGE_EMPTY: () => i18n.t('ERROR_COMMAND_MESSAGE_EMPTY'),
-    INSTANCE_ALREADY_RUNNING: () => i18n.t('ERROR_INSTANCE_ALREADY_RUNNING')
+    INSTANCE_ALREADY_RUNNING: () => i18n.t('ERROR_INSTANCE_ALREADY_RUNNING'),
+    BAD_CONFIG_DOWNLOAD: () => i18n.t('ERROR_BAD_CONFIG_DOWNLOAD')
 };
 
 export const TOGGLE_MIDI_VALUES: Record<string, string> = { on: '127', off: '0' };
@@ -131,9 +151,9 @@ export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean
     midiresume: false
 } as const;
 
-export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH);
-export const REWARDS_DB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH);
-export const PERMISSIONS_DB = new JSONDatabase<PermissionsType>(CONFIG.PERMISSIONS_DB);
+export const ALIASES_DB = new JSONDatabase<AliasesType>(CONFIG.ALIASES_DB_PATH, { ignoreFileNotFound: true });
+export const REWARDS_DB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH, { ignoreFileNotFound: true });
+export const PERMISSIONS_DB = new JSONDatabase<PermissionsType>(CONFIG.PERMISSIONS_DB, { ignoreFileNotFound: true });
 
 export const EVENT_EMITTER = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 
