@@ -16,7 +16,7 @@ Gracias! ♥
 *************************
 
 ****
-Installation:
+Instalación:
 ****
 1. Descomprime todos los contenidos de este zip en una carpeta nueva
 2. Lanza la versión adecuada de TwitchMIDI según tu sistema operativo
