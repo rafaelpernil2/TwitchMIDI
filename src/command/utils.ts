@@ -33,11 +33,11 @@ export function getCommand(message: string): [command: Command | null, args: str
  * @returns [command?: Command, args?: string]
  */
 export function getMacro(message: string): Array<[command: Command | null, args: string, delay: number]> {
-    const [command, ...args] = message.slice(1).split(GLOBAL.SPACE_SEPARATOR);
+    const [command] = message.slice(1).split(GLOBAL.SPACE_SEPARATOR);
     const parsedCommand = command.toLowerCase();
 
-    // If there's no exclamation mark or there's arguments, it's an invalid macro
-    if (!message.startsWith(GLOBAL.EXCLAMATION_MARK) || args.length > 0) {
+    // If there's no exclamation mark, it's an invalid macro. Ignore the arguments
+    if (!message.startsWith(GLOBAL.EXCLAMATION_MARK)) {
         return [];
     }
 

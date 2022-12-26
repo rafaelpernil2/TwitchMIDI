@@ -1,5 +1,6 @@
 import { ApiClient, HelixCustomRewardRedemptionTargetStatus, HelixUser } from '@twurple/api';
 import { RefreshingAuthProvider } from '@twurple/auth';
+import { getCommand } from '../command/utils';
 import { ERROR_MSG, REWARDS_DB } from '../configuration/constants';
 import { REWARD_TITLE_COMMAND } from '../database/jsondb/types';
 
@@ -18,9 +19,12 @@ export async function createRewards(authProvider: RefreshingAuthProvider, userna
     const userId = await getBroadcasterId(apiClient, username);
 
     const rewardEntries = Object.entries(REWARDS_DB.selectAll(REWARD_TITLE_COMMAND) ?? {});
-    const createPromiseMap = rewardEntries.map(([title, [, cost]]) =>
-        apiClient.channelPoints.createCustomReward(userId, { title, cost, userInputRequired: true, autoFulfill: false })
-    );
+    const createPromiseMap = rewardEntries.map(([title, [command, cost]]) => {
+        const [parsedCommand] = getCommand(command);
+        const userInputRequired = parsedCommand != null; // Single commands require user input while macros do not
+
+        return apiClient.channelPoints.createCustomReward(userId, { title, cost, userInputRequired, autoFulfill: false });
+    });
     try {
         await Promise.allSettled(createPromiseMap);
     } catch (error) {
@@ -40,7 +44,7 @@ export async function toggleRewardsStatus(authProvider: RefreshingAuthProvider, 
     const allRewards = await apiClient.channelPoints.getCustomRewards(userId, true);
 
     // Only treat our rewards
-    const validRewards = allRewards.filter(({ title }) => REWARDS_DB.select(REWARD_TITLE_COMMAND, title) != null);
+    const validRewards = isEnabled ? allRewards.filter(({ title }) => REWARDS_DB.select(REWARD_TITLE_COMMAND, title) != null) : allRewards;
     const updatePromiseMap = validRewards.map((reward) => {
         const [, cost] = REWARDS_DB.select(REWARD_TITLE_COMMAND, reward.title) ?? [];
         return apiClient.channelPoints.updateCustomReward(userId, reward.id, { ...reward, isEnabled, cost });

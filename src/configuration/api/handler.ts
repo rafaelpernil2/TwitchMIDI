@@ -4,7 +4,7 @@ import i18n from '../../i18n/loader';
 import { promises as fs } from 'fs';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
 import { reloadRewards } from '../../rewards/handler';
-import { favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue';
+import { clearQueue, favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue';
 import { Command } from '../../command/types';
 
 /**
@@ -91,9 +91,13 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
                     }
                     case 'DELETE': {
                         // Validate request
-                        if (commandName == null || turn == null || isNaN(Number(turn))) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
+                        if (commandName == null || (turn != null && isNaN(Number(turn)))) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
 
-                        removeFromQueue(commandName, Number(turn));
+                        if (turn != null) {
+                            removeFromQueue(commandName, Number(turn));
+                        } else {
+                            clearQueue(commandName);
+                        }
 
                         // Happy path, all OK! :)
                         return _buildResponse(res, 200, i18n.t('API_OK'));

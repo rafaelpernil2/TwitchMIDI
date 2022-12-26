@@ -27,9 +27,6 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
                     return;
                 }
 
-                // Delay before instruction
-                await setTimeoutPromise(delayNs);
-
                 const commandHandler = CommandHandlers[command] as CommandHandlerType;
                 // If rewards mode enabled and the input is a command and the user is not streamer or mod or vip, only allow safe commands
                 if (commandHandler == null) {
@@ -47,6 +44,10 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
                 };
                 // Checks if the user has enough permissions
                 checkCommandAccess(command, twitch, source, env);
+
+                // Delay before instruction
+                await setTimeoutPromise(delayNs);
+
                 // Call command
                 return commandHandler(
                     args,

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.0] - 2022-12-21
 ### Added
 - Macro feature: Now you can trigger a set of commands with different timeouts just using a single command or "macro"
-- Revamped and extended API. Now you can query what's in the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
+- Revamped and extended API. Now you can query what's in the queue, clear the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
 - Automatic config file (re)generation and integrity checks. The config files are downloaded and merged from the master branch to fix any compatibility issues while keeping your settings. Updates are now as simple as getting the latest binary!
 - Single-instance enforcement through .lock file: Now you can only run one instance of TwitchMIDI at any time to avoid undefined behaviour
 - Embedded README.txt inside binary zip
@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved setTimeoutPromise with a default case for 0ns
 - aliases.json has a new section called "macros". Not a breaking change because it is fixed automatically by this update
 - BREAKING CHANGE: /refreshConfig API now works via POST
+### Fixed
+- Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now it is bumped to 100
+- Rewards disable bug. Before, it only disabled the current rewards from rewards.json file. If any reward were changed while running TwitchMIDI, it would stay active forever. Now it disables all rewards created by TwitchMIDI (new behaviour) and enables only the ones from rewards.json file (as before)
 
 ## [2.7.2] - 2022-09-28
 ### Fixed

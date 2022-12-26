@@ -29,6 +29,7 @@ export const CONFIG = {
     MAX_TEMPO: 400,
     DEFAULT_TEMPO: 120,
     DEFAULT_SWEEP_FREQUENCY: 60,
+    MAX_QUEUE_LENGTH: 100,
     FULFILL_TIMEOUT_MS: 10000,
     LOCAL_SERVER_HOST: 'localhost',
     LOCAL_SERVER_PORT: 8000,
@@ -156,6 +157,7 @@ export const REWARDS_DB = new JSONDatabase<RewardsType>(CONFIG.REWARDS_PATH, { i
 export const PERMISSIONS_DB = new JSONDatabase<PermissionsType>(CONFIG.PERMISSIONS_DB, { ignoreFileNotFound: true });
 
 export const EVENT_EMITTER = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
+EVENT_EMITTER.setMaxListeners(CONFIG.MAX_QUEUE_LENGTH); // Increase listener limit for queue. This represents how many requests can be in the queue at any given time
 
 export const EVENT = {
     BAR_LOOP_CHANGE_EVENT: 'barLoopChange',

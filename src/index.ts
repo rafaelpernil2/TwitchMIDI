@@ -12,7 +12,7 @@ import { CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
 import { getBooleanByStringList } from './utils/generic';
-import { getCommand } from './command/utils';
+import { getCommandList } from './command/utils';
 import { setupConfiguration } from './configuration/configurator/setup';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
 import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
@@ -95,10 +95,10 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
         // For rewards that are not part of this plugin
         if (!command) return;
 
-        const [parsedCommand] = getCommand(command);
+        const commandList = getCommandList(command);
 
         // Invalid configuration
-        if (parsedCommand == null) {
+        if (commandList.length === 0) {
             console.log(ERROR_MSG.INVALID_REWARD());
             return;
         }
@@ -114,6 +114,11 @@ async function _initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthPro
  * @param env Environment variables
  */
 function _attachExitCallbacksBeforeInit(): void {
+    // Initialize
+    process.removeAllListeners('exit');
+    process.removeAllListeners('SIGHUP');
+    process.removeAllListeners('SIGINT');
+
     process.on('exit', _onExitProcessBeforeInit());
     process.on('SIGHUP', _onExitProcessBeforeInit());
     process.on('SIGINT', _onExitProcessBeforeInit());
@@ -125,6 +130,11 @@ function _attachExitCallbacksBeforeInit(): void {
  * @param env Environment variables
  */
 function _attachExitCallbacksAfterInit(broadcasterAuthProvider: RefreshingAuthProvider, env: ParsedEnvVariables): void {
+    // Initialize
+    process.removeAllListeners('exit');
+    process.removeAllListeners('SIGHUP');
+    process.removeAllListeners('SIGINT');
+
     process.on('exit', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGINT', _onExitProcessAfterInit(broadcasterAuthProvider, env));
