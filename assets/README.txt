@@ -10,7 +10,7 @@ Welcome to
                                 by Rafael Pernil (@rafaelpernil2)
 
 *************************
-If you want to support my work, please contribute via Paypal - https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNNCONN_REFUSED_RETRY
+If you want to support my work, please contribute via Paypal - https://www.paypal.com/donate/?hosted_button_id=9RRAEE5J7NNNN
 
 Thank you! ♥
 *************************
