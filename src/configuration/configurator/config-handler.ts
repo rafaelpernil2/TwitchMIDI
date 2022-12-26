@@ -54,7 +54,7 @@ export async function validatePermissionsFile(): Promise<void> {
     let isModified = false;
     // Check each section and fix structure if needed
     const currentPermissionsMap = PERMISSIONS_DB.selectAll(PERMISSIONS_MAP) ?? ({} as PermissionsType['permissionsMap']);
-    const commandList = Object.keys(CommandHandlers) as Command[];
+    const commandList = Object.keys(CommandHandlers).sort() as Command[];
 
     for (const command of commandList) {
         if (currentPermissionsMap[command] != null) continue;

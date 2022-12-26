@@ -17,7 +17,7 @@ export class JSONDatabase<T> implements Database<T> {
         try {
             this.syncFetchDB();
         } catch (error) {
-            if (error instanceof Error && error.message.startsWith('ENOENT') && ignoreFileNotFound) {
+            if (error instanceof Error && (error.message.startsWith('ENOENT') || error.message === 'Unexpected end of JSON input') && ignoreFileNotFound) {
                 this._db = {} as T;
                 this._dbCommit = {} as T;
                 return;
