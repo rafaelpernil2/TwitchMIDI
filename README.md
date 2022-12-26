@@ -10,8 +10,6 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
   - [Download](#download)
   - [Installation](#installation)
   - [Update](#update)
-    - [Overriding custom settings](#overriding-custom-settings)
-    - [Safe method](#safe-method)
   - [Why?](#why)
   - [Features](#features)
   - [Commands](#commands)
@@ -62,21 +60,7 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 ## Update
 
-### Overriding custom settings
-
-* Extract and replace all files into your folder
-
-### Safe method
-
-Okay, this can get a little more complicated, but if you are using custom settings, you already know how they work
-
-* Extract the zip in a different folder than before
-* Copy and replace TwitchMIDI-yourplatform (e.g TwitchMIDI-win.exe) and package.json into your folder
-* Open [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json) and make sure all commands have an entry, otherwise those missing will always return permissions errors
-* That's it!
-
-> Note: You do not need to replace the entire config folder unless there is a major version change (e.g, from 1.x.x to 2.x.x).
-> In case of doubt, compare old with new versions of config files and re-apply your changes. See [CHANGELOG.md](CHANGELOG.md) and search "BREAKING CHANGE" for more details.
+Just put the new version in your folder. TwitchMIDI will configure everything automatically and add anything missing.
 
 
 ## Why?
@@ -136,6 +120,7 @@ So far, this first version does all that, keep reading the features for more det
 * HTTP API to interact with the bot behind the scenes with an alternative UI (like TwitchMIDI+ Control Panel)
 * Internationalization with full support for English and Spanish as of right now
 * Update checking on startup, a message appears if there is a new version available
+* Automatic checking and fix of configuration files. It ensures that all settings are correct while keeping the good ones
 
 ## Commands
 
