@@ -69,6 +69,14 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
             }
             // If it is in queue and is your turn
             else if (_isMyTurn(type, turn) && _isCollisionFree(type)) {
+                // Skip removed requests
+                if ( _hasToBeRejected(type, turn)){
+                    EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
+                    reject();
+                    return;
+                }
+
+                // Happy path
                 _setRequestPlayingNow(type, queueMap[type][turn] ?? GLOBAL.EMPTY_MESSAGE);
                 EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                 resolve();
@@ -85,7 +93,7 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
  * @returns If the queued request is not null
  */
 export function isInQueue(type: Command, turn: number): boolean {
-    return queueMap[type][turn] != null || queueMap[type][turn] !== GLOBAL.EMPTY_MESSAGE;
+    return queueMap[type][turn] != null;
 }
 
 /**
@@ -265,6 +273,16 @@ function _mustRepeatRequest(type: Command, currentTurn: number, nextTurn: number
             )
         )
     );
+}
+
+/**
+ * Checks if a request has to be skipped
+ * @param type
+ * @param turn
+ * @returns If the queued request is not null
+ */
+function _hasToBeRejected(type: Command, turn: number): boolean {
+    return queueMap[type][turn] === GLOBAL.EMPTY_MESSAGE;
 }
 
 /**
