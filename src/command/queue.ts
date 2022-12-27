@@ -6,7 +6,6 @@ import { areRequestsOpen } from './guards';
 import { Command } from './types';
 
 export const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
-const queueCommitMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
 export const favoriteIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
 export const currentTurnMap = Object.fromEntries(Object.values(Command).map((key) => [key, 0])) as Record<Command, number>;
@@ -118,22 +117,16 @@ export function isQueueEmpty(type: Command): boolean {
  * Removes petitions from a queue by type
  * @param type
  */
-export function clearQueue(type: Command, { backup = false } = {}): void {
-    if (backup) {
-        queueCommitMap[type] = JSON.parse(JSON.stringify(queueMap[type])) as Record<number, string | null>;
-    } else {
-        queueCommitMap[type] = {};
-    }
-
+export function clearQueue(type: Command): void {
     queueMap[type] = {};
 }
 
 /**
  * Clears all queues
  */
-export function clearAllQueues({ backup = false } = {}): void {
+export function clearAllQueues(): void {
     for (const type of Object.values(Command)) {
-        clearQueue(type, { backup });
+        clearQueue(type);
     }
     requestPlayingNow = null;
 }
@@ -150,15 +143,6 @@ export function clearQueueList(...typeList: Command[]): void {
     if (typeList.includes(Command.sendchord) && typeList.includes(Command.sendloop)) {
         requestPlayingNow = null;
     }
-}
-
-/**
- * Restores the previous values cleared in a queue by type
- * @param type
- */
-export function rollbackClearQueue(type: Command): void {
-    const backup = JSON.parse(JSON.stringify(queueCommitMap[type])) as Record<number, string | null>;
-    queueMap[type] = { ...backup, ...queueMap[type] };
 }
 
 /**
@@ -305,7 +289,7 @@ async function _setRequestPlayingNow(type: Command, request: string): Promise<vo
  */
 function _processQueue(type: Command): [type: Command, request: string][] {
     const queue: Array<string | null> = [];
-    Object.entries({ ...queueCommitMap[type], ...queueMap[type] }).map(([key, value]) => (queue[Number(key)] = value));
+    Object.entries(queueMap[type]).map(([key, value]) => (queue[Number(key)] = value));
 
     return queue
         .slice(currentTurnMap[type])

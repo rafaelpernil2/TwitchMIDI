@@ -17,8 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debug profile for VSCode. A launch.json file for easier debugging with VSCode
 ### Changed
 - BREAKING CHANGE: /refreshConfig API now works via POST
-- Removed all config files from artifact
-- Removed unnecessary template files
 - Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json
 - Minor refactors for easier translations. The ASCII logo of TwitchMIDI now is saved as a constant
 - Minor naming refactors
@@ -27,6 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now it is bumped to 100
 - Rewards disable bug. Before, it only disabled the current rewards from rewards.json file. If any reward were changed while running TwitchMIDI, it would stay active forever. Now it disables all rewards created by TwitchMIDI (new behaviour) and enables only the ones from rewards.json file (as before)
+### Removed
+- Unused queue clear rollback. Now the logic is simpler
+- All config files from final artifact (TwitchMIDI.zip file)
+- Unnecessary template files
+
 
 ## [2.7.2] - 2022-09-28
 ### Fixed
