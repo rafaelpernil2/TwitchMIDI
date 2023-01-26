@@ -45,7 +45,8 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         TARGET_MIDI_CHANNEL,
         REWARDS_MODE,
         VIP_REWARDS_MODE,
-        SEND_UNAUTHORIZED_MESSAGE
+        SEND_UNAUTHORIZED_MESSAGE,
+        SILENCE_MACRO_MESSAGES
     } = targetEnv;
 
     // STEP 1
@@ -99,11 +100,15 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
 
         const sendUnauthorizedMessage = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_UNAUTHORIZED_MESSAGE_QUESTION'), SEND_UNAUTHORIZED_MESSAGE)) || 'N';
         SEND_UNAUTHORIZED_MESSAGE = String(getBooleanByString(sendUnauthorizedMessage));
+
         const rewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_REWARDS_MODE_QUESTION'), REWARDS_MODE)) || 'Y';
         REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
 
         const vipRewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_VIP_REWARDS_MODE_QUESTION'), VIP_REWARDS_MODE)) || 'Y';
         VIP_REWARDS_MODE = String(getBooleanByString(vipRewardsModeFlag));
+
+        const silenceMacroMessages = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_SILENCE_MACRO_MESSAGES_QUESTION'), SILENCE_MACRO_MESSAGES)) || 'Y';
+        SILENCE_MACRO_MESSAGES = String(getBooleanByString(silenceMacroMessages));
     }
 
     // STEP 4
@@ -132,6 +137,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REWARDS_MODE=' + REWARDS_MODE + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'VIP_REWARDS_MODE=' + VIP_REWARDS_MODE + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'SEND_UNAUTHORIZED_MESSAGE=' + SEND_UNAUTHORIZED_MESSAGE + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'SILENCE_MACRO_MESSAGES=' + SILENCE_MACRO_MESSAGES + '\n');
 
     rl.close();
     console.log(chalk.greenBright(i18n.t('SETUP_STEP_END')));
@@ -154,7 +160,8 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         TARGET_MIDI_CHANNEL,
         REWARDS_MODE,
         VIP_REWARDS_MODE,
-        SEND_UNAUTHORIZED_MESSAGE
+        SEND_UNAUTHORIZED_MESSAGE,
+        SILENCE_MACRO_MESSAGES
     };
 }
 
@@ -201,8 +208,8 @@ function isStep2Invalid({ BROADCASTER_ACCESS_TOKEN, BROADCASTER_REFRESH_TOKEN, B
  * @param env Environment variables object
  * @returns If it is invalid or not configurated
  */
-function isStep3Invalid({ REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_UNAUTHORIZED_MESSAGE }: EnvObject): boolean {
-    return isNullish(REWARDS_MODE) || isNullish(VIP_REWARDS_MODE) || isNullish(TARGET_CHANNEL) || isNullish(SEND_UNAUTHORIZED_MESSAGE);
+function isStep3Invalid({ REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_UNAUTHORIZED_MESSAGE, SILENCE_MACRO_MESSAGES }: EnvObject): boolean {
+    return isNullish(REWARDS_MODE) || isNullish(VIP_REWARDS_MODE) || isNullish(TARGET_CHANNEL) || isNullish(SEND_UNAUTHORIZED_MESSAGE) || isNullish(SILENCE_MACRO_MESSAGES);
 }
 
 /**

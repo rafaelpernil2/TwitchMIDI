@@ -1,15 +1,17 @@
-import { EnvObject, envVariables } from './types';
+import { EnvObject, envVariables, ParsedEnvVariables } from './types';
 import { ERROR_MSG, GLOBAL } from '../constants';
 import * as VALIDATORS from './validators';
+import { getBooleanByStringList } from '../../utils/generic';
 
 /**
  * Loads all variables from process.env (after being loaded by dotenv) and triggers the setup if some variable is missing
  * @param altSetupProcess Setup process called if some variable is missing
  * @returns All environment variables ready to go
  */
-export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables: EnvObject) => Promise<EnvObject>): Promise<EnvObject> {
+export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables: EnvObject) => Promise<EnvObject>): Promise<ParsedEnvVariables> {
     try {
-        return _getVariables();
+        const loadedVariables =  _getVariables();
+        return _parseEnvVariables(loadedVariables);
     } catch (error) {
         console.log(String(error));
         const currentVariables = Object.fromEntries(envVariables.map((key) => [key, process.env[key]])) as EnvObject;
@@ -18,7 +20,8 @@ export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables:
         if (loadedVariables == null || !_areVariablesValid(loadedVariables)) {
             throw new Error(ERROR_MSG.BAD_SETUP_PROCESS());
         }
-        return loadedVariables;
+        // Parse variables
+        return _parseEnvVariables(loadedVariables);
     }
 }
 
@@ -55,4 +58,16 @@ function _areVariablesValid(loadedVariables: Record<string, string | undefined>)
     }
 
     return true;
+}
+
+/**
+ * Parse Env variables and conver types where needed
+ * @param env EnvObject
+ * @returns ParsedEnvVariables
+ */
+function _parseEnvVariables(env: EnvObject): ParsedEnvVariables {
+    const [REWARDS_MODE, VIP_REWARDS_MODE, SEND_UNAUTHORIZED_MESSAGE, SILENCE_MACRO_MESSAGES] = getBooleanByStringList(env.REWARDS_MODE, env.VIP_REWARDS_MODE, env.SEND_UNAUTHORIZED_MESSAGE, env.SILENCE_MACRO_MESSAGES);
+    const TARGET_MIDI_CHANNEL = Number(env.TARGET_MIDI_CHANNEL) - 1;
+
+    return { ...env, TARGET_MIDI_CHANNEL, REWARDS_MODE, VIP_REWARDS_MODE, SEND_UNAUTHORIZED_MESSAGE, SILENCE_MACRO_MESSAGES };
 }

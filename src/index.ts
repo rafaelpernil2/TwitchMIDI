@@ -11,11 +11,10 @@ import { onMessageHandlerClosure } from './twitch/chat/handler';
 import { CONFIG, ERROR_MSG, GLOBAL, REWARDS_DB } from './configuration/constants';
 
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
-import { getBooleanByStringList } from './utils/generic';
 import { getCommandList } from './command/utils';
 import { setupConfiguration } from './configuration/configurator/setup';
 import { RefreshingAuthProvider } from '@twurple/auth/lib';
-import { EnvObject, ParsedEnvVariables } from './configuration/env/types';
+import { ParsedEnvVariables } from './configuration/env/types';
 import { REWARD_TITLE_COMMAND } from './database/jsondb/types';
 import { toggleRewardsStatus, updateRedeemIdStatus } from './rewards/handler';
 import { MessageHandler, RequestSource } from './twitch/chat/types';
@@ -40,7 +39,7 @@ import { validateConfigFiles } from './configuration/configurator/config-handler
         _attachExitCallbacksBeforeInit();
 
         // Load config data
-        const env = _parseEnvVariables(await getLoadedEnvVariables(setupConfiguration));
+        const env = await getLoadedEnvVariables(setupConfiguration);
         const botAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BOT_ACCESS_TOKEN, env.BOT_REFRESH_TOKEN], 'BOT');
         const broadcasterAuthProvider = await getAuthProvider([env.CLIENT_ID, env.CLIENT_SECRET], [env.BROADCASTER_ACCESS_TOKEN, env.BROADCASTER_REFRESH_TOKEN], 'BROADCASTER');
 
@@ -164,18 +163,6 @@ async function _callCommandByRedeemption(
         // Cancel redemption if any error occurs
         await updateRedeemIdStatus(authProvider, env.TARGET_CHANNEL, { rewardId, redemptionId, status: 'CANCELED' });
     }
-}
-
-/**
- * Parse Env variables and conver types where needed
- * @param env EnvObject
- * @returns ParsedEnvVariables
- */
-function _parseEnvVariables(env: EnvObject): ParsedEnvVariables {
-    const [REWARDS_MODE, VIP_REWARDS_MODE, SEND_UNAUTHORIZED_MESSAGE] = getBooleanByStringList(env.REWARDS_MODE, env.VIP_REWARDS_MODE, env.SEND_UNAUTHORIZED_MESSAGE);
-    const TARGET_MIDI_CHANNEL = Number(env.TARGET_MIDI_CHANNEL) - 1;
-
-    return { ...env, TARGET_MIDI_CHANNEL, REWARDS_MODE, VIP_REWARDS_MODE, SEND_UNAUTHORIZED_MESSAGE };
 }
 
 /**

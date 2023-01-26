@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Single-instance enforcement through .lock file: Now you can only run one instance of TwitchMIDI at any time to avoid undefined behaviour
 - Embedded README.txt inside binary zip. It explains how to install and run TwitchMIDI in basic terms
 - Debug profile for VSCode. A launch.json file for easier debugging with VSCode
+- New .env flag - SILENCE_MACRO_MESSAGES for new Macro feature. It disables message output for macro commands
 ### Changed
 - BREAKING CHANGE: /refreshConfig API now works via POST
 - Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json
