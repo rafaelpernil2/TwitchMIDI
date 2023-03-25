@@ -47,6 +47,7 @@ export interface CommandConfigParams {
     targetMIDIName: string;
     targetMIDIChannel: number;
     isRewardsMode: boolean;
+    silenceMessages: boolean;
 }
 
 export interface TwitchParams {

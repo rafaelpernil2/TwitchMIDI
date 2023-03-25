@@ -1,8 +1,8 @@
 import { ERROR_MSG, PERMISSIONS_DB, SAFE_COMMANDS } from '../configuration/constants';
-import { ParsedEnvVariables } from '../configuration/env/types';
+import { ParsedEnvObject } from '../configuration/env/types';
 import { PermissionsTable, PERMISSIONS_MAP } from '../database/jsondb/types';
 import { SharedVariable } from '../shared-variable/implementation';
-import { RequestSource, TwitchParams, UserRoles } from '../twitch/chat/types';
+import { RequestSource, TwitchParams, UserRoles } from '../twitch/command/types';
 import { Command } from './types';
 
 export const areRequestsOpen = new SharedVariable(false);
@@ -16,7 +16,7 @@ export const areRequestsOpen = new SharedVariable(false);
  * @param env Environment variables
  * @returns
  */
-export function checkCommandAccess(command: Command, { userRoles, user }: TwitchParams, source: RequestSource, env: ParsedEnvVariables): void {
+export function checkCommandAccess(command: Command, { userRoles, user }: TwitchParams, source: RequestSource, env: ParsedEnvObject): void {
     const { blacklist, whitelist, requirements } = _getPermissionsTable(command);
 
     // Full access: If it is broadcaster, access is allowed
@@ -112,7 +112,7 @@ function _checkWhitelist(whitelist: string[], user: string): void {
  * @param userRoles { isMod, isVip } Twitch user roles
  * @returns
  */
-function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvVariables, { isMod, isVip }: UserRoles): void {
+function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvObject, { isMod, isVip }: UserRoles): void {
     if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }

@@ -1,5 +1,5 @@
 import { Command } from '../../command/types';
-import { UserRoles } from '../../twitch/chat/types';
+import { UserRoles } from '../../twitch/command/types';
 
 export interface AliasesType {
     chordProgressions: Record<string, string>;

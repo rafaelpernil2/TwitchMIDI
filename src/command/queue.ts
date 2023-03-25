@@ -70,7 +70,7 @@ export async function waitForMyTurn(turn: number, type: Command): Promise<void> 
             // If it is in queue and is your turn
             else if (_isMyTurn(type, turn) && _isCollisionFree(type)) {
                 // Skip removed requests
-                if ( _hasToBeRejected(type, turn)){
+                if (_hasToBeRejected(type, turn)) {
                     EVENT_EMITTER.removeListener(EVENT.BAR_LOOP_CHANGE_EVENT, onCommandTurn);
                     reject();
                     return;

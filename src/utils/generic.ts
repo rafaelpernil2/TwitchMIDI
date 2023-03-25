@@ -1,4 +1,4 @@
-import { ERROR_MSG, GLOBAL } from '../configuration/constants';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
 
 /**
  * Checks if the argument is an empty object
@@ -57,11 +57,16 @@ export function removeDuplicates<T>(list: T[]): T[] {
 }
 
 /**
- * Builds a set of valid Twitch messages given the 500 characters limitation
+ * Builds a set of valid short messages given the 500 characters limitation on Twitch
  * @param messageData [leading, content, trailing] Text always appended before content, The content itself, Text appended always after the content
  * @param limit Character limitation, 500 by default
  */
-export function buildTwitchMessage([leading = '', content = '', trailing = ''] = [], limit = 500): string[] {
+export function buildChunkedMessage([leading = '', content = '', trailing = ''] = [], limit = CONFIG.MAX_TWITCH_MESSAGE_LENGTH): string[] {
+    // Simple case
+    if (leading.length === 0 && trailing.length === 0 && content.length < limit) {
+        return [content];
+    }
+
     const [leadingLength, trailingLength] = [leading.length, trailing.length];
 
     if (leadingLength > limit || trailingLength > limit) {

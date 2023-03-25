@@ -1,7 +1,7 @@
 import { ChatClient } from '@twurple/chat/lib';
 import { ALIASES_DB, GLOBAL } from '../configuration/constants';
 import { COMMANDS_KEY, MACROS_KEY } from '../database/jsondb/types';
-import { buildTwitchMessage } from '../utils/generic';
+import { buildChunkedMessage } from '../utils/generic';
 import { Command } from './types';
 
 /**
@@ -62,16 +62,16 @@ export function deAliasCommand(command: string): Command {
  * @param message Single command or macro
  * @returns Command list
  */
-export function getCommandList(message: string): Array<[command: Command | null, args: string, delay: number]> {
+export function getCommandList(message: string): [isMacroMessage: boolean, commandList: Array<[command: Command | null, args: string, delay: number]>] {
     const [command, args] = getCommand(message);
 
     // Macro case - It is not a valid single command by itself
     if (command == null) {
-        return getMacro(message);
+        return [true, getMacro(message)];
     }
 
     // Common case - Single command, delay of 0ns
-    return [[command, args, 0]];
+    return [false, [[command, args, 0]]];
 }
 
 /**
@@ -88,9 +88,13 @@ export function splitCommandArguments(commandArguments: string): string[] {
  * @param chatClient Twitch Chat Client
  * @param channel Twitch Chat channel
  * @param messageData [leading, content, trailing] Data for the message
+ * @param { silenceMessages: boolean } options Parameters for customizing the behaviour
  */
-export function sayLongTwitchChatMessage(chatClient: ChatClient, channel: string, [leading = '', content = '', trailing = ''] = []) {
-    const messageList = buildTwitchMessage([leading, content, trailing]);
+export function sayTwitchChatMessage(chatClient: ChatClient, channel: string, [leading = '', content = '', trailing = ''] = [], { silenceMessages } = { silenceMessages: false }) {
+    // Do nothing if messages are muted
+    if (silenceMessages) return;
+
+    const messageList = buildChunkedMessage([leading, content, trailing]);
     for (const twitchMessage of messageList) {
         chatClient.say(channel, twitchMessage);
     }

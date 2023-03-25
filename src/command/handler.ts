@@ -1,8 +1,8 @@
 import { ResponseStatus } from '../database/interface';
 import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
 import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue';
-import { isValidCommand, deAliasCommand, splitCommandArguments, sayLongTwitchChatMessage } from './utils';
-import { CommandParams } from '../twitch/chat/types';
+import { isValidCommand, deAliasCommand, splitCommandArguments, sayTwitchChatMessage } from './utils';
+import { CommandParams } from '../twitch/command/types';
 import { removeDuplicates } from '../utils/generic';
 import {
     checkMIDIConnection,
@@ -30,12 +30,12 @@ import i18n from '../i18n/loader';
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midihelp(...[message, , { chatClient, channel }]: CommandParams): void {
+export function midihelp(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const [commandToTest] = splitCommandArguments(message);
     if (isValidCommand(commandToTest)) {
-        sayLongTwitchChatMessage(chatClient, channel, [`${i18n.t('MIDIHELP_VALID')} !${commandToTest}: `, COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()]);
+        sayTwitchChatMessage(chatClient, channel, [`${i18n.t('MIDIHELP_VALID')} !${commandToTest}: `, COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()], { silenceMessages });
     } else {
-        sayLongTwitchChatMessage(chatClient, channel, [i18n.t('MIDIHELP_INVALID') + ' ', Object.values(Command).join(GLOBAL.COMMA_JOIN)]);
+        sayTwitchChatMessage(chatClient, channel, [i18n.t('MIDIHELP_INVALID') + ' ', Object.values(Command).join(GLOBAL.COMMA_JOIN)], { silenceMessages });
     }
 }
 
@@ -46,22 +46,22 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+export async function midion(...[, { targetMIDIName, isRewardsMode, silenceMessages }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
     try {
         await connectMIDI(targetMIDIName);
         if (isRewardsMode) {
-            chatClient.say(channel, i18n.t('MIDION_REWARDS'));
+            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDION_REWARDS')], { silenceMessages });
             await createRewards(authProvider, broadcasterUser);
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
-        EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
+        EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel, silenceMessages));
         areRequestsOpen.set(true);
         console.log(i18n.t('MIDION_LOG_ENABLED'));
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR());
     }
-    chatClient.say(channel, `${i18n.t('MIDION_ENABLED')} ${CONFIG.OP_SIGNATURE}`);
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDION_ENABLED')} ${CONFIG.OP_SIGNATURE}`], { silenceMessages });
 }
 
 /**
@@ -71,12 +71,12 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
-    chatClient.say(channel, i18n.t('MIDIOFF_INIT'));
+export async function midioff(...[, { targetMIDIChannel, isRewardsMode, silenceMessages }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_INIT')], { silenceMessages });
     try {
         await disconnectMIDI(targetMIDIChannel);
         if (isRewardsMode) {
-            chatClient.say(channel, i18n.t('MIDIOFF_REWARDS'));
+            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_REWARDS')], { silenceMessages });
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
@@ -85,7 +85,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
     }
-    chatClient.say(channel, `${i18n.t('MIDIOFF_DISABLED')} ${CONFIG.OP_SIGNATURE}`);
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDIOFF_DISABLED')} ${CONFIG.OP_SIGNATURE}`], { silenceMessages });
 }
 
 /**
@@ -95,9 +95,9 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midipause(...[, , { chatClient, channel }]: CommandParams): void {
+export function midipause(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     areRequestsOpen.set(false);
-    chatClient.say(channel, i18n.t('MIDIPAUSE'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIPAUSE')], { silenceMessages });
 }
 
 /**
@@ -107,9 +107,9 @@ export function midipause(...[, , { chatClient, channel }]: CommandParams): void
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midiresume(...[, , { chatClient, channel }]: CommandParams): void {
+export function midiresume(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     areRequestsOpen.set(true);
-    chatClient.say(channel, i18n.t('MIDIRESUME'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIRESUME')], { silenceMessages });
 }
 /**
  * Saves a chord progresion with an alias to be used later
@@ -118,7 +118,7 @@ export function midiresume(...[, , { chatClient, channel }]: CommandParams): voi
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function addchord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
+export async function addchord(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     const [alias, ...chordProgressionTokens] = message.split(GLOBAL.SLASH_SEPARATOR).map((str) => str.trim());
     const chordProgression = chordProgressionTokens.join(GLOBAL.SLASH_SEPARATOR);
@@ -131,7 +131,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }
     await ALIASES_DB.commit();
-    chatClient.say(channel, i18n.t('ADDCHORD'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('ADDCHORD')], { silenceMessages });
 }
 
 /**
@@ -141,7 +141,7 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function removechord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
+export async function removechord(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     const parsedAlias = message.toLowerCase();
     const status = ALIASES_DB.delete(CHORD_PROGRESSIONS_KEY, parsedAlias);
@@ -149,7 +149,7 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND());
     }
     await ALIASES_DB.commit();
-    chatClient.say(channel, i18n.t('REMOVECHORD'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('REMOVECHORD')], { silenceMessages });
 }
 
 /**
@@ -159,20 +159,20 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function chordlist(...[message, , { chatClient, channel }]: CommandParams): void {
+export function chordlist(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     // Case with alias to lookup
     const aliasToLookup = message.toLowerCase();
     const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, message);
     if (aliasToLookup !== GLOBAL.EMPTY_MESSAGE && chordProgression != null) {
-        chatClient.say(channel, `🎵${aliasToLookup}🎵:🎼${chordProgression}🎼`);
+        sayTwitchChatMessage(chatClient, channel, [, `🎵${aliasToLookup}🎵:🎼${chordProgression}🎼`], { silenceMessages });
         return;
     }
     // Default case showing all
     const chordProgressionList = Object.entries(ALIASES_DB.value?.chordProgressions ?? {});
     if (chordProgressionList.length === 0) return;
-    chatClient.say(channel, i18n.t('CHORDLIST_DEFAULT'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('CHORDLIST_DEFAULT')], { silenceMessages });
     for (const [alias, chordProgression] of chordProgressionList) {
-        sayLongTwitchChatMessage(chatClient, channel, [`🎵${alias}🎵:🎼`, chordProgression, '🎼']);
+        sayTwitchChatMessage(chatClient, channel, [`🎵${alias}🎵:🎼`, chordProgression, '🎼'], { silenceMessages });
     }
 }
 
@@ -183,11 +183,11 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendnote(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function sendnote(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     const requestList = message.split(GLOBAL.COMMA_SEPARATOR).map((request) => _getNoteList(request));
-    chatClient.say(channel, i18n.t('SENDNOTE'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('SENDNOTE')], { silenceMessages });
     for (const request of requestList) {
         await triggerNoteList(request, targetMIDIChannel);
     }
@@ -200,14 +200,14 @@ export async function sendnote(...[message, { targetMIDIChannel }, { chatClient,
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendchord(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function sendchord(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Lookup previously saved chord progressions
     const chordProgression = _getChordProgression(message);
 
     const myTurn = queue(message, Command.sendchord);
-    chatClient.say(channel, i18n.t('SENDCHORD'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('SENDCHORD')], { silenceMessages });
 
     await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
 }
@@ -219,14 +219,14 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendloop(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function sendloop(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Queue chord progression petition
     const chordProgression = _getChordProgression(message);
     const myTurn = queue(message, Command.sendloop);
 
-    chatClient.say(channel, i18n.t('SENDLOOP'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('SENDLOOP')], { silenceMessages });
     do {
         // Execute at least once to wait for your turn in the queue
         await triggerChordList(chordProgression, targetMIDIChannel, Command.sendloop, myTurn);
@@ -240,7 +240,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function sendcc(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     const ccCommandList = _getCCCommandList(message);
@@ -248,7 +248,7 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
     triggerCCCommandList(ccCommandList, targetMIDIChannel);
 
     const controllerList = removeDuplicates(ccCommandList.map(([controller]) => controller)).join(GLOBAL.COMMA_JOIN);
-    chatClient.say(channel, `${i18n.t('SENDCC_1')}${controllerList}${i18n.t('SENDCC_2')}`);
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('SENDCC_1')}${controllerList}${i18n.t('SENDCC_2')}`], { silenceMessages });
 }
 
 /**
@@ -258,13 +258,13 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midicurrentrequest(...[, , { chatClient, channel }]: CommandParams): void {
+export function midicurrentrequest(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const currentRequestPlaying = getCurrentRequestPlaying();
     if (currentRequestPlaying == null) {
-        chatClient.say(channel, i18n.t('MIDICURRENTREQUEST_NOTHING'));
+        sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDICURRENTREQUEST_NOTHING')], { silenceMessages });
         return;
     }
-    sayLongTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
+    sayTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request), { silenceMessages });
 }
 
 /**
@@ -274,11 +274,13 @@ export function midicurrentrequest(...[, , { chatClient, channel }]: CommandPara
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams): void {
+export function midirequestqueue(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const requestList = getRequestQueue()
         .map(([type, request]) => `!${type} "${request}"`)
         .join(GLOBAL.COMMA_JOIN);
-    sayLongTwitchChatMessage(chatClient, channel, [i18n.t('MIDIREQUESTQUEUE_OK') + ': ', requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList]);
+    sayTwitchChatMessage(chatClient, channel, [i18n.t('MIDIREQUESTQUEUE_OK') + ': ', requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList], {
+        silenceMessages
+    });
 }
 
 /**
@@ -288,10 +290,10 @@ export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
+export function cclist(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const commands = Object.keys(ALIASES_DB.value?.ccCommands ?? {});
     if (commands.length === 0) return;
-    sayLongTwitchChatMessage(chatClient, channel, [i18n.t('CCLIST') + ': ', commands.join(GLOBAL.COMMA_JOIN)]);
+    sayTwitchChatMessage(chatClient, channel, [i18n.t('CCLIST') + ': ', commands.join(GLOBAL.COMMA_JOIN)], { silenceMessages });
 }
 
 /**
@@ -301,13 +303,13 @@ export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midivolume(...[message, , { chatClient, channel }]: CommandParams): void {
+export function midivolume(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const value = parseInt(splitCommandArguments(message)[0]);
     // Convert to range 0-127
     setMIDIVolume(value);
-    chatClient.say(channel, i18n.t('MIDIVOLUME') + ' ' + String(value) + '%');
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIVOLUME') + ' ' + String(value) + '%'], { silenceMessages });
     if (value === 69) {
-        chatClient.say(channel, i18n.t('EASTEREGG_69'));
+        sayTwitchChatMessage(chatClient, channel, [, i18n.t('EASTEREGG_69')], { silenceMessages });
     }
 }
 
@@ -318,9 +320,9 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function stoploop(...[, , { chatClient, channel }]: CommandParams): void {
+export function stoploop(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     clearQueueList(Command.sendchord, Command.sendloop);
-    chatClient.say(channel, i18n.t('STOPLOOP'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('STOPLOOP')], { silenceMessages });
 }
 
 /**
@@ -330,9 +332,9 @@ export function stoploop(...[, , { chatClient, channel }]: CommandParams): void 
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function fullstopmidi(...[, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     stopAllMidi(targetMIDIChannel);
-    chatClient.say(channel, i18n.t('FULLSTOPMIDI'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('FULLSTOPMIDI')], { silenceMessages });
 }
 
 /**
@@ -342,7 +344,7 @@ export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel 
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function settempo(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function settempo(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const newTempo = Number(splitCommandArguments(message)[0]);
     if (isNaN(newTempo) || newTempo < CONFIG.MIN_TEMPO || newTempo > CONFIG.MAX_TEMPO) {
         throw new Error(ERROR_MSG.INVALID_TEMPO());
@@ -350,9 +352,9 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
     // Generates a MIDI clock
     triggerClock(targetMIDIChannel, newTempo);
 
-    chatClient.say(channel, i18n.t('SETTEMPO') + ' ' + String(newTempo));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('SETTEMPO') + ' ' + String(newTempo)], { silenceMessages });
     if (Math.floor(newTempo) === 69) {
-        chatClient.say(channel, i18n.t('EASTEREGG_69'));
+        sayTwitchChatMessage(chatClient, channel, [, i18n.t('EASTEREGG_69')], { silenceMessages });
     }
 }
 
@@ -363,9 +365,9 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function syncmidi(...[, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     triggerClock(targetMIDIChannel);
-    chatClient.say(channel, i18n.t('SYNCMIDI'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('SYNCMIDI')], { silenceMessages });
 }
 
 /**
@@ -375,11 +377,11 @@ export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: 
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function fetchdb(...[, , { chatClient, channel }]: CommandParams): Promise<void> {
+export async function fetchdb(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
     await ALIASES_DB.fetchDB();
     await REWARDS_DB.fetchDB();
     await PERMISSIONS_DB.fetchDB();
-    chatClient.say(channel, i18n.t('FETCHDB'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('FETCHDB')], { silenceMessages });
 }
 
 /**
@@ -579,8 +581,8 @@ function _parseMIDIValue(midiValue: string | number): number {
  * @param channel Twitch Channel
  * @returns An event handler
  */
-function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Command, request: string) => void {
-    return (type, request) => sayLongTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request));
+function _onPlayingNowChange(chatClient: ChatClient, channel: string, silenceMessages: boolean): (type: Command, request: string) => void {
+    return (type, request) => sayTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request), { silenceMessages });
 }
 
 /**
