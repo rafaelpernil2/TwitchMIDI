@@ -72,6 +72,6 @@ export enum ResponseStatus {
     Error
 }
 
-type CustomObject<Type> = {
+export type CustomObject<Type> = {
     [Property in keyof Type]: Type[Property];
 };

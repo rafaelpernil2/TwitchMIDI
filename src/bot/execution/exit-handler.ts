@@ -1,30 +1,30 @@
-import { RefreshingAuthProvider } from '@twurple/auth/lib';
-import { promises as fs, existsSync } from 'fs';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../../configuration/constants';
-import { ParsedEnvObject } from '../../configuration/env/types';
-import { stopAllMidi } from '../../midi/handler';
-import { toggleRewardsStatus } from '../../rewards/handler';
+import { RefreshingAuthProvider } from '@twurple/auth';
+import { writeFileSync, rmSync, existsSync } from 'fs';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../../configuration/constants.js';
+import { ParsedEnvObject } from '../../configuration/env/types.js';
+import { stopAllMidi } from '../../midi/handler.js';
+import { toggleRewardsStatus } from '../../rewards/handler.js';
 
 /**
- * Deletes the execution lock to indicate that the program has exited
+ * Obtains an execution lock to indicate that the program is open
  * @returns
  */
-export function acquireLock(): Promise<void> {
+export function acquireLock(): void {
     // Check if another instance is running.
     // If so, the stored API port will no longer link with the original instance
     if (existsSync(CONFIG.DOT_LOCK)) {
         throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING());
     }
 
-    return fs.writeFile(CONFIG.DOT_LOCK, GLOBAL.EMPTY_MESSAGE);
+    return writeFileSync(CONFIG.DOT_LOCK, GLOBAL.EMPTY_MESSAGE);
 }
 
 /**
  * Deletes the execution lock to indicate that the program has exited
  * @returns
  */
-export function releaseLock(): Promise<void> {
-    return fs.rm(CONFIG.DOT_LOCK, { force: true });
+export function releaseLock(): void {
+    return rmSync(CONFIG.DOT_LOCK, { force: true });
 }
 
 /**
@@ -41,6 +41,11 @@ export function attachExitCallbacksBeforeInit(): void {
     process.on('exit', _onExitProcessBeforeInit());
     process.on('SIGHUP', _onExitProcessBeforeInit());
     process.on('SIGINT', _onExitProcessBeforeInit());
+    process.on('uncaughtException', (error) => {
+        console.log(error);
+        console.log(ERROR_MSG.INIT());
+        _onExitProcessBeforeInit()();
+    });
 }
 
 /**
@@ -57,6 +62,7 @@ export function attachExitCallbacksAfterInit(broadcasterAuthProvider: Refreshing
     process.on('exit', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGINT', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    process.on('uncaughtException', _onExitProcessAfterInit(broadcasterAuthProvider, env));
 }
 
 /**
@@ -64,10 +70,10 @@ export function attachExitCallbacksAfterInit(broadcasterAuthProvider: Refreshing
  * @param broadcasterAuthProvider Broadcaster auth provider
  * @param env Environment variables
  */
-function _onExitProcessBeforeInit(): () => Promise<void> {
+function _onExitProcessBeforeInit(): () => void {
     // Before initialization only check lock
-    return async () => {
-        await releaseLock();
+    return () => {
+        releaseLock();
         process.exit();
     };
 }
@@ -88,7 +94,7 @@ function _onExitProcessAfterInit(broadcasterAuthProvider: RefreshingAuthProvider
         if (env.REWARDS_MODE) {
             await toggleRewardsStatus(broadcasterAuthProvider, env.TARGET_CHANNEL, { isEnabled: false });
         }
-        await releaseLock();
+        releaseLock();
         process.exit();
     };
 }

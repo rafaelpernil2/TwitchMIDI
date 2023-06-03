@@ -14,7 +14,7 @@ export const envVariables = [
     'SILENCE_MACRO_MESSAGES'
 ] as const;
 
-export type EnvObject = Record<typeof envVariables[number], string>;
+export type EnvObject = Record<(typeof envVariables)[number], string>;
 
 export interface ParsedEnvObject extends Omit<EnvObject, 'REWARDS_MODE' | 'VIP_REWARDS_MODE' | 'TARGET_MIDI_CHANNEL' | 'SEND_UNAUTHORIZED_MESSAGE' | 'SILENCE_MACRO_MESSAGES'> {
     REWARDS_MODE: boolean;

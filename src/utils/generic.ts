@@ -1,4 +1,4 @@
-import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants.js';
 
 /**
  * Checks if the argument is an empty object

@@ -1,9 +1,9 @@
-import { JSONDatabase } from '../database/jsondb/implementation';
-import { AliasesType, PermissionsType, RewardsType } from '../database/jsondb/types';
+import { JSONDatabase } from '../database/jsondb/implementation.js';
+import { AliasesType, PermissionsType, RewardsType } from '../database/jsondb/types.js';
 import EventEmitter from 'events';
-import { Command } from '../command/types';
-import i18n from '../i18n/loader';
-import { AccessToken } from '@twurple/auth/lib';
+import { Command } from '../command/types.js';
+import i18n from '../i18n/loader.js';
+import { AccessToken } from '@twurple/auth';
 
 export const CONFIG = {
     ALIASES_DB_PATH: './config/aliases.json',
@@ -105,7 +105,7 @@ export const GLOBAL = {
     ETC: '...'
 } as const;
 
-export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], () => string> = {
+export const COMMAND_DESCRIPTIONS: Record<(typeof Command)[keyof typeof Command], () => string> = {
     midihelp: () => i18n.t('HELP_MIDIHELP'),
     midion: () => i18n.t('HELP_MIDION'),
     midioff: () => i18n.t('HELP_MIDIOFF'),
@@ -129,7 +129,7 @@ export const COMMAND_DESCRIPTIONS: Record<typeof Command[keyof typeof Command], 
     midiresume: () => i18n.t('HELP_MIDIRESUME')
 } as const;
 
-export const SAFE_COMMANDS: Record<typeof Command[keyof typeof Command], boolean> = {
+export const SAFE_COMMANDS: Record<(typeof Command)[keyof typeof Command], boolean> = {
     midihelp: true,
     midion: false,
     midioff: false,

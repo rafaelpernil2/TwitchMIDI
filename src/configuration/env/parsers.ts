@@ -1,5 +1,5 @@
-import { getBooleanByStringList } from '../../utils/generic';
-import { EnvObject, ParsedEnvObject } from './types';
+import { getBooleanByStringList } from '../../utils/generic.js';
+import { EnvObject, ParsedEnvObject } from './types.js';
 
 /**
  * Parse Env variables and convert types where needed

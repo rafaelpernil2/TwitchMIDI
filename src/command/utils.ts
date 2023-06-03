@@ -1,8 +1,8 @@
-import { ChatClient } from '@twurple/chat/lib';
-import { ALIASES_DB, GLOBAL } from '../configuration/constants';
-import { COMMANDS_KEY, MACROS_KEY } from '../database/jsondb/types';
-import { buildChunkedMessage } from '../utils/generic';
-import { Command } from './types';
+import { ChatClient } from '@twurple/chat';
+import { ALIASES_DB, GLOBAL } from '../configuration/constants.js';
+import { COMMANDS_KEY, MACROS_KEY } from '../database/jsondb/types.js';
+import { buildChunkedMessage } from '../utils/generic.js';
+import { Command } from './types.js';
 
 /**
  * Checks if a command is in the list of defined commands and aliases

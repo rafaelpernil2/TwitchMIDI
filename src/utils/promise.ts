@@ -1,10 +1,10 @@
 import NanoTimer from 'nanotimer';
 import https from 'https';
 import http from 'http';
-import { isJsonString } from './generic';
+import { isJsonString } from './generic.js';
 import readline from 'readline';
-import i18n from '../i18n/loader';
-import { GLOBAL } from '../configuration/constants';
+import i18n from '../i18n/loader.js';
+import { GLOBAL } from '../configuration/constants.js';
 
 /**
  * Creates a promise that resolves in a determined amount of nanoseconds

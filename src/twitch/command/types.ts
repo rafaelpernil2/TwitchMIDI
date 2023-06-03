@@ -1,6 +1,6 @@
 import { RefreshingAuthProvider } from '@twurple/auth';
-import { ChatClient } from '@twurple/chat/lib/ChatClient';
-import { TwitchPrivateMessage } from '@twurple/chat/lib/commands/TwitchPrivateMessage';
+import { ChatClient } from '@twurple/chat';
+import { PrivateMessage } from '@twurple/chat';
 
 export enum RequestSource {
     CHAT,
@@ -9,7 +9,7 @@ export enum RequestSource {
 
 export type CommandHandlerType = (...commandParams: CommandParams) => unknown | Promise<unknown>;
 
-export type MessageHandler = (channel: string, user: string, message: string, msg?: TwitchPrivateMessage) => Promise<void> | void;
+export type MessageHandler = (channel: string, user: string, message: string, msg?: PrivateMessage) => Promise<void> | void;
 
 export type UserRoles = {
     /**

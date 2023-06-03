@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Embedded README.txt inside binary zip. It explains how to install and run TwitchMIDI in basic terms
 - Debug profile for VSCode. A launch.json file for easier debugging with VSCode
 - New .env flag - SILENCE_MACRO_MESSAGES for new Macro feature. It disables message output for macro commands
+- Better exit handling - Now it catches unhandled exceptions to improve exit handling and user experience
 ### Changed
 - BREAKING CHANGE: /refreshConfig API now works via POST
 - Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json
@@ -23,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor naming refactors
 - Improved setTimeoutPromise with a default case for 0ns
 - aliases.json has a new section called "macros". Not a breaking change because it is fixed automatically by this update
+- Updated all dependencies (Twurple.js, i18next, JZZ, PKG...)
+- Migrated all code to Node 18, Typescript 5.0 and ESModule
+- Replaced NCC with ESBuild for a reduced build time
 ### Fixed
 - Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now it is bumped to 100
 - Rewards disable bug. Before, it only disabled the current rewards from rewards.json file. If any reward were changed while running TwitchMIDI, it would stay active forever. Now it disables all rewards created by TwitchMIDI (new behaviour) and enables only the ones from rewards.json file (as before)

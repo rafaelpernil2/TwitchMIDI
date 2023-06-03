@@ -1,9 +1,9 @@
-import { ERROR_MSG, PERMISSIONS_DB, SAFE_COMMANDS } from '../configuration/constants';
-import { ParsedEnvObject } from '../configuration/env/types';
-import { PermissionsTable, PERMISSIONS_MAP } from '../database/jsondb/types';
-import { SharedVariable } from '../shared-variable/implementation';
-import { RequestSource, TwitchParams, UserRoles } from '../twitch/command/types';
-import { Command } from './types';
+import { ERROR_MSG, PERMISSIONS_DB, SAFE_COMMANDS } from '../configuration/constants.js';
+import { ParsedEnvObject } from '../configuration/env/types.js';
+import { PermissionsTable, PERMISSIONS_MAP } from '../database/jsondb/types.js';
+import { SharedVariable } from '../shared-variable/implementation.js';
+import { RequestSource, TwitchParams, UserRoles } from '../twitch/command/types.js';
+import { Command } from './types.js';
 
 export const areRequestsOpen = new SharedVariable(false);
 

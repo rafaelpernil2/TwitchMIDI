@@ -1,25 +1,25 @@
 // This NEEDS to be executed first
 import 'dotenv/config';
 
-import * as JZZ from 'jzz';
+import JZZ from 'jzz';
 
 import chalk from 'chalk';
-import { getLoadedEnvVariables } from './configuration/env/loader';
-import { getAuthProvider } from './twitch/auth/provider';
+import { getLoadedEnvVariables } from './configuration/env/loader.js';
+import { getAuthProvider } from './twitch/auth/provider.js';
 import { ChatClient } from '@twurple/chat';
-import { initializeChatMode } from './twitch/chat/handler';
-import { CONFIG, ERROR_MSG } from './configuration/constants';
+import { initializeChatMode } from './twitch/chat/handler.js';
+import { CONFIG, ERROR_MSG } from './configuration/constants.js';
 
-import { setupConfiguration } from './configuration/configurator/setup';
-import { ParsedEnvObject } from './configuration/env/types';
-import { toggleRewardsStatus } from './rewards/handler';
-import { askUserInput } from './utils/promise';
-import i18n, { initializei18n } from './i18n/loader';
-import { initiateConfigAPI } from './configuration/api/handler';
-import { validateConfigFiles } from './configuration/configurator/config-handler';
-import { initializeRewardsMode } from './twitch/rewards/handler';
-import { acquireLock, attachExitCallbacksAfterInit, attachExitCallbacksBeforeInit } from './bot/execution/exit-handler';
-import { checkUpdates } from './bot/execution/checks-handler';
+import { setupConfiguration } from './configuration/configurator/setup.js';
+import { ParsedEnvObject } from './configuration/env/types.js';
+import { toggleRewardsStatus } from './rewards/handler.js';
+import { askUserInput } from './utils/promise.js';
+import i18n, { initializei18n } from './i18n/loader.js';
+import { initiateConfigAPI } from './configuration/api/handler.js';
+import { validateConfigFiles } from './configuration/configurator/config-handler.js';
+import { initializeRewardsMode } from './twitch/rewards/handler.js';
+import { acquireLock, attachExitCallbacksAfterInit, attachExitCallbacksBeforeInit } from './bot/execution/exit-handler.js';
+import { checkUpdates } from './bot/execution/checks-handler.js';
 
 /**
  * Initialization code
@@ -30,7 +30,7 @@ import { checkUpdates } from './bot/execution/checks-handler';
         await initializei18n();
 
         // Acquire lock and attach lock release on exit
-        await acquireLock();
+        acquireLock();
         attachExitCallbacksBeforeInit();
 
         // Load config data

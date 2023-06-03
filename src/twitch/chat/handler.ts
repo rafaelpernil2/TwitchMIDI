@@ -1,8 +1,8 @@
-import { RefreshingAuthProvider } from '@twurple/auth/lib';
-import { ChatClient } from '@twurple/chat/lib';
-import { ParsedEnvObject } from '../../configuration/env/types';
-import { onMessageHandlerClosure } from '../command/handler';
-import { RequestSource } from '../command/types';
+import { RefreshingAuthProvider } from '@twurple/auth';
+import { ChatClient } from '@twurple/chat';
+import { ParsedEnvObject } from '../../configuration/env/types.js';
+import { onMessageHandlerClosure } from '../command/handler.js';
+import { RequestSource } from '../command/types.js';
 
 /**
  * Initializes Rewards mode

@@ -1,12 +1,12 @@
 import { ChatClient } from '@twurple/chat';
-import { CONFIG, ERROR_MSG } from '../../configuration/constants';
-import { CommandHandlerType, MessageHandler, RequestSource, TwitchParams } from './types';
-import { getCommandList, sayTwitchChatMessage } from '../../command/utils';
-import * as CommandHandlers from '../../command/handler';
-import { checkCommandAccess } from '../../command/guards';
-import { ParsedEnvObject } from '../../configuration/env/types';
+import { CONFIG, ERROR_MSG } from '../../configuration/constants.js';
+import { CommandHandlerType, MessageHandler, RequestSource, TwitchParams } from './types.js';
+import { getCommandList, sayTwitchChatMessage } from '../../command/utils.js';
+import * as CommandHandlers from '../../command/handler.js';
+import { checkCommandAccess } from '../../command/guards.js';
+import { ParsedEnvObject } from '../../configuration/env/types.js';
 import { RefreshingAuthProvider } from '@twurple/auth';
-import { setTimeoutPromise } from '../../utils/promise';
+import { setTimeoutPromise } from '../../utils/promise.js';
 
 /**
  * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control

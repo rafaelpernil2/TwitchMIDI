@@ -1,9 +1,9 @@
-import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants';
-import { syncMode } from '../midi/clock';
-import { Sync } from '../midi/types';
-import { isEmptyObject } from '../utils/generic';
-import { areRequestsOpen } from './guards';
-import { Command } from './types';
+import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants.js';
+import { syncMode } from '../midi/clock.js';
+import { Sync } from '../midi/types.js';
+import { isEmptyObject } from '../utils/generic.js';
+import { areRequestsOpen } from './guards.js';
+import { Command } from './types.js';
 
 export const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;

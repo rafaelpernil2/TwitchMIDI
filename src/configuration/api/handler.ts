@@ -1,11 +1,11 @@
 import http from 'http';
-import { ALIASES_DB, REWARDS_DB, PERMISSIONS_DB, GLOBAL, CONFIG } from '../constants';
-import i18n from '../../i18n/loader';
+import { ALIASES_DB, REWARDS_DB, PERMISSIONS_DB, GLOBAL, CONFIG } from '../constants.js';
+import i18n from '../../i18n/loader.js';
 import { promises as fs } from 'fs';
-import { RefreshingAuthProvider } from '@twurple/auth/lib';
-import { reloadRewards } from '../../rewards/handler';
-import { clearQueue, favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue';
-import { Command } from '../../command/types';
+import { RefreshingAuthProvider } from '@twurple/auth';
+import { reloadRewards } from '../../rewards/handler.js';
+import { clearQueue, favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue.js';
+import { Command } from '../../command/types.js';
 
 /**
  * Creates an HTTP server that implements Configuration API

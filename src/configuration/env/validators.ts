@@ -1,5 +1,5 @@
-import i18n from '../../i18n/loader';
-import { ERROR_MSG } from '../constants';
+import i18n from '../../i18n/loader.js';
+import { ERROR_MSG } from '../constants.js';
 
 /**
  * Validates TARGET_MIDI_CHANNEL to make sure the MIDI channel is valid

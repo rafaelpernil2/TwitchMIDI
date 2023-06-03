@@ -1,4 +1,4 @@
-import { JSONDatabase } from '../../database/jsondb/implementation';
+import { JSONDatabase } from '../../database/jsondb/implementation.js';
 import {
     CHORD_PROGRESSIONS_KEY,
     CC_COMMANDS_KEY,
@@ -9,13 +9,13 @@ import {
     PermissionsType,
     PermissionsTable,
     REWARD_TITLE_COMMAND
-} from '../../database/jsondb/types';
-import { ALIASES_DB, CONFIG, ERROR_MSG, PERMISSIONS_DB, REWARDS_DB } from '../constants';
-import { httpsRequestPromise } from '../../utils/promise';
+} from '../../database/jsondb/types.js';
+import { ALIASES_DB, CONFIG, ERROR_MSG, PERMISSIONS_DB, REWARDS_DB } from '../constants.js';
+import { httpsRequestPromise } from '../../utils/promise.js';
 import http from 'http';
 import { promises as fs, existsSync } from 'fs';
-import { Command } from '../../command/types';
-import * as CommandHandlers from '../../command/handler';
+import { Command } from '../../command/types.js';
+import * as CommandHandlers from '../../command/handler.js';
 
 const DEFAULT_CONFIG_FILE_CACHE: Record<string, unknown> = {};
 

@@ -1,9 +1,9 @@
-import { ResponseStatus } from '../database/interface';
-import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue';
-import { isValidCommand, deAliasCommand, splitCommandArguments, sayTwitchChatMessage } from './utils';
-import { CommandParams } from '../twitch/command/types';
-import { removeDuplicates } from '../utils/generic';
+import { ResponseStatus } from '../database/interface.js';
+import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants.js';
+import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue.js';
+import { isValidCommand, deAliasCommand, splitCommandArguments, sayTwitchChatMessage } from './utils.js';
+import { CommandParams } from '../twitch/command/types.js';
+import { removeDuplicates } from '../utils/generic.js';
 import {
     checkMIDIConnection,
     connectMIDI,
@@ -14,14 +14,15 @@ import {
     triggerChordList,
     triggerNoteList,
     setMIDIVolume
-} from '../midi/handler';
-import { CCCommand, Command } from './types';
-import { inlineChord } from 'harmonics';
-import { CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, CHORD_PROGRESSIONS_KEY } from '../database/jsondb/types';
-import { ChatClient } from '@twurple/chat/lib/ChatClient';
-import { createRewards, toggleRewardsStatus } from '../rewards/handler';
-import { areRequestsOpen } from './guards';
-import i18n from '../i18n/loader';
+} from '../midi/handler.js';
+import { CCCommand, Command } from './types.js';
+import harmonics from 'harmonics';
+const { inlineChord } = harmonics;
+import { CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, CHORD_PROGRESSIONS_KEY } from '../database/jsondb/types.js';
+import { ChatClient } from '@twurple/chat';
+import { createRewards, toggleRewardsStatus } from '../rewards/handler.js';
+import { areRequestsOpen } from './guards.js';
+import i18n from '../i18n/loader.js';
 
 /**
  * Shows all available commands and explains how to use them

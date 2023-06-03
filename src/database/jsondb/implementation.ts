@@ -1,7 +1,7 @@
-import { Database, ResponseStatus } from '../interface';
+import { CustomObject, Database, ResponseStatus } from '../interface.js';
 import { promises as fs, readFileSync } from 'fs';
 
-export class JSONDatabase<T> implements Database<T> {
+export class JSONDatabase<T extends CustomObject<T>> implements Database<T> {
     private _filePath: string;
     private _fileName: string;
     private _db: T | undefined;

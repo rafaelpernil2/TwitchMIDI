@@ -1,6 +1,6 @@
 import { AccessToken, RefreshingAuthProvider } from '@twurple/auth';
-import { promises as fs } from 'fs';
-import { CONFIG } from '../../configuration/constants';
+import { promises as fs, existsSync } from 'fs';
+import { CONFIG } from '../../configuration/constants.js';
 /**
  * Generates an authentication provider for Twitch
  * @param client [clientId, clientSecret]
@@ -18,10 +18,18 @@ export async function getAuthProvider(
 
     const tokenData: AccessToken = { ...CONFIG.TOKENS_TEMPLATE, accessToken, refreshToken };
     const tokensPath = kind === 'BOT' ? CONFIG.BOT_TOKENS_PATH : CONFIG.BROADCASTER_TOKENS_PATH;
-    return new RefreshingAuthProvider(
-        { clientId, clientSecret, onRefresh: async (newTokenData) => await fs.writeFile(tokensPath, JSON.stringify(newTokenData, null, 4), { encoding: 'utf-8' }) },
-        tokenData
-    );
+
+    const authProvider = new RefreshingAuthProvider({
+        clientId,
+        clientSecret,
+        onRefresh: async (_, newTokenData) => await _writeTokens(newTokenData, tokensPath)
+    });
+
+    // Initialization
+    await _writeTokens(tokenData, tokensPath);
+    await authProvider.addUserForToken(tokenData, ['chat']);
+
+    return authProvider;
 }
 
 /**
@@ -41,4 +49,18 @@ async function _loadLatestTokens(
     } catch (error) {
         return [envAccessToken, envRefreshToken];
     }
+}
+
+/**
+ * Writes JSON file with tokens
+ * @param envTokens Tokens from .env file
+ * @param tokensPath Token file path
+ * @returns void
+ */
+async function _writeTokens(tokenData: AccessToken, tokensPath: string): Promise<void> {
+    if (!existsSync(CONFIG.CONFIG_FOLDER_PATH)) {
+        await fs.mkdir(CONFIG.CONFIG_FOLDER_PATH);
+    }
+
+    return fs.writeFile(tokensPath, JSON.stringify(tokenData, null, 4), { encoding: 'utf-8' });
 }

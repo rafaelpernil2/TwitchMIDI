@@ -1,8 +1,8 @@
 import { ApiClient, HelixCustomRewardRedemptionTargetStatus, HelixUser } from '@twurple/api';
 import { RefreshingAuthProvider } from '@twurple/auth';
-import { getCommand } from '../command/utils';
-import { ERROR_MSG, REWARDS_DB } from '../configuration/constants';
-import { REWARD_TITLE_COMMAND } from '../database/jsondb/types';
+import { getCommand } from '../command/utils.js';
+import { ERROR_MSG, REWARDS_DB } from '../configuration/constants.js';
+import { REWARD_TITLE_COMMAND } from '../database/jsondb/types.js';
 
 let broadcasterId: HelixUser['id'];
 let apiClient: ApiClient;
@@ -16,13 +16,13 @@ let areRewardsOn = false;
  */
 export async function createRewards(authProvider: RefreshingAuthProvider, username: string): Promise<void> {
     const apiClient = getApiClient(authProvider);
-    const userId = await getBroadcasterId(apiClient, username);
+    const userId = await getBroadcasterId(authProvider, username);
 
     const rewardEntries = Object.entries(REWARDS_DB.selectAll(REWARD_TITLE_COMMAND) ?? {});
     const createPromiseMap = rewardEntries.map(([title, [command, cost]]) => {
         const [parsedCommand] = getCommand(command);
         const userInputRequired = parsedCommand != null; // Single commands require user input while macros do not
-
+        
         return apiClient.channelPoints.createCustomReward(userId, { title, cost, userInputRequired, autoFulfill: false });
     });
     try {
@@ -40,7 +40,7 @@ export async function createRewards(authProvider: RefreshingAuthProvider, userna
  */
 export async function toggleRewardsStatus(authProvider: RefreshingAuthProvider, username: string, { isEnabled }: { isEnabled: boolean }): Promise<void> {
     const apiClient = getApiClient(authProvider);
-    const userId = await getBroadcasterId(apiClient, username);
+    const userId = await getBroadcasterId(authProvider, username);
     const allRewards = await apiClient.channelPoints.getCustomRewards(userId, true);
 
     // Only treat our rewards
@@ -69,7 +69,7 @@ export async function updateRedeemIdStatus(
     { rewardId, redemptionId, status }: { rewardId: string; redemptionId: string; status: HelixCustomRewardRedemptionTargetStatus }
 ): Promise<void> {
     const apiClient = getApiClient(authProvider);
-    const userId = await getBroadcasterId(apiClient, username);
+    const userId = await getBroadcasterId(authProvider, username);
     try {
         await apiClient.channelPoints.updateRedemptionStatusByIds(userId, rewardId, [redemptionId], status);
     } catch (error) {
@@ -93,15 +93,16 @@ export function getApiClient(authProvider: RefreshingAuthProvider): ApiClient {
 
 /**
  * Calls TwitchAPI and returns the broadcaster user id
- * @param apiClient Twurple ApiClient
+ * @param authProvider Twurple AuthProvider
  * @param username Broadcaster username
  * @returns Broadcaster user id
  */
-export async function getBroadcasterId(apiClient: ApiClient, username: string): Promise<string> {
+export async function getBroadcasterId(authProvider: RefreshingAuthProvider, username: string): Promise<string> {
     if (broadcasterId != null) {
         return broadcasterId;
     }
 
+    const apiClient = getApiClient(authProvider);
     const broadcaster = await apiClient.users.getUserByName(username);
     if (broadcaster == null) {
         throw new Error(ERROR_MSG.BROADCASTER_USER_NOT_FOUND());

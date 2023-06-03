@@ -1,5 +1,5 @@
-import { CONFIG, GLOBAL } from '../../configuration/constants';
-import { httpsRequestPromise } from '../../utils/promise';
+import { CONFIG, GLOBAL } from '../../configuration/constants.js';
+import { httpsRequestPromise } from '../../utils/promise.js';
 
 import { promises as fs } from 'fs';
 import http from 'http';

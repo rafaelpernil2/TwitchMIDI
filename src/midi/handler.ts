@@ -1,12 +1,12 @@
-import { setTimeoutPromise } from '../utils/promise';
+import { setTimeoutPromise } from '../utils/promise.js';
 import * as JZZ from 'jzz';
-import { JZZTypes } from '../custom-typing/jzz';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
-import { forwardQueue, waitForMyTurn, clearAllQueues } from '../command/queue';
-import { SharedVariable } from '../shared-variable/implementation';
-import { initClockData, isClockActive, syncMode, startClock, stopClock } from './clock';
-import { CCCommand, Command } from '../command/types';
-import { Sync } from './types';
+import { JZZTypes } from '../custom-typing/jzz.js';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants.js';
+import { forwardQueue, waitForMyTurn, clearAllQueues } from '../command/queue.js';
+import { SharedVariable } from '../shared-variable/implementation.js';
+import { initClockData, isClockActive, syncMode, startClock, stopClock } from './clock.js';
+import { CCCommand, Command } from '../command/types.js';
+import { Sync } from './types.js';
 
 // IMPORTANT: ONLY THIS FILE CONTAINS A MIDI CONNECTION
 // For example, the clock uses the MIDI connection but it is always provided as an argument

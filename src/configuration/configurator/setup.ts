@@ -1,14 +1,14 @@
 import readline from 'readline';
 import http from 'http';
 import EventEmitter from 'events';
-import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise';
+import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise.js';
 import { promises as fs } from 'fs';
-import { EnvObject } from '../env/types';
-import { getBooleanByString, isNullish } from '../../utils/generic';
-import { CONFIG } from '../constants';
+import { EnvObject } from '../env/types.js';
+import { getBooleanByString, isNullish } from '../../utils/generic.js';
+import { CONFIG } from '../constants.js';
 import chalk from 'chalk';
-import i18n from '../../i18n/loader';
-import * as VALIDATORS from '../env/validators';
+import i18n from '../../i18n/loader.js';
+import * as VALIDATORS from '../env/validators.js';
 
 const localHTTPServerEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 const NEW_CODE = 'newCode';

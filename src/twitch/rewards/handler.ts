@@ -1,13 +1,13 @@
 import { RefreshingAuthProvider } from '@twurple/auth';
-import { ChatClient } from '@twurple/chat/lib';
+import { ChatClient } from '@twurple/chat';
 import { PubSubClient, PubSubRedemptionMessage } from '@twurple/pubsub';
-import { getCommandList } from '../../command/utils';
-import { REWARDS_DB, ERROR_MSG, CONFIG, GLOBAL } from '../../configuration/constants';
-import { ParsedEnvObject } from '../../configuration/env/types';
-import { REWARD_TITLE_COMMAND } from '../../database/jsondb/types';
-import { updateRedeemIdStatus } from '../../rewards/handler';
-import { onMessageHandlerClosure } from '../command/handler';
-import { RequestSource, MessageHandler } from '../command/types';
+import { getCommandList } from '../../command/utils.js';
+import { REWARDS_DB, ERROR_MSG, CONFIG, GLOBAL } from '../../configuration/constants.js';
+import { ParsedEnvObject } from '../../configuration/env/types.js';
+import { REWARD_TITLE_COMMAND } from '../../database/jsondb/types.js';
+import { getBroadcasterId, updateRedeemIdStatus } from '../../rewards/handler.js';
+import { onMessageHandlerClosure } from '../command/handler.js';
+import { RequestSource, MessageHandler } from '../command/types.js';
 
 /**
  * Initializes Rewards mode
@@ -16,9 +16,9 @@ import { RequestSource, MessageHandler } from '../command/types';
  * @param env Environment variables
  */
 export async function initializeRewardsMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvObject): Promise<void> {
-    const pubSubClient = new PubSubClient();
-    const broadcasterUserId = await pubSubClient.registerUserListener(broadcasterAuthProvider);
-    await pubSubClient.onRedemption(broadcasterUserId, async ({ id: redemptionId, rewardId, rewardTitle, message: args, userName }: PubSubRedemptionMessage) => {
+    const pubSubClient = new PubSubClient({ authProvider: broadcasterAuthProvider });
+    const broadcasterUserId = await getBroadcasterId(broadcasterAuthProvider, env.TARGET_CHANNEL);
+    pubSubClient.onRedemption(broadcasterUserId, async ({ id: redemptionId, rewardId, rewardTitle, message: args, userName }: PubSubRedemptionMessage) => {
         // Look up the command
         const [command] = REWARDS_DB.select(REWARD_TITLE_COMMAND, rewardTitle) ?? [];
 

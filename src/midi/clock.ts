@@ -1,10 +1,10 @@
 import NanoTimer from 'nanotimer';
-import { EVENT_EMITTER, EVENT } from '../configuration/constants';
-import { JZZTypes } from '../custom-typing/jzz';
-import { NanoTimerProperties } from '../custom-typing/nanotimer';
-import { SharedVariable } from '../shared-variable/implementation';
-import { isChordInProgress } from './handler';
-import { Sync } from './types';
+import { EVENT_EMITTER, EVENT } from '../configuration/constants.js';
+import { JZZTypes } from '../custom-typing/jzz.js';
+import { NanoTimerProperties } from '../custom-typing/nanotimer.js';
+import { SharedVariable } from '../shared-variable/implementation.js';
+import { isChordInProgress } from './handler.js';
+import { Sync } from './types.js';
 
 // Shared variables
 export const syncMode = new SharedVariable<Sync>(Sync.OFF);

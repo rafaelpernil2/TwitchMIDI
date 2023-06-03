@@ -1,7 +1,7 @@
-import { EnvObject, envVariables, ParsedEnvObject } from './types';
-import { ERROR_MSG, GLOBAL } from '../constants';
-import * as VALIDATORS from './validators';
-import { parseEnvVariables } from './parsers';
+import { EnvObject, envVariables, ParsedEnvObject } from './types.js';
+import { ERROR_MSG, GLOBAL } from '../constants.js';
+import * as VALIDATORS from './validators.js';
+import { parseEnvVariables } from './parsers.js';
 
 /**
  * Loads all variables from process.env (after being loaded by dotenv) and triggers the setup if some variable is missing
