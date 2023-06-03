@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [3.0.0] - 2022-12-21
+## [3.0.0] - 2023-06-03
 ### Added
 - Macro feature: Now you can trigger a set of commands with different timeouts just using a single command or "macro"
 - Revamped and extended API. Now you can query what's in the queue, clear the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
