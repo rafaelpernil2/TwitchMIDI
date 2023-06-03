@@ -23,6 +23,10 @@
         "MIDI - Change tempo": [
             "!settempo",
             100
+        ],
+        "MIDI - Macro fadeout": [
+            "!fadeout",
+            20
         ]
     }
 }
