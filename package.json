@@ -15,11 +15,11 @@
     "start": "node ./lib/index.js",
     "clean": "del-cli dist package",
     "ncc": "ncc build src/index.ts -m -o dist -e jazz-midi",
-    "esbuild": "esbuild lib/index.js --bundle --platform=node --target=node18 --external:jazz-midi --outdir=dist",
+    "esbuild": "esbuild lib/index.js --bundle --platform=node --target=node18 --external:jazz-midi --outdir=dist --minify",
     "package": "pkg . -o package/TwitchMIDI",
     "prezip": "cpy assets/* package && cpy package.json package",
     "zip": "cd package && bestzip ../TwitchMIDI.zip *",
-    "bundle": "npm run clean && npm run esbuild && npm run package && npm run zip"
+    "bundle": "npm run clean && npm run build && npm run esbuild && npm run package && npm run zip"
   },
   "keywords": [
     "midi",
