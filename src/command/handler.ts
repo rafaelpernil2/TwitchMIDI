@@ -47,22 +47,22 @@ export function midihelp(...[message, { silenceMessages }, { chatClient, channel
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midion(...[, { targetMIDIName, isRewardsMode, silenceMessages }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
     try {
         await connectMIDI(targetMIDIName);
         if (isRewardsMode) {
-            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDION_REWARDS')], { silenceMessages });
+            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDION_REWARDS')]);
             await createRewards(authProvider, broadcasterUser);
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
-        EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel, silenceMessages));
+        EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         areRequestsOpen.set(true);
         console.log(i18n.t('MIDION_LOG_ENABLED'));
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR());
     }
-    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDION_ENABLED')} ${CONFIG.OP_SIGNATURE}`], { silenceMessages });
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDION_ENABLED')} ${CONFIG.OP_SIGNATURE}`]);
 }
 
 /**
@@ -72,12 +72,12 @@ export async function midion(...[, { targetMIDIName, isRewardsMode, silenceMessa
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midioff(...[, { targetMIDIChannel, isRewardsMode, silenceMessages }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
-    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_INIT')], { silenceMessages });
+export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_INIT')]);
     try {
         await disconnectMIDI(targetMIDIChannel);
         if (isRewardsMode) {
-            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_REWARDS')], { silenceMessages });
+            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_REWARDS')]);
             await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
@@ -86,7 +86,7 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode, silenceM
     } catch (error) {
         throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
     }
-    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDIOFF_DISABLED')} ${CONFIG.OP_SIGNATURE}`], { silenceMessages });
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDIOFF_DISABLED')} ${CONFIG.OP_SIGNATURE}`]);
 }
 
 /**
@@ -582,8 +582,8 @@ function _parseMIDIValue(midiValue: string | number): number {
  * @param channel Twitch Channel
  * @returns An event handler
  */
-function _onPlayingNowChange(chatClient: ChatClient, channel: string, silenceMessages: boolean): (type: Command, request: string) => void {
-    return (type, request) => sayTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request), { silenceMessages });
+function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Command, request: string) => void {
+    return (type, request) => sayTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request), { silenceMessages: false });
 }
 
 /**
