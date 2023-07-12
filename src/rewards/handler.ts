@@ -22,7 +22,7 @@ export async function createRewards(authProvider: RefreshingAuthProvider, userna
     const createPromiseMap = rewardEntries.map(([title, [command, cost]]) => {
         const [parsedCommand] = getCommand(command);
         const userInputRequired = parsedCommand != null; // Single commands require user input while macros do not
-        
+
         return apiClient.channelPoints.createCustomReward(userId, { title, cost, userInputRequired, autoFulfill: false });
     });
     try {
@@ -46,8 +46,13 @@ export async function toggleRewardsStatus(authProvider: RefreshingAuthProvider, 
     // Only treat our rewards
     const validRewards = isEnabled ? allRewards.filter(({ title }) => REWARDS_DB.select(REWARD_TITLE_COMMAND, title) != null) : allRewards;
     const updatePromiseMap = validRewards.map((reward) => {
-        const [, cost] = REWARDS_DB.select(REWARD_TITLE_COMMAND, reward.title) ?? [];
-        return apiClient.channelPoints.updateCustomReward(userId, reward.id, { ...reward, isEnabled, cost });
+        const [command = '', cost] = REWARDS_DB.select(REWARD_TITLE_COMMAND, reward.title) ?? [];
+
+        // Re-check if it is a macro command
+        const [parsedCommand] = getCommand(command);
+        const userInputRequired = parsedCommand != null; // Single commands require user input while macros do not
+
+        return apiClient.channelPoints.updateCustomReward(userId, reward.id, { ...reward, userInputRequired, isEnabled, cost });
     });
     try {
         await Promise.all(updatePromiseMap);
