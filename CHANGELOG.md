@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revamped and extended API. Now you can query what's in the queue, clear the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
 - Automatic config file (re)generation and integrity checks. The config files are downloaded and merged from the master branch to fix any compatibility issues while keeping your settings. Updates are now as simple as getting the latest binary!
 - Favorite requests - Set your favorite request from queue and stop the queue at that point (only via Config API)
+- Queue Request saving via Config API - You you can save any request in the queue with an alias you like via Config API
 - Single-instance enforcement through .lock file: Now you can only run one instance of TwitchMIDI at any time to avoid undefined behaviour
 - Embedded README.txt inside binary zip. It explains how to install and run TwitchMIDI in basic terms
 - Debug profile for VSCode. A launch.json file for easier debugging with VSCode

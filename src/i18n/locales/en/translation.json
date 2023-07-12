@@ -137,6 +137,7 @@
         "API_OK_1": "File",
         "API_OK_2": "refreshed successfully!",
         "API_BAD_DATA": "Input data is invalid",
+        "API_GENERIC_ERROR": "Some error occurred when fulfilling this request",
         "API_SERVER_CONNECTION": "TwitchMIDI Config API listening on port"
     }
 }

@@ -4,7 +4,7 @@ import i18n from '../../i18n/loader.js';
 import { promises as fs } from 'fs';
 import { RefreshingAuthProvider } from '@twurple/auth';
 import { reloadRewards } from '../../rewards/handler.js';
-import { clearQueue, favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, unmarkFavorite } from '../../command/queue.js';
+import { clearQueue, favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, saveRequest, unmarkFavorite } from '../../command/queue.js';
 import { Command } from '../../command/types.js';
 
 /**
@@ -136,6 +136,31 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
                         if (commandName == null) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
 
                         unmarkFavorite(commandName);
+
+                        // Happy path, all OK! :)
+                        return _buildResponse(res, 200, i18n.t('API_OK'));
+                    }
+                    default:
+                        return _buildResponse(res, 405);
+                }
+            }
+
+            case '/saveRequest': {
+                // Obtain name of command to check
+                const commandName = url.searchParams.get('command') as Command | null;
+                const turn = url.searchParams.get('turn');
+                const alias = url.searchParams.get('alias');
+
+                switch (req.method) {
+                    case 'POST': {
+                        // Validate request
+                        if (commandName == null || turn == null || alias == null) return _buildResponse(res, 400, i18n.t('API_BAD_DATA'));
+
+                        try {
+                            await saveRequest(commandName, Number(turn), alias);
+                        } catch (error) {
+                            return _buildResponse(res, 400, error instanceof Error ? error.message : i18n.t('API_GENERIC_ERROR'))
+                        }
 
                         // Happy path, all OK! :)
                         return _buildResponse(res, 200, i18n.t('API_OK'));

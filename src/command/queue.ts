@@ -1,9 +1,11 @@
-import { ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants.js';
+import { CHORD_PROGRESSIONS_KEY } from '../database/jsondb/types.js';
+import { ALIASES_DB, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL } from '../configuration/constants.js';
 import { syncMode } from '../midi/clock.js';
 import { Sync } from '../midi/types.js';
 import { isEmptyObject } from '../utils/generic.js';
 import { areRequestsOpen } from './guards.js';
 import { Command } from './types.js';
+import { ResponseStatus } from '../database/interface.js';
 
 export const queueMap = Object.fromEntries(Object.values(Command).map((key) => [key, {}])) as Record<Command, Record<number, string | null>>;
 const uniqueIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
@@ -178,6 +180,31 @@ export function markAsFavorite(type: Command, turn: number): void {
  */
 export function unmarkFavorite(type: Command): void {
     favoriteIdMap[type] = -1;
+}
+
+/**
+ * Save a request into the list of aliases
+ * @param type
+ * @param turn
+ * @param alias
+ */
+export async function saveRequest(type: Command, turn: number, alias: string): Promise<void> {
+    const chordProgression = queueMap[type][turn];
+    if (chordProgression == null){
+        throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND());
+    }
+
+    const aliasAlreadyExisted = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, chordProgression.toLowerCase()) != null;
+
+    if (aliasAlreadyExisted){
+        throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
+    }
+
+    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS_KEY, alias.toLowerCase(), chordProgression);
+    if (insertStatus === ResponseStatus.Error) {
+        throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
+    }
+    await ALIASES_DB.commit();
 }
 
 /**
