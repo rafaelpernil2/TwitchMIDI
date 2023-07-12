@@ -189,18 +189,21 @@ export function unmarkFavorite(type: Command): void {
  * @param alias
  */
 export async function saveRequest(type: Command, turn: number, alias: string): Promise<void> {
-    const chordProgression = queueMap[type][turn];
-    if (chordProgression == null){
+    const requestData = queueMap[type][turn];
+
+    // If request does not exist
+    if (requestData == null){
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND());
     }
 
-    const aliasAlreadyExisted = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, chordProgression.toLowerCase()) != null;
-
-    if (aliasAlreadyExisted){
+    
+    // If the request to save was already an saved alias, throw error
+    const aliasAlreadyExists = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, requestData.toLowerCase()) != null;
+    if (aliasAlreadyExists){
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }
 
-    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS_KEY, alias.toLowerCase(), chordProgression);
+    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS_KEY, alias.toLowerCase(), requestData);
     if (insertStatus === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }
