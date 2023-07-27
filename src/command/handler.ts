@@ -20,7 +20,7 @@ import harmonics from 'harmonics';
 const { inlineChord } = harmonics;
 import { CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, CHORD_PROGRESSIONS_KEY } from '../database/jsondb/types.js';
 import { ChatClient } from '@twurple/chat';
-import { createRewards, toggleRewardsStatus } from '../rewards/handler.js';
+import { createRewards, reloadRewards, toggleRewardsStatus } from '../rewards/handler.js';
 import { areRequestsOpen } from './guards.js';
 import i18n from '../i18n/loader.js';
 
@@ -378,10 +378,13 @@ export function syncmidi(...[, { targetMIDIChannel, silenceMessages }, { chatCli
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function fetchdb(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function fetchdb(...[, { silenceMessages, isRewardsMode }, { chatClient, channel, authProvider, broadcasterUser }]: CommandParams): Promise<void> {
     await ALIASES_DB.fetchDB();
     await REWARDS_DB.fetchDB();
     await PERMISSIONS_DB.fetchDB();
+    if (isRewardsMode) {
+        await reloadRewards(authProvider, broadcasterUser);
+    }
     sayTwitchChatMessage(chatClient, channel, [, i18n.t('FETCHDB')], { silenceMessages });
 }
 

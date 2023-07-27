@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated all dependencies (Twurple.js, i18next, JZZ, PKG...)
 - Migrated all code to Node 18, Typescript 5.0 and ESModule
 - Replaced NCC with ESBuild for a reduced build time
+- Now !fetchdb also regenerates rewards in case there is a change
 ### Fixed
 - Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now it is bumped to 100
 - Rewards disable bug. Before, it only disabled the current rewards from rewards.json file. If any reward were changed while running TwitchMIDI, it would stay active forever. Now it disables all rewards created by TwitchMIDI (new behaviour) and enables only the ones from rewards.json file (as before)
