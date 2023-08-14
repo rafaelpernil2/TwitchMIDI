@@ -1,4 +1,5 @@
-import { CustomObject, Database, ResponseStatus } from '../interface.js';
+import { CustomObject, ResponseStatus } from '../../types/generic.js';
+import { Database } from '../interface.js';
 import { promises as fs, readFileSync } from 'fs';
 
 export class JSONDatabase<T extends CustomObject<T>> implements Database<T> {

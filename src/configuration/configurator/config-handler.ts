@@ -19,7 +19,10 @@ import * as CommandHandlers from '../../command/handler.js';
 
 const DEFAULT_CONFIG_FILE_CACHE: Record<string, unknown> = {};
 
-export async function validateConfigFiles(): Promise<void> {
+/**
+ * Validates and creates/completes config files if needed
+ */
+export async function setupConfigFiles(): Promise<void> {
     if (!existsSync(CONFIG.CONFIG_FOLDER_PATH)) {
         await fs.mkdir(CONFIG.CONFIG_FOLDER_PATH);
     }
@@ -29,6 +32,12 @@ export async function validateConfigFiles(): Promise<void> {
     await validatePermissionsFile();
 }
 
+/**
+ * Validates and writes aliases and rewards file
+ * @param db JSONDatabase where to store file/select which one to download
+ * @param sections Sections to validate
+ * @returns
+ */
 export async function validateFileGeneric<T, P extends keyof T>(db: JSONDatabase<T>, sections: P[]): Promise<void> {
     let isModified = false;
     // Check each section and fix structure if needed
@@ -50,6 +59,10 @@ export async function validateFileGeneric<T, P extends keyof T>(db: JSONDatabase
     return;
 }
 
+/**
+ * Validates and writes permissions file
+ * @returns
+ */
 export async function validatePermissionsFile(): Promise<void> {
     let isModified = false;
     // Check each section and fix structure if needed
@@ -75,6 +88,11 @@ export async function validatePermissionsFile(): Promise<void> {
     return;
 }
 
+/**
+ * Downloads config files from GitHub repo
+ * @param db JSONDatabase where to store file/select which one to download
+ * @returns File data
+ */
 export async function downloadDefaultFileFromRepo<T>(db: JSONDatabase<T>): Promise<T | undefined> {
     try {
         // Read GitHub's master <config-file>.json

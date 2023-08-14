@@ -1,8 +1,8 @@
 import { setTimeoutPromise } from '../utils/promise.js';
-import * as JZZ from 'jzz';
+import JZZ from 'jzz';
 import { JZZTypes } from '../custom-typing/jzz.js';
 import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants.js';
-import { forwardQueue, waitForMyTurn, clearAllQueues } from '../command/queue.js';
+import { forwardQueue, clearAllQueues } from '../command/queue.js';
 import { SharedVariable } from '../shared-variable/implementation.js';
 import { initClockData, isClockActive, syncMode, startClock, stopClock } from './clock.js';
 import { CCCommand, Command } from '../command/types.js';
@@ -19,12 +19,19 @@ let globalVolume = CONFIG.DEFAULT_VOLUME;
 export const isChordInProgress = new SharedVariable<boolean>(false);
 
 /**
+ * Requests MIDI access from JZZ library
+ */
+export async function requestMIDIAccess(): Promise<WebMidi.MIDIAccess> {
+    return JZZ.requestMIDIAccess();
+}
+
+/**
  * Connects to the virtual MIDI device
  * @param targetMIDIName Virtual MIDI device name
  */
 export async function connectMIDI(targetMIDIName: string): Promise<void> {
     _initVariables();
-    const midi = await JZZ.default();
+    const midi = await JZZ();
     output = midi.openMidiOut(targetMIDIName);
 }
 
@@ -76,22 +83,19 @@ export async function triggerNoteList(rawNoteList: Array<[note: string, timeSubD
  * @param rawChordProgression Chord progression to trigger
  * @param targetMIDIChannel Virtual device MIDI channel
  * @param type 'sendloop' or 'sendchord'
- * @param myTurn My turn in the queue
  */
 export async function triggerChordList(
     rawChordProgression: Array<[noteList: string[], timeSubDivision: number]>,
     targetMIDIChannel: number,
-    type: Command.sendloop | Command.sendchord,
-    myTurn: number
+    type: Command.sendloop | Command.sendchord
 ): Promise<void> {
     // If the MIDI clock has not started yet, start it to make the chord progression sound
-    _autoStartClock(targetMIDIChannel);
+    autoStartClock(targetMIDIChannel);
     // Reset sync flag
     syncMode.set(Sync.OFF);
 
     // We wait until the bar starts and is your turn
     try {
-        await waitForMyTurn(myTurn, type);
         const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
 
         // Blocking section
@@ -167,6 +171,19 @@ function _initVariables(): void {
     isChordInProgress.set(false);
     globalTempo = CONFIG.DEFAULT_TEMPO;
     globalVolume = CONFIG.DEFAULT_VOLUME;
+}
+
+/**
+ * Checks if the clock is active and if not, it starts it
+ * @param targetMIDIChannel Virtual MIDI device channel
+ */
+export function autoStartClock(targetMIDIChannel: number): void {
+    if (output == null) {
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
+    }
+    if (!isClockActive()) {
+        startClock(targetMIDIChannel, output, globalTempo);
+    }
 }
 
 /**
@@ -300,17 +317,4 @@ function _sweep(
         result.push([value, time]);
     }
     return result;
-}
-
-/**
- * Checks if the clock is active and if not, it starts it
- * @param targetMIDIChannel Virtual MIDI device channel
- */
-function _autoStartClock(targetMIDIChannel: number): void {
-    if (output == null) {
-        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
-    }
-    if (!isClockActive()) {
-        startClock(targetMIDIChannel, output, globalTempo);
-    }
 }

@@ -1,3 +1,5 @@
+import { CustomObject, ResponseStatus } from '../types/generic.js';
+
 export interface Database<T extends CustomObject<T>> {
     /**
      * Retrieves the full DB data
@@ -66,12 +68,3 @@ export interface Database<T extends CustomObject<T>> {
      */
     fetchDB(): Promise<void>;
 }
-
-export enum ResponseStatus {
-    Ok,
-    Error
-}
-
-export type CustomObject<Type> = {
-    [Property in keyof Type]: Type[Property];
-};

@@ -3,9 +3,10 @@ import { ALIASES_DB, REWARDS_DB, PERMISSIONS_DB, GLOBAL, CONFIG } from '../const
 import i18n from '../../i18n/loader.js';
 import { promises as fs } from 'fs';
 import { RefreshingAuthProvider } from '@twurple/auth';
-import { reloadRewards } from '../../rewards/handler.js';
 import { clearQueue, favoriteIdMap, markAsFavorite, queueMap, removeFromQueue, saveRequest, unmarkFavorite } from '../../command/queue.js';
 import { Command } from '../../command/types.js';
+import { reloadRewards } from '../../twitch/rewards/handler.js';
+import { ParsedEnvObject } from '../env/types.js';
 
 /**
  * Creates an HTTP server that implements Configuration API
@@ -14,11 +15,11 @@ import { Command } from '../../command/types.js';
 /**
  * Creates an HTTP server that implements Configuration API
  * @param authProvider Authentication provider
- * @param broadcasterUser Broadcaster username
+ * @param env Environment variables
  */
-export function initiateConfigAPI(authProvider: RefreshingAuthProvider, broadcasterUser: string): void {
+export function initiateConfigAPI(authProvider: RefreshingAuthProvider, env: ParsedEnvObject): void {
     // Create server
-    const server = http.createServer(_onRequest(authProvider, broadcasterUser));
+    const server = http.createServer(_onRequest(authProvider, env.TARGET_CHANNEL));
     // Listen from server
     server.listen(() => {
         const address = server.address();
@@ -35,10 +36,10 @@ export function initiateConfigAPI(authProvider: RefreshingAuthProvider, broadcas
  * Exposes a REST API via /refreshConfig with a "file" as query param to refresh
  * config files on demand
  * @param authProvider Authentication provider
- * @param broadcasterUser Broadcaster username
+ * @param targetChannel Target channel
  * @returns A request listener for a HTTP server
  */
-function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: string): (req: http.IncomingMessage, res: http.ServerResponse) => Promise<void> {
+function _onRequest(authProvider: RefreshingAuthProvider, targetChannel: string): (req: http.IncomingMessage, res: http.ServerResponse) => Promise<void> {
     // Map of file name with the correspondent DB
     const configFileMap = {
         aliases: ALIASES_DB,
@@ -62,7 +63,7 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
 
                         // If it is a reward, reload them, otherwise, refresh the file
                         if (queryFile === 'rewards') {
-                            await reloadRewards(authProvider, broadcasterUser);
+                            await reloadRewards(authProvider, targetChannel);
                         } else {
                             await configFileMap[queryFile].fetchDB();
                         }
@@ -76,13 +77,26 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
             }
             case '/queue': {
                 // Obtain name of command to check
-                const commandName = url.searchParams.get('command') as Command | null;
+                const commandName = url.searchParams.get('command') as Command.sendloop | Command.sendchord | null;
                 const turn = url.searchParams.get('turn');
 
                 switch (req.method) {
                     case 'GET': {
                         // Obtain queue details
-                        const queueData = commandName != null ? { [commandName]: queueMap[commandName] } : queueMap;
+                        const sendChordEntries = [...queueMap.sendchord.tagEntries()[0]];
+                        const sendchord: Record<number, string> = {};
+                        for (const [turn, tag] of sendChordEntries) {
+                            sendchord[turn] = tag;
+                        }
+
+                        const sendLoopEntries = [...queueMap.sendloop.tagEntries()[0]];
+                        const sendloop: Record<number, string> = {};
+                        for (const [turn, tag] of sendLoopEntries) {
+                            sendloop[turn] = tag;
+                        }
+
+                        const total = { sendloop, sendchord };
+                        const queueData = commandName != null ? { [commandName]: total[commandName] } : total;
                         const jsonData = JSON.stringify(queueData);
 
                         // Happy path, all OK! :)
@@ -109,7 +123,7 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
 
             case '/favorite': {
                 // Obtain name of command to check
-                const commandName = url.searchParams.get('command') as Command | null;
+                const commandName = url.searchParams.get('command') as Command.sendloop | Command.sendchord | null;
                 const turn = url.searchParams.get('turn');
 
                 switch (req.method) {
@@ -147,7 +161,7 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
 
             case '/saveRequest': {
                 // Obtain name of command to check
-                const commandName = url.searchParams.get('command') as Command | null;
+                const commandName = url.searchParams.get('command') as Command.sendloop | Command.sendchord | null;
                 const turn = url.searchParams.get('turn');
                 const alias = url.searchParams.get('alias');
 
@@ -159,7 +173,7 @@ function _onRequest(authProvider: RefreshingAuthProvider, broadcasterUser: strin
                         try {
                             await saveRequest(commandName, Number(turn), alias);
                         } catch (error) {
-                            return _buildResponse(res, 400, error instanceof Error ? error.message : i18n.t('API_GENERIC_ERROR'))
+                            return _buildResponse(res, 400, error instanceof Error ? error.message : i18n.t('API_GENERIC_ERROR'));
                         }
 
                         // Happy path, all OK! :)

@@ -1,7 +1,6 @@
-import { ResponseStatus } from '../database/interface.js';
 import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants.js';
-import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue.js';
-import { isValidCommand, deAliasCommand, splitCommandArguments, sayTwitchChatMessage } from './utils.js';
+import { queue, getCurrentRequestPlaying, getRequestQueue, createAutomaticClockSyncedQueue, clearAllQueues } from './queue.js';
+import { isValidCommand, deAliasCommand, splitCommandArguments } from './utils.js';
 import { CommandParams } from '../twitch/command/types.js';
 import { removeDuplicates } from '../utils/generic.js';
 import {
@@ -11,18 +10,20 @@ import {
     triggerCCCommandList,
     stopAllMidi,
     triggerClock,
-    triggerChordList,
     triggerNoteList,
-    setMIDIVolume
+    setMIDIVolume,
+    autoStartClock
 } from '../midi/handler.js';
 import { CCCommand, Command } from './types.js';
 import harmonics from 'harmonics';
 const { inlineChord } = harmonics;
 import { CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, CHORD_PROGRESSIONS_KEY } from '../database/jsondb/types.js';
 import { ChatClient } from '@twurple/chat';
-import { createRewards, reloadRewards, toggleRewardsStatus } from '../rewards/handler.js';
 import { areRequestsOpen } from './guards.js';
 import i18n from '../i18n/loader.js';
+import { createRewards, toggleRewardsStatus, reloadRewards } from '../twitch/rewards/handler.js';
+import { sayTwitchChatMessage } from '../twitch/chat/handler.js';
+import { ResponseStatus } from '../types/generic.js';
 
 /**
  * Shows all available commands and explains how to use them
@@ -47,13 +48,13 @@ export function midihelp(...[message, { silenceMessages }, { chatClient, channel
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, targetChannel }]: CommandParams): Promise<void> {
     try {
         await connectMIDI(targetMIDIName);
         if (isRewardsMode) {
             sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDION_REWARDS')]);
-            await createRewards(authProvider, broadcasterUser);
-            await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
+            await createRewards(authProvider, targetChannel);
+            await toggleRewardsStatus(authProvider, targetChannel, { isEnabled: true });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
@@ -72,13 +73,13 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, targetChannel }]: CommandParams): Promise<void> {
     sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_INIT')]);
     try {
         await disconnectMIDI(targetMIDIChannel);
         if (isRewardsMode) {
             sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_REWARDS')]);
-            await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
+            await toggleRewardsStatus(authProvider, targetChannel, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         areRequestsOpen.set(false);
@@ -201,16 +202,16 @@ export async function sendnote(...[message, { targetMIDIChannel, silenceMessages
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendchord(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
+export function sendchord(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Lookup previously saved chord progressions
     const chordProgression = _getChordProgression(message);
 
-    const myTurn = queue(message, Command.sendchord);
+    queue(message, chordProgression, Command.sendchord);
+    autoStartClock(targetMIDIChannel);
+    createAutomaticClockSyncedQueue(targetMIDIChannel);
     sayTwitchChatMessage(chatClient, channel, [, i18n.t('SENDCHORD')], { silenceMessages });
-
-    await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
 }
 
 /**
@@ -220,18 +221,15 @@ export async function sendchord(...[message, { targetMIDIChannel, silenceMessage
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendloop(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
+export function sendloop(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Queue chord progression petition
     const chordProgression = _getChordProgression(message);
-    const myTurn = queue(message, Command.sendloop);
-
+    queue(message, chordProgression, Command.sendloop);
+    autoStartClock(targetMIDIChannel);
+    createAutomaticClockSyncedQueue(targetMIDIChannel);
     sayTwitchChatMessage(chatClient, channel, [, i18n.t('SENDLOOP')], { silenceMessages });
-    do {
-        // Execute at least once to wait for your turn in the queue
-        await triggerChordList(chordProgression, targetMIDIChannel, Command.sendloop, myTurn);
-    } while (myTurn === currentTurnMap.sendloop);
 }
 
 /**
@@ -322,7 +320,7 @@ export function midivolume(...[message, { silenceMessages }, { chatClient, chann
  *         ]
  */
 export function stoploop(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
-    clearQueueList(Command.sendchord, Command.sendloop);
+    clearAllQueues();
     sayTwitchChatMessage(chatClient, channel, [, i18n.t('STOPLOOP')], { silenceMessages });
 }
 
@@ -378,12 +376,12 @@ export function syncmidi(...[, { targetMIDIChannel, silenceMessages }, { chatCli
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function fetchdb(...[, { silenceMessages, isRewardsMode }, { chatClient, channel, authProvider, broadcasterUser }]: CommandParams): Promise<void> {
+export async function fetchdb(...[, { silenceMessages, isRewardsMode }, { chatClient, channel, authProvider, targetChannel }]: CommandParams): Promise<void> {
     await ALIASES_DB.fetchDB();
     await REWARDS_DB.fetchDB();
     await PERMISSIONS_DB.fetchDB();
     if (isRewardsMode) {
-        await reloadRewards(authProvider, broadcasterUser);
+        await reloadRewards(authProvider, targetChannel);
     }
     sayTwitchChatMessage(chatClient, channel, [, i18n.t('FETCHDB')], { silenceMessages });
 }

@@ -1,7 +1,5 @@
-import { ChatClient } from '@twurple/chat';
 import { ALIASES_DB, GLOBAL } from '../configuration/constants.js';
 import { COMMANDS_KEY, MACROS_KEY } from '../database/jsondb/types.js';
-import { buildChunkedMessage } from '../utils/generic.js';
 import { Command } from './types.js';
 
 /**
@@ -81,21 +79,4 @@ export function getCommandList(message: string): [isMacroMessage: boolean, comma
  */
 export function splitCommandArguments(commandArguments: string): string[] {
     return commandArguments.split(GLOBAL.SPACE_SEPARATOR).filter((value) => value !== GLOBAL.EMPTY_MESSAGE);
-}
-
-/**
- * Splits and says in as many messages as needed the full message, even if it exceeds the 500 character limit
- * @param chatClient Twitch Chat Client
- * @param channel Twitch Chat channel
- * @param messageData [leading, content, trailing] Data for the message
- * @param { silenceMessages: boolean } options Parameters for customizing the behaviour
- */
-export function sayTwitchChatMessage(chatClient: ChatClient, channel: string, [leading = '', content = '', trailing = ''] = [], { silenceMessages } = { silenceMessages: false }) {
-    // Do nothing if messages are muted
-    if (silenceMessages) return;
-
-    const messageList = buildChunkedMessage([leading, content, trailing]);
-    for (const twitchMessage of messageList) {
-        chatClient.say(channel, twitchMessage);
-    }
 }

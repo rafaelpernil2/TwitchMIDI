@@ -3,7 +3,7 @@ import { writeFileSync, rmSync, existsSync } from 'fs';
 import { CONFIG, ERROR_MSG, GLOBAL } from '../../configuration/constants.js';
 import { ParsedEnvObject } from '../../configuration/env/types.js';
 import { stopAllMidi } from '../../midi/handler.js';
-import { toggleRewardsStatus } from '../../rewards/handler.js';
+import { toggleRewardsStatus } from '../../twitch/rewards/handler.js';
 
 /**
  * Obtains an execution lock to indicate that the program is open

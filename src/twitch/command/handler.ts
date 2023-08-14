@@ -1,12 +1,13 @@
 import { ChatClient } from '@twurple/chat';
 import { CONFIG, ERROR_MSG } from '../../configuration/constants.js';
 import { CommandHandlerType, MessageHandler, RequestSource, TwitchParams } from './types.js';
-import { getCommandList, sayTwitchChatMessage } from '../../command/utils.js';
+import { getCommandList } from '../../command/utils.js';
 import * as CommandHandlers from '../../command/handler.js';
 import { checkCommandAccess } from '../../command/guards.js';
 import { ParsedEnvObject } from '../../configuration/env/types.js';
 import { RefreshingAuthProvider } from '@twurple/auth';
 import { setTimeoutPromise } from '../../utils/promise.js';
+import { sayTwitchChatMessage } from '../chat/handler.js';
 
 /**
  * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control
@@ -39,7 +40,7 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
                     chatClient,
                     authProvider,
                     user,
-                    broadcasterUser: env.TARGET_CHANNEL,
+                    targetChannel: env.TARGET_CHANNEL,
                     userRoles: msg?.userInfo ?? CONFIG.DEFAULT_USER_ROLES
                 };
                 // Checks if the user has enough permissions

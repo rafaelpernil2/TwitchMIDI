@@ -18,8 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Debug profile for VSCode. A launch.json file for easier debugging with VSCode
 - New .env flag - SILENCE_MACRO_MESSAGES for new Macro feature. It disables message output for macro commands
 - Better exit handling - Now it catches unhandled exceptions to improve exit handling and user experience
+- New internal queue interface and implementation to improve performance and simplify code
 ### Changed
 - BREAKING CHANGE: /refreshConfig API now works via POST
+- Removed eventlistener-per-request logic. Now there's only one event listener for the MIDI clock and the request queue is handled by an in-memory queue without nested promises
+- Optimized initial loading, now creates batches of promises to await for reduced times
+- Code re-organization to better isolate components and domains (Twitch, MIDI, commands, queue...)
 - Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json
 - Minor refactors for easier translations. The ASCII logo of TwitchMIDI now is saved as a constant
 - Minor naming refactors
