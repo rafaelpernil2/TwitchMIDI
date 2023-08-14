@@ -11,9 +11,9 @@ import { buildChunkedMessage } from '../../utils/generic.js';
  * @param env Environment variables
  * @returns Chat client
  */
-export async function connectChatClient(botAuthProvider: RefreshingAuthProvider, env: ParsedEnvObject) {
+export function connectChatClient(botAuthProvider: RefreshingAuthProvider, env: ParsedEnvObject) {
     const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
-    await chatClient.connect();
+    chatClient.connect();
 
     return chatClient;
 }

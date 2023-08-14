@@ -21,9 +21,10 @@ export async function getAuthProvider(
 
     const authProvider = new RefreshingAuthProvider({
         clientId,
-        clientSecret,
-        onRefresh: async (_, newTokenData) => await _writeTokens(newTokenData, tokensPath)
+        clientSecret
     });
+
+    authProvider.onRefresh(async (_, newTokenData) => await _writeTokens(newTokenData, tokensPath));
 
     // Initialization
     await _writeTokens(tokenData, tokensPath);

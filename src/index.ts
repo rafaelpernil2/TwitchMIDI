@@ -45,8 +45,6 @@ import { showInitErrorMessages, showInitReadyMessages, showUpdateMessages, showI
 
         // Apply setup steps in parallel
         const setupPromiseList = [
-            // Connect to Twitch
-            connectChatClient(botAuthProvider, env),
             // Load config files
             setupConfigFiles(),
             // Open MIDI connection
@@ -54,11 +52,13 @@ import { showInitErrorMessages, showInitReadyMessages, showUpdateMessages, showI
             // Check for updates
             showUpdateMessages()
         ] as const;
-        const [chatClient] = await Promise.all(setupPromiseList);
+        await Promise.all(setupPromiseList);
 
         // Finish initialization and handle exit signals
         attachExitCallbacksAfterInit(broadcasterAuthProvider, env);
 
+        // Connect to Twitch
+        const chatClient = connectChatClient(botAuthProvider, env);
         // Open to external events after initialization
         const twitchConnectionPromiseList = [
             initializeRewardsMode(broadcasterAuthProvider, chatClient, env),
