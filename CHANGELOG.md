@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New internal queue interface and implementation to improve performance and simplify code
 ### Changed
 - BREAKING CHANGE: /refreshConfig API now works via POST
-- Removed eventlistener-per-request logic. Now there's only one event listener for the MIDI clock and the request queue is handled by an in-memory queue without nested promises
+- Improved clock precision by removing eventlistener-per-request logic. Now there is no event listener for this logic and the request queue is handled by an in-memory queue without nested promises. EventEmitters are not precise enough for music timing.
 - Optimized initial loading, now creates batches of promises to await for reduced times
 - Code re-organization to better isolate components and domains (Twitch, MIDI, commands, queue...)
 - Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json

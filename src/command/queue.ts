@@ -9,6 +9,9 @@ import { GenericQueue } from '../queue/generic-queue/implementation.js';
 import { triggerChordList } from '../midi/handler.js';
 
 export const favoriteIdMap = Object.fromEntries(Object.values(Command).map((key) => [key, -1])) as Record<Command, number>;
+export let onBarLoopChange: () => Promise<void> = async () => {
+    // Implement if needed
+};
 
 let requestPlayingNow: { type: Command.sendloop | Command.sendchord; request: string } | null;
 
@@ -18,11 +21,6 @@ export const queueMap = {
 } as const;
 
 export function createAutomaticClockSyncedQueue(targetMIDIChannel: number) {
-    const listenerCount = EVENT_EMITTER.listenerCount(EVENT.BAR_LOOP_CHANGE_EVENT);
-    if (listenerCount > 0) {
-        return;
-    }
-
     const onCommandTurn = (type: Command.sendloop | Command.sendchord) => async () => {
         const [turn] = queueMap[type].getCurrentTurn();
 
@@ -41,13 +39,13 @@ export function createAutomaticClockSyncedQueue(targetMIDIChannel: number) {
         return true;
     };
 
-    EVENT_EMITTER.on(EVENT.BAR_LOOP_CHANGE_EVENT, async () => {
+    onBarLoopChange = async () => {
         const sendchordHasPlayed = await onCommandTurn(Command.sendchord)();
         // If sendchord has played, we have to wait until next tick for synchronization
         if (sendchordHasPlayed) return;
         // Otherwise, sendloop can be played
         await onCommandTurn(Command.sendloop)();
-    });
+    };
 }
 
 /**

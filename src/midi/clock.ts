@@ -1,10 +1,10 @@
 import NanoTimer from 'nanotimer';
-import { EVENT_EMITTER, EVENT } from '../configuration/constants.js';
 import { JZZTypes } from '../custom-typing/jzz.js';
 import { NanoTimerProperties } from '../custom-typing/nanotimer.js';
 import { SharedVariable } from '../shared-variable/implementation.js';
 import { isChordInProgress } from './handler.js';
 import { Sync } from './types.js';
+import { onBarLoopChange } from '../command/queue.js';
 
 // Shared variables
 export const syncMode = new SharedVariable<Sync>(Sync.OFF);
@@ -70,9 +70,6 @@ function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['ope
  * @returns
  */
 function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
-    // We store in closure variables the event emitter and event for speed and consistency
-    const emitter = EVENT_EMITTER;
-    const event = EVENT.BAR_LOOP_CHANGE_EVENT;
     let isFirst = true;
     return () => {
         // Constant time operations to ensure time stability
@@ -84,7 +81,7 @@ function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
         // If is bar start and it's not executing blocking section
         if (tick === 1 && !isInProgress) {
             // Notify and send the current active mode
-            emitter.emit(event);
+            onBarLoopChange();
         }
 
         if (isFirst) {
