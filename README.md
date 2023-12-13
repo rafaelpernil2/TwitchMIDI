@@ -1,4 +1,4 @@
-# TwitchMIDI
+# <img src="./docs/static/img/logo.svg" width="40" style="margin-bottom: -10px; padding-right: 5px">TwitchMIDI
 
 A full-featured configurable Twitch bot to connect with your MIDI equipment while streaming. Allow your viewers to be part of your musical creations!
 
