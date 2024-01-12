@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 # Introduction {#introduction}
 
-## Donwload {#Download}
+## Download {#Download}
 
 Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github.com/rafaelpernil2/TwitchMIDI/releases/latest/download/TwitchMIDI.zip)
 
@@ -22,21 +22,7 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 ## Update {#Update}
 
-### Overriding custom settings
-
-* Extract and replace all files
-
-### Safe method
-
-Okay, this can get a little more complicated, but if you are using custom settings, you already know how they work
-
-* Extract the zip in a different folder than before
-* Copy and replace TwitchMIDI-yourplatform (e.g TwitchMIDI-win.exe) and package.json into your folder
-* Open [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json) and make sure all commands have an entry, otherwise those missing will always return permissions errors
-* That's it!
-
-> Note: You do not need to replace the entire config folder unless there is a major version change (e.g, from 1.x.x to 2.x.x).
-> In case of doubt, compare old with new versions of config files and re-apply your changes. See [CHANGELOG.md](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/CHANGELOG.md) for more info.
+Just put the new version in your folder. TwitchMIDI will configure everything automatically and add anything missing.
 
 
 ## Why? {#Why}
@@ -74,6 +60,7 @@ So far, this first version does all that, keep reading the features for more det
   * Pause requests with [!midipause](#midipause) and resume with [!midiresume](#midiresume)
 * Configurable aliases on [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json)
   * Commands - Add as many command aliases as you want
+  * Macros - Launch a set of actions from a single command
   * Chord progressions/loops - Add an alias for a chord progresion to play or loop using "name/chords" syntax
     * Add chord progressions via [!addchord](#addchord)
     * Remove chord progression via [!removechord](#removechord)
@@ -92,5 +79,134 @@ So far, this first version does all that, keep reading the features for more det
   * Commands only work for the streamer and mods
   * Allow VIPs to bypass rewards via VIP_REWARDS_MODE
 * Bundle optimized for different operating systems and no extra software required for execution
+* HTTP API to interact with the bot behind the scenes with an alternative UI (like TwitchMIDI+ Control Panel)
 * Internationalization with full support for English and Spanish as of right now
 * Update checking on startup, a message appears if there is a new version available
+* Automatic checking and fix of configuration files. It ensures that all settings are correct while keeping the good ones
+
+## Commands {#Commands}
+
+#### !midihelp
+&nbsp;&nbsp;&nbsp;&nbsp;Shows all commands available and info about each command.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````command // (e.g "sendloop")````
+
+
+#### !midion
+&nbsp;&nbsp;&nbsp;&nbsp;Turns on the MIDI functionality of the bot
+
+
+#### !midioff
+&nbsp;&nbsp;&nbsp;&nbsp;Turns off the MIDI functionality of the bot
+
+#### !midipause
+&nbsp;&nbsp;&nbsp;&nbsp;Pauses the requests but keeps playing whatever was already playing
+
+#### !midiresume
+&nbsp;&nbsp;&nbsp;&nbsp;Reactivates requests after they were paused with !midipause
+
+#### !addchord
+&nbsp;&nbsp;&nbsp;&nbsp;Adds a chord progression or loop with an alias to [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json).
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````name/chords(chord length in quarter notes) // (e.g. "pop/C G(2) Amin(2) F")````
+
+
+#### !removechord
+&nbsp;&nbsp;&nbsp;&nbsp;Removes a chord progression or loop with an alias from [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json).
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````alias // (e.g. "pop")````
+
+
+#### !chordlist
+&nbsp;&nbsp;&nbsp;&nbsp;Shows all saved chord progressions or loops from [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json) that can be used
+
+
+#### !sendnote
+&nbsp;&nbsp;&nbsp;&nbsp;Sends a note or a set of notes.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````note1 note2 ... // (e.g. "C4 E4 G4")````
+
+
+#### !sendchord
+&nbsp;&nbsp;&nbsp;&nbsp;Sends a chord progression with an alias or with chords.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````chord1 chord2(chord length in quarter notes)... // (e.g. "C(4) G Amin(2) F","pop")````
+
+
+#### !sendloop
+&nbsp;&nbsp;&nbsp;&nbsp;Sends a loop with an alias or with chords.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````chord1 chord2(chord length in quarter notes)... // (e.g. "C G Amin F","pop")````
+
+
+#### !sendcc
+&nbsp;&nbsp;&nbsp;&nbsp;Sends a MIDI CC message with an alias, code or value sweeps.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````controller value,controller2 value2(delay_in_ms) // (e.g. "43 100,43 60", "cutoff sweep", "cutoff 100,cutoff 10(10000)")````
+
+
+#### !midicurrentrequest
+&nbsp;&nbsp;&nbsp;&nbsp;Shows the current request being played.
+
+
+#### !midirequestqueue
+&nbsp;&nbsp;&nbsp;&nbsp;Shows the request queue for chord progressions and loops.
+
+
+#### !cclist
+&nbsp;&nbsp;&nbsp;&nbsp;Shows a list of available CC command macros from [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json)
+
+
+#### !midivolume
+&nbsp;&nbsp;&nbsp;&nbsp;Sets the velocity for the chords/notes/loops.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````value between 0 and 100 // (e.g. "50","100")````
+
+
+#### !stoploop
+&nbsp;&nbsp;&nbsp;&nbsp;Stops the loop once it ends
+
+
+#### !fullstopmidi
+&nbsp;&nbsp;&nbsp;&nbsp;Stops all MIDI messages and sound
+
+
+#### !settempo
+&nbsp;&nbsp;&nbsp;&nbsp;Starts the MIDI clock and sets a tempo.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````tempo // (e.g. "120", "200")````
+
+
+#### !syncmidi
+&nbsp;&nbsp;&nbsp;&nbsp;Restarts the MIDI clock and syncs loop and clock on the next repetition
+
+
+#### !fetchdb
+&nbsp;&nbsp;&nbsp;&nbsp;Refreshes aliases, rewards and permissions configurations from the respective files.
+
+## Troubleshooting
+
+Question: I get authentication errors each time I open the app. What can I do?
+
+Answer:
+
+>Delete `bot-tokens.json` and `broadcaster-tokens.json` from your `config` folder. If that does not work, remove BROADCASTER_REFRESH_TOKEN, BROADCASTER_ACCESS_TOKEN, BOT_REFRESH_TOKEN and BOT_ACCESS_TOKEN from your `.env` file and re-configure it again
+
