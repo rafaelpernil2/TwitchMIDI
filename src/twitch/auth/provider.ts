@@ -24,7 +24,7 @@ export async function getAuthProvider(
         clientSecret
     });
 
-    authProvider.onRefresh(async (_, newTokenData) => await _writeTokens(newTokenData, tokensPath));
+    authProvider.onRefresh(async (_: unknown, newTokenData: AccessToken) => await _writeTokens(newTokenData, tokensPath));
 
     // Initialization
     await _writeTokens(tokenData, tokensPath);

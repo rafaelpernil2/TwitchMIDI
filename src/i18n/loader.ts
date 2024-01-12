@@ -3,9 +3,9 @@ import { askUserInput } from '../utils/promise.js';
 import { GLOBAL } from '../configuration/constants.js';
 import chalk from 'chalk';
 
-// Import assertions are still experimental as of Node v18
-import translationES from './locales/es/translation.json' assert { type: 'json' };
-import translationEN from './locales/en/translation.json' assert { type: 'json' };
+// Import attributes for ESModule
+import translationES from './locales/es/translation.json' with { type: 'json' };
+import translationEN from './locales/en/translation.json' with { type: 'json' };
 
 const resources: Resource = {
     es: translationES as ResourceLanguage,
