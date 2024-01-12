@@ -6,38 +6,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [3.0.0] - 2023-06-03
+## [3.0.0] - 2024-01-12
 ### Added
 - Macro feature: Now you can trigger a set of commands with different timeouts just using a single command or "macro"
-- Revamped and extended API. Now you can query what's in the queue, clear the queue, remove items from the queue and select a favorite request to keep repeating (for TwitchMIDI+)
+- aliases.json has a new section called "macros". Not a breaking change because it is fixed automatically by this update
+- New .env flag - SILENCE_MACRO_MESSAGES for new Macro feature. It disables message output for macro commands
+- Revamped and extended Config API (for TwitchMIDI+). Now you can:
+  - Query what's in the queue
+  - Clear the queue
+  - Remove items from the queue
+  - Save request from the queue with any alias you like
+  - Select a favorite request to keep repeating 
 - Automatic config file (re)generation and integrity checks. The config files are downloaded and merged from the master branch to fix any compatibility issues while keeping your settings. Updates are now as simple as getting the latest binary!
-- Favorite requests - Set your favorite request from queue and stop the queue at that point (only via Config API)
-- Queue Request saving via Config API - You you can save any request in the queue with an alias you like via Config API
 - Single-instance enforcement through .lock file: Now you can only run one instance of TwitchMIDI at any time to avoid undefined behaviour
 - Embedded README.txt inside binary zip. It explains how to install and run TwitchMIDI in basic terms
 - Debug profile for VSCode. A launch.json file for easier debugging with VSCode
-- New .env flag - SILENCE_MACRO_MESSAGES for new Macro feature. It disables message output for macro commands
-- Better exit handling - Now it catches unhandled exceptions to improve exit handling and user experience
 - New internal queue interface and implementation to improve performance and simplify code
 ### Changed
 - BREAKING CHANGE: /refreshConfig API now works via POST
 - Improved clock precision by removing eventlistener-per-request logic. Now there is no event listener for this logic and the request queue is handled by an in-memory queue without nested promises. EventEmitters are not precise enough for music timing.
+- Better exit handling - Now it catches unhandled exceptions to improve exit handling and user experience
 - Optimized initial loading, now creates batches of promises to await for reduced times
 - Code re-organization to better isolate components and domains (Twitch, MIDI, commands, queue...)
 - Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json
 - Minor refactors for easier translations. The ASCII logo of TwitchMIDI now is saved as a constant
 - Minor naming refactors
 - Improved setTimeoutPromise with a default case for 0ns
-- aliases.json has a new section called "macros". Not a breaking change because it is fixed automatically by this update
 - Updated all dependencies (Twurple.js, i18next, JZZ, PKG...)
-- Migrated all code to Node 18, Typescript 5.0 and ESModule
+- Migrated all code to Node 20, Typescript 5.3 and ESModule
 - Replaced NCC with ESBuild for a reduced build time
 - Now !fetchdb also regenerates rewards in case there is a change
 ### Fixed
-- Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now it is bumped to 100
 - Rewards disable bug. Before, it only disabled the current rewards from rewards.json file. If any reward were changed while running TwitchMIDI, it would stay active forever. Now it disables all rewards created by TwitchMIDI (new behaviour) and enables only the ones from rewards.json file (as before)
 ### Removed
-- Unused queue clear rollback. Now the logic is simpler
+- Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now there is no limit since there are no EventEmitters in use.
+- Queue clear rollback function that was unused. Now the logic is simpler
 - All config files from final artifact (TwitchMIDI.zip file)
 - Unnecessary template files
 
