@@ -5,17 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "command": "npm run serve",
+            "name": "DEBUG: npm serve",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>\\**"
-            ],
-            "program": "${workspaceFolder}\\src\\index.ts",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}\\lib\\*.js"
-            ]
+            "type": "node-terminal"
         }
     ]
 }
