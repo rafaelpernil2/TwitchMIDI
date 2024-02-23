@@ -37,6 +37,7 @@ export function attachExitCallbacksBeforeInit(): void {
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGHUP');
     process.removeAllListeners('SIGINT');
+    process.removeAllListeners('uncaughtException');
 
     process.on('exit', _onExitProcessBeforeInit());
     process.on('SIGHUP', _onExitProcessBeforeInit());
@@ -58,6 +59,7 @@ export function attachExitCallbacksAfterInit(broadcasterAuthProvider: Refreshing
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGHUP');
     process.removeAllListeners('SIGINT');
+    process.removeAllListeners('uncaughtException');
 
     process.on('exit', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
