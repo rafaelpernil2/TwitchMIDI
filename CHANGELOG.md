@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor naming refactors
 - Improved setTimeoutPromise with a default case for 0ns
 - Updated all dependencies (Twurple.js, i18next, JZZ, PKG, ESLint...)
-- Migrated all code to Node 22, Typescript 5.7 and ESModule
+- Migrated all code to Node 22, Typescript 5.8 and ESModule
 - Replaced NCC with ESBuild for a reduced build time
 - Now !fetchdb also disables and regenerates rewards on Twitch in case there is a change
 - Improved readability of initial setup links using magenta background as highlight and other text color changes
