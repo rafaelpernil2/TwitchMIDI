@@ -36,10 +36,10 @@
     "@twurple/chat": "7.2.1",
     "@twurple/eventsub-ws": "7.2.1",
     "chalk": "4.1.2",
-    "dotenv": "16.4.7",
+    "dotenv": "16.5.0",
     "harmonics": "1.1.0",
     "i18next": "24.2.3",
-    "jzz": "1.9.1",
+    "jzz": "1.9.3",
     "nanotimer": "0.3.15"
   },
   "pkg": {
@@ -53,22 +53,22 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "9.22.0",
+    "@eslint/js": "9.24.0",
     "@types/nanotimer": "0.3.2",
-    "@types/node": "22.13.10",
-    "@yao-pkg/pkg": "6.3.2",
+    "@types/node": "22.14.1",
+    "@yao-pkg/pkg": "6.4.0",
     "bestzip": "2.2.1",
     "cpy-cli": "5.0.0",
     "del-cli": "6.0.0",
-    "esbuild": "0.25.1",
-    "eslint": "9.22.0",
-    "eslint-config-prettier": "10.1.1",
-    "eslint-plugin-prettier": "5.2.3",
+    "esbuild": "0.25.2",
+    "eslint": "9.24.0",
+    "eslint-config-prettier": "10.1.2",
+    "eslint-plugin-prettier": "5.2.6",
     "find-unused-exports": "7.1.1",
     "globals": "16.0.0",
     "prettier": "3.5.3",
-    "typescript": "5.8.2",
-    "typescript-eslint": "8.26.1"
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.29.1"
   },
   "prettier": {
     "printWidth": 180,
