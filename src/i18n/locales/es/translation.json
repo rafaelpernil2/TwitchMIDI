@@ -104,7 +104,7 @@
         "ERROR_BROADCASTER_USER_NOT_FOUND": "Cuenta de streamer no encontrada",
         "ERROR_INVALID_AFFIXES": "Mensaje con caracteres previos y finales excesivos. El mensaje es demasiado largo",
         "ERROR_COMMAND_MESSAGE_EMPTY": "Petición inválida, por favor, proporciona más datos para usar este comando. Usa !midihelp para más info",
-        "ERROR_INSTANCE_ALREADY_RUNNING": "Ya hay otra instancia de TwitchMIDI corriendo. Sólo puede ejecutarse una instancia a la vez",
+        "ERROR_INSTANCE_ALREADY_RUNNING": "Ya hay otra instancia de TwitchMIDI corriendo. Sólo puede ejecutarse una instancia a la vez. Si crees que esto es un error, cierra todas las instancias de TwitchMIDI y borra el archivo '.lock' en la carpeta de la app",
         "ERROR_BAD_CONFIG_DOWNLOAD": "Al menos uno de tus archivos de configuración es inválido y TwitchMIDI no puede arreglarlo automáticamente.\nPor favor, busca y coloca los ficheros de configuración de una versión previa de TwitchMIDI en\nla carpeta 'config' o inténtalo más tarde (GitHub probablemente estará caído) :/",
         "ERROR_INVALID_BAN_USER": "Petición inválida, por favor, proporciona un usuario a banear. Usa !midihelp para más info",
         "ERROR_INVALID_UNBAN_USER": "Petición inválida, por favor, proporciona un usuario a desbanear. Usa !midihelp para más info",

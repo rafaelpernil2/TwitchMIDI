@@ -19,12 +19,12 @@ import { showInitErrorMessages, showInitReadyMessages, showUpdateMessages, showI
  */
 (async () => {
     try {
+        // Language detection and prompt. This goes first because error messages have to be translated
+        await initializei18n();
+
         // Acquire lock and attach lock release on exit
         acquireLock();
         attachExitCallbacksBeforeInit();
-
-        // Language detection and prompt
-        await initializei18n();
 
         // Show welcome message and ask user to wait for initialization
         showInitWelcomeMessages();

@@ -104,7 +104,7 @@
         "ERROR_BROADCASTER_USER_NOT_FOUND": "Broadcaster not found",
         "ERROR_INVALID_AFFIXES": "Bad message leading or trailing content, it exceeds maximum length",
         "ERROR_COMMAND_MESSAGE_EMPTY": "Bad request, please provide additional data to use this command. Use !midihelp for more info",
-        "ERROR_INSTANCE_ALREADY_RUNNING": "An instance of TwitchMIDI is already running. Only one instance can run at any given time",
+        "ERROR_INSTANCE_ALREADY_RUNNING": "An instance of TwitchMIDI is already running. Only one instance can run at any given time. If you think this is an error, close all TwitchMIDI instances and delete the file '.lock' in the app folder",
         "ERROR_BAD_CONFIG_DOWNLOAD": "At least one of your config files is invalid and TwitchMIDI cannot fix it automatically.\nPlease place the config files from a previous TwitchMIDI version\nat 'config' folder or try later (GitHub is probably down right now) :/",
         "ERROR_INVALID_BAN_USER": "Bad request, please provide a username to ban. Use !midihelp for more info",
         "ERROR_INVALID_UNBAN_USER": "Bad request, please provide a username to unban. Use !midihelp for more info",
