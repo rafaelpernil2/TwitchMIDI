@@ -1,22 +1,28 @@
 import { RefreshingAuthProvider } from '@twurple/auth';
-import { writeFileSync, rmSync, existsSync } from 'fs';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../../configuration/constants.js';
+import { writeFileSync, rmSync, existsSync, readFileSync } from 'fs';
+import { CONFIG, ERROR_MSG } from '../../configuration/constants.js';
 import { ParsedEnvObject } from '../../configuration/env/types.js';
 import { stopAllMidi } from '../../midi/handler.js';
 import { toggleRewardsStatus } from '../../twitch/rewards/handler.js';
+import process from 'process';
 
 /**
  * Obtains an execution lock to indicate that the program is open
  * @returns
  */
 export function acquireLock(): void {
-    // Check if another instance is running.
-    // If so, the stored API port will no longer link with the original instance
+    // If a .lock file exists
     if (existsSync(CONFIG.DOT_LOCK)) {
-        throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING());
+        // Check if instance with .lock PID is running
+        const pid = parseInt(readFileSync(CONFIG.DOT_LOCK, 'utf-8'), 10);
+
+        // If so, throw error and exit process
+        if (_isPidRunning(pid)) {
+            throw new Error(ERROR_MSG.INSTANCE_ALREADY_RUNNING());
+        }
     }
 
-    return writeFileSync(CONFIG.DOT_LOCK, GLOBAL.EMPTY_MESSAGE);
+    return writeFileSync(CONFIG.DOT_LOCK, process.pid.toString());
 }
 
 /**
@@ -99,4 +105,18 @@ function _onExitProcessAfterInit(broadcasterAuthProvider: RefreshingAuthProvider
         _releaseLock();
         process.exit();
     };
+}
+
+/**
+ * Checks if a process is running
+ * @param pid Process ID
+ * @returns True if running, false otherwise
+ */
+function _isPidRunning(pid: number): boolean {
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch {
+        return false;
+    }
 }
