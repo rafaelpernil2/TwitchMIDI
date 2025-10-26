@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
-## [3.0.0] - 2025-05-18
+## [3.0.0] - 2025-10-26
 ### Added
 - Repetitions per loop, now each loop repeats itself 4 times by default before moving to the next loop in queue. It can be customized via REPETITIONS_PER_LOOP at .env file
 - Limit to one request in queue per user. Now if there's a request in queue by a particular user, that user has to wait until it's played or call !wrongloop and try again
@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor naming refactors
 - Improved setTimeoutPromise with a default case for 0ns
 - Updated all dependencies (Twurple.js, i18next, JZZ, PKG, ESLint...)
-- Migrated all code to Node 22, Typescript 5.8 and ESModule
+- Migrated all code to Node 22, Typescript 5.9 and ESModule
 - Replaced NCC with ESBuild for a reduced build time
 - Now !fetchdb also disables and regenerates rewards on Twitch in case there is a change
 - Improved readability of initial setup links using magenta background as highlight and other text color changes
