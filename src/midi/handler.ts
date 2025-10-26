@@ -21,7 +21,7 @@ export const isChordInProgress = new SharedVariable<boolean>(false);
 /**
  * Requests MIDI access from JZZ library
  */
-export async function requestMIDIAccess(): Promise<WebMidi.MIDIAccess> {
+export async function requestMIDIAccess(): Promise<unknown> {
     return JZZ.requestMIDIAccess();
 }
 
