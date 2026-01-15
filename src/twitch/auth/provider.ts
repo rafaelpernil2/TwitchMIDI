@@ -1,5 +1,5 @@
 import { AccessToken, RefreshingAuthProvider } from '@twurple/auth';
-import { promises as fs, existsSync } from 'fs';
+import { promises as fs, existsSync, mkdirSync } from 'fs';
 import { CONFIG } from '../../configuration/constants.js';
 /**
  * Generates an authentication provider for Twitch
@@ -61,7 +61,7 @@ async function _loadLatestTokens(
  */
 async function _writeTokens(tokenData: AccessToken, tokensPath: string): Promise<void> {
     if (!existsSync(CONFIG.CONFIG_FOLDER_PATH)) {
-        await fs.mkdir(CONFIG.CONFIG_FOLDER_PATH);
+        mkdirSync(CONFIG.CONFIG_FOLDER_PATH);
     }
 
     return fs.writeFile(tokensPath, JSON.stringify(tokenData, null, 4), { encoding: 'utf-8' });

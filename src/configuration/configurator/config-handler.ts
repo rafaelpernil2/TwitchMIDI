@@ -13,7 +13,7 @@ import {
 import { ALIASES_DB, CONFIG, ERROR_MSG, PERMISSIONS_DB, REWARDS_DB } from '../constants.js';
 import { httpsRequestPromise } from '../../utils/promise.js';
 import http from 'http';
-import { promises as fs, existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { Command } from '../../command/types.js';
 import * as CommandHandlers from '../../command/handler.js';
 
@@ -24,7 +24,7 @@ const DEFAULT_CONFIG_FILE_CACHE: Record<string, unknown> = {};
  */
 export async function setupConfigFiles(): Promise<void> {
     if (!existsSync(CONFIG.CONFIG_FOLDER_PATH)) {
-        await fs.mkdir(CONFIG.CONFIG_FOLDER_PATH);
+        mkdirSync(CONFIG.CONFIG_FOLDER_PATH);
     }
 
     await _validateFileGeneric(ALIASES_DB, [COMMANDS_KEY, CHORD_PROGRESSIONS_KEY, CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, MACROS_KEY]);
