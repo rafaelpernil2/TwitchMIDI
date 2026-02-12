@@ -30,7 +30,8 @@ declare module 'i18next' {
 
 i18next.init({
     resources,
-    fallbackLng: 'en'
+    fallbackLng: 'en',
+    showSupportNotice: false
 });
 
 /**
