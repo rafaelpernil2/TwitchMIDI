@@ -6,8 +6,8 @@ export enum Command {
     removechord = 'removechord',
     chordlist = 'chordlist',
     sendnote = 'sendnote',
-    sendchord = 'sendchord',
     sendloop = 'sendloop',
+    wrongloop = 'wrongloop',
     sendcc = 'sendcc',
     cclist = 'cclist',
     midivolume = 'midivolume',
@@ -19,7 +19,10 @@ export enum Command {
     midicurrentrequest = 'midicurrentrequest',
     midirequestqueue = 'midirequestqueue',
     midipause = 'midipause',
-    midiresume = 'midiresume'
+    midiresume = 'midiresume',
+    midibanuser = 'midibanuser',
+    midiunbanuser = 'midiunbanuser',
+    miditimeout = 'miditimeout'
 }
 
 export type CCCommand = [controller: number, value: number, time: number];

@@ -10,14 +10,35 @@ export const envVariables = [
     'TARGET_MIDI_CHANNEL',
     'REWARDS_MODE',
     'VIP_REWARDS_MODE',
-    'SEND_UNAUTHORIZED_MESSAGE'
+    'SEND_UNAUTHORIZED_MESSAGE',
+    'SILENCE_MACRO_MESSAGES',
+    'ALLOW_CUSTOM_TIME_SIGNATURE',
+    'TIME_SIGNATURE_NUMERATOR_CC',
+    'TIME_SIGNATURE_DENOMINATOR_CC',
+    'REPETITIONS_PER_LOOP'
 ] as const;
 
-export type EnvObject = Record<typeof envVariables[number], string>;
+export type EnvObject = Record<(typeof envVariables)[number], string>;
 
-export interface ParsedEnvVariables extends Omit<EnvObject, 'REWARDS_MODE' | 'VIP_REWARDS_MODE' | 'TARGET_MIDI_CHANNEL' | 'SEND_UNAUTHORIZED_MESSAGE'> {
+export interface ParsedEnvObject extends Omit<
+    EnvObject,
+    | 'REWARDS_MODE'
+    | 'VIP_REWARDS_MODE'
+    | 'TARGET_MIDI_CHANNEL'
+    | 'SEND_UNAUTHORIZED_MESSAGE'
+    | 'SILENCE_MACRO_MESSAGES'
+    | 'ALLOW_CUSTOM_TIME_SIGNATURE'
+    | 'TIME_SIGNATURE_NUMERATOR_CC'
+    | 'TIME_SIGNATURE_DENOMINATOR_CC'
+    | 'REPETITIONS_PER_LOOP'
+> {
     REWARDS_MODE: boolean;
     VIP_REWARDS_MODE: boolean;
     TARGET_MIDI_CHANNEL: number;
     SEND_UNAUTHORIZED_MESSAGE: boolean;
+    SILENCE_MACRO_MESSAGES: boolean;
+    ALLOW_CUSTOM_TIME_SIGNATURE: boolean;
+    TIME_SIGNATURE_NUMERATOR_CC: number;
+    TIME_SIGNATURE_DENOMINATOR_CC: number;
+    REPETITIONS_PER_LOOP: number;
 }

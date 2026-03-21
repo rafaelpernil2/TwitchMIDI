@@ -6,6 +6,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.0.0] - 2026-03-21
+### Added
+- Repetitions per loop, now each loop repeats itself 4 times by default before moving to the next loop in queue. It can be customized via REPETITIONS_PER_LOOP at .env file
+- Limit to one request in queue per user. Now if there's a request in queue by a particular user, that user has to wait until it's played or call !wrongloop and try again
+- Custom Time signatures in requests, now you can request loops with different time signatures (only one per request) like 3/4, 5/4, 7/8... or whatever is on your mind. Prog rock!
+- Time signature changes trigger a MIDI CC message. You can map it to your metronome time signature within your DAW
+- Macro feature: Now you can trigger a set of commands with different timeouts just using a single command or "macro"
+- aliases.json has a new section called "macros". Not a breaking change because it is fixed automatically by this update
+- !wrongloop command to remove a wrong but valid request from the queue
+- New .env flags:
+  - SILENCE_MACRO_MESSAGES for new Macro feature. It disables message output for macro commands
+  - ALLOW_CUSTOM_TIME_SIGNATURE for custom time signature feature. It enables or disables other time signatures than 4/4
+  - TIME_SIGNATURE_NUMERATOR_CC sets the MIDI CC to send messages containing the time signature numerator on each time signature change
+  - TIME_SIGNATURE_DENOMINATOR_CC sets the MIDI CC to send messages containing the time signature denominator on each time signature change
+  - REPETITIONS_PER_LOOP sets the amount of times each loop is played before moving to the next in queue
+- !midibanuser and !midiunbanuser to forbid usage to some users
+- !miditimeout to rate-limit requests per user (10 seconds by default)
+- Now each request tags the user to let them know about the status of their request
+- Revamped and extended Config API (for TwitchMIDI+). Now you can:
+  - Query what's in the queue
+  - Clear the queue
+  - Remove items from the queue
+  - Save request from the queue with any alias you like
+  - Select a favorite request to keep repeating 
+  - Reload configuration from files (./config)
+  - Set tempo
+  - Set MIDI volume
+  - Check if bot is active (!midion has been sent)
+  - Sync MIDI loop and clock (like !syncmidi)
+- Automatic config file (re)generation and integrity checks. The config files are downloaded and merged from the master branch to fix any compatibility issues while keeping your settings. Updates are now as simple as getting the latest binary!
+- Single-instance enforcement through .lock file: Now you can only run one instance of TwitchMIDI at any time to avoid undefined behaviour
+- Embedded README.txt inside binary zip. It explains how to install and run TwitchMIDI in basic terms
+- Debug profile for VSCode. A launch.json file for easier debugging with VSCode
+- New internal queue interface and implementation to improve performance and simplify code. Also now any item can be removed from the queue and the app knows which request to play next properly.
+- Logo in README title
+- package.json script to find unused exports. This helps remove unused code or reduce code visibility
+### Changed
+- BREAKING CHANGE: /refreshConfig API now works via POST
+- Improved clock precision by removing eventlistener-per-request logic. Now there is no event listener for this logic and the request queue is handled by an in-memory queue without nested promises. EventEmitters are not precise enough for music timing.
+- Better exit handling - Now it catches unhandled exceptions to improve exit handling and user experience
+- Optimized initial loading, now creates batches of promises to await for reduced times
+- Code re-organization to better isolate components and domains (Twitch, MIDI, commands, queue...)
+- Re-generated config files with proper alphabetical sorting in aliases.json, permissions.json and rewards.json
+- Minor refactors for easier translations. The ASCII logo of TwitchMIDI now is saved as a constant
+- Minor naming refactors
+- Improved setTimeoutPromise with a default case for 0ns
+- Updated all dependencies (Twurple.js, i18next, JZZ, PKG, ESLint...)
+- Migrated all code to Node 22, Typescript 5.9 and ESModule
+- Replaced NCC with ESBuild for a reduced build time
+- Now !fetchdb also disables and regenerates rewards on Twitch in case there is a change
+- Improved readability of initial setup links using magenta background as highlight and other text color changes
+- Migrated from @vercel/pkg to @yao/pkg due to deprecation
+- Migrated Twitch PubSub to EventSub due to deprecation on April 14th 2025
+### Fixed
+- !midion with virtual MIDI device inactive or non existent would not throw an error. Now it does and helps the streamer find out what is wrong
+- !syncmidi logic. nanotimer does not work as expected when calling .clearInterval, so I needed to invalidate the clock at synchronization
+- Rewards disable bug. Before, it only disabled the current rewards from rewards.json file. If any reward were changed while running TwitchMIDI, it would stay active forever. Now it disables all rewards created by TwitchMIDI (new behaviour) and enables only the ones from rewards.json file (as before)
+- Control Change error handling, now requests without value give a meaningful error
+- Bad request bug. If you request "H" it is registered as a valid chord however, JZZ treats it as invalid and the queue stops working. Now it works well!
+- !midion or non secure commands on !midipause did not work for mods. Now it does. If requests are paused but you are a mod, you can access
+### Removed
+- BREAKING CHANGE: !sendchord command
+- Documentation page from this repository. Now any documentation change does not require a new version release
+- Max loop queue length. Before it was limited by the EventEmitter to 10 items waiting in queue. Now there is no limit since there are no EventEmitters in use.
+- Queue clear rollback function that was unused. Now the logic is simpler
+- All config files from final artifact (TwitchMIDI.zip file)
+- Unnecessary template files
+- Dead code
+
+
 ## [2.7.2] - 2022-09-28
 ### Fixed
 - Callback executed on close to disable rewards and stop MIDI was only applied with rewards mode enabled. MIDI has to stop too with rewards mode disabled
@@ -450,6 +520,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.2...v3.0.0
 [2.7.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.6.6...v2.7.0

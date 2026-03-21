@@ -1,10 +1,10 @@
 import NanoTimer from 'nanotimer';
 import https from 'https';
 import http from 'http';
-import { isJsonString } from './generic';
+import { isJsonString } from './generic.js';
 import readline from 'readline';
-import i18n from '../i18n/loader';
-import { GLOBAL } from '../configuration/constants';
+import i18n from '../i18n/loader.js';
+import { GLOBAL } from '../configuration/constants.js';
 
 /**
  * Creates a promise that resolves in a determined amount of nanoseconds
@@ -12,6 +12,11 @@ import { GLOBAL } from '../configuration/constants';
  * @returns
  */
 export async function setTimeoutPromise(timeout: number): Promise<void> {
+    // No timeout
+    if (timeout === 0) {
+        return;
+    }
+
     const timer = new NanoTimer();
     return new Promise((resolve) => {
         timer.setTimeout(resolve, '', String(timeout) + 'n');
@@ -34,7 +39,7 @@ export async function httpsRequestPromise<T>(options: https.RequestOptions): Pro
                 if (statusCode != null && statusCode >= 200 && statusCode <= 299) {
                     resolve({ statusCode, headers, body: isJsonString(body) ? (JSON.parse(body) as T) : body });
                 } else {
-                    reject(i18n.t('ERROR_REQUEST_FAILED') + String(statusCode) + ', body: ' + body);
+                    reject(new Error(i18n.t('ERROR_REQUEST_FAILED') + String(statusCode) + ', body: ' + body));
                 }
             });
         });

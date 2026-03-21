@@ -1,6 +1,6 @@
 import { AccessToken, RefreshingAuthProvider } from '@twurple/auth';
-import { promises as fs } from 'fs';
-import { CONFIG } from '../../configuration/constants';
+import { promises as fs, existsSync, mkdirSync } from 'fs';
+import { CONFIG } from '../../configuration/constants.js';
 /**
  * Generates an authentication provider for Twitch
  * @param client [clientId, clientSecret]
@@ -13,17 +13,25 @@ export async function getAuthProvider(
     [envAccessToken, envRefreshToken]: [envAccessToken: string, envRefreshToken: string],
     kind: 'BOT' | 'BROADCASTER'
 ): Promise<RefreshingAuthProvider> {
-    const template = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;
-
     // Load latest available tokens
     const [accessToken, refreshToken] = await _loadLatestTokens([envAccessToken, envRefreshToken], kind);
 
-    const tokenData: AccessToken = { ...template, accessToken, refreshToken };
+    const tokenData: AccessToken = { ...CONFIG.TOKENS_TEMPLATE, accessToken, refreshToken };
     const tokensPath = kind === 'BOT' ? CONFIG.BOT_TOKENS_PATH : CONFIG.BROADCASTER_TOKENS_PATH;
-    return new RefreshingAuthProvider(
-        { clientId, clientSecret, onRefresh: async (newTokenData) => await fs.writeFile(tokensPath, JSON.stringify(newTokenData, null, 4), { encoding: 'utf-8' }) },
-        tokenData
-    );
+
+    const authProvider = new RefreshingAuthProvider({
+        clientId,
+        clientSecret
+    });
+
+    // Due to the way twurple.js defines onRefresh, its return value is considered "any" and ESLint throws an error
+    authProvider.onRefresh(async (_: unknown, newTokenData: AccessToken) => await _writeTokens(newTokenData, tokensPath));
+
+    // Initialization
+    await _writeTokens(tokenData, tokensPath);
+    await authProvider.addUserForToken(tokenData, ['chat']);
+
+    return authProvider;
 }
 
 /**
@@ -40,7 +48,21 @@ async function _loadLatestTokens(
         const tokensPath = kind === 'BOT' ? CONFIG.BOT_TOKENS_PATH : CONFIG.BROADCASTER_TOKENS_PATH;
         const { accessToken, refreshToken } = JSON.parse(await fs.readFile(tokensPath, { encoding: 'utf-8' })) as AccessToken;
         return [accessToken ?? envAccessToken, refreshToken ?? envRefreshToken];
-    } catch (error) {
+    } catch {
         return [envAccessToken, envRefreshToken];
     }
+}
+
+/**
+ * Writes JSON file with tokens
+ * @param envTokens Tokens from .env file
+ * @param tokensPath Token file path
+ * @returns void
+ */
+async function _writeTokens(tokenData: AccessToken, tokensPath: string): Promise<void> {
+    if (!existsSync(CONFIG.CONFIG_FOLDER_PATH)) {
+        mkdirSync(CONFIG.CONFIG_FOLDER_PATH);
+    }
+
+    return fs.writeFile(tokensPath, JSON.stringify(tokenData, null, 4), { encoding: 'utf-8' });
 }

@@ -1,15 +1,14 @@
 import readline from 'readline';
 import http from 'http';
 import EventEmitter from 'events';
-import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise';
+import { httpsRequestPromise, setTimeoutPromise } from '../../utils/promise.js';
 import { promises as fs } from 'fs';
-import { EnvObject } from '../env/types';
-import { getBooleanByString, isNullish } from '../../utils/generic';
-import { AccessToken } from '@twurple/auth/lib';
-import { CONFIG } from '../constants';
+import { EnvObject } from '../env/types.js';
+import { getBooleanByString, isNullish } from '../../utils/generic.js';
+import { CONFIG } from '../constants.js';
 import chalk from 'chalk';
-import i18n from '../../i18n/loader';
-import * as VALIDATORS from '../env/validators';
+import i18n from '../../i18n/loader.js';
+import * as VALIDATORS from '../env/validators.js';
 
 const localHTTPServerEmitter = new EventEmitter(); // I use Node.js events for notifying when the beat start is ready
 const NEW_CODE = 'newCode';
@@ -20,6 +19,9 @@ const NEW_CODE = 'newCode';
  * @returns
  */
 export async function setupConfiguration(currentVariables: EnvObject): Promise<EnvObject> {
+    // TwitchMIDI logo
+    console.log(chalk.yellow(CONFIG.TWITCH_MIDI_ASCII));
+    // Initial text
     console.log(chalk.yellow(i18n.t('SETUP_1')));
     // Arbitrary delay for usability
     await setTimeoutPromise(5_000_000_000);
@@ -43,13 +45,24 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         TARGET_MIDI_CHANNEL,
         REWARDS_MODE,
         VIP_REWARDS_MODE,
-        SEND_UNAUTHORIZED_MESSAGE
+        SEND_UNAUTHORIZED_MESSAGE,
+        SILENCE_MACRO_MESSAGES,
+        ALLOW_CUSTOM_TIME_SIGNATURE,
+        TIME_SIGNATURE_NUMERATOR_CC,
+        TIME_SIGNATURE_DENOMINATOR_CC,
+        REPETITIONS_PER_LOOP
     } = targetEnv;
 
     // STEP 1
     if (isStep1Invalid(targetEnv)) {
         console.log(chalk.greenBright(i18n.t('SETUP_STEP_1')));
-        console.log(chalk.magenta(i18n.t('SETUP_STEP_1_TEXT')));
+        console.log(
+            chalk.magentaBright(i18n.t('SETUP_STEP_1_TEXT')) +
+                chalk.bgMagentaBright(CONFIG.TWITCH_CONSOLE_APPS_URL) +
+                chalk.magentaBright(i18n.t('SETUP_STEP_1_AFTER_LINK')) +
+                chalk.bgMagentaBright(CONFIG.REDIRECT_URI) +
+                chalk.magentaBright(i18n.t('SETUP_STEP_1_AFTER_REDIRECT_LINK'))
+        );
 
         CLIENT_ID = await _makeQuestion(rl, i18n.t('SETUP_STEP_1_CLIENT_ID_QUESTION'), CLIENT_ID);
         CLIENT_SECRET = await _makeQuestion(rl, i18n.t('SETUP_STEP_1_CLIENT_SECRET_QUESTION'), CLIENT_SECRET);
@@ -58,11 +71,11 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     // STEP 2
     if (isStep2Invalid(targetEnv)) {
         console.log(chalk.greenBright(i18n.t('SETUP_STEP_2')));
-        console.log(chalk.magenta(i18n.t('SETUP_STEP_2_TEXT')));
+        console.log(chalk.magentaBright(i18n.t('SETUP_STEP_2_TEXT')));
         // This server awaits the response from the URL
         const server = _createAuthServer(CONFIG.LOCAL_SERVER_HOST, CONFIG.LOCAL_SERVER_PORT);
-        const authUrl = await _createAuthURL(CLIENT_ID);
-        console.log(chalk.magenta(i18n.t('SETUP_STEP_2_LINK') + authUrl));
+        const authUrl = _createAuthURL(CLIENT_ID);
+        console.log(chalk.magentaBright(i18n.t('SETUP_STEP_2_LINK')) + chalk.bgMagentaBright(authUrl));
 
         // Wait until user clicks and authorizes
         const BROADCASTER_CODE = await _getAuthCode();
@@ -76,7 +89,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         BOT_REFRESH_TOKEN = BROADCASTER_REFRESH_TOKEN;
         if (isBotDifferent) {
             console.log(chalk.greenBright(i18n.t('SETUP_STEP_2_BOT_TEXT_1')));
-            console.log(chalk.magenta(i18n.t('SETUP_STEP_2_BOT_TEXT_2') + authUrl));
+            console.log(chalk.magentaBright(i18n.t('SETUP_STEP_2_BOT_TEXT_2')) + chalk.bgMagentaBright(authUrl));
             // Wait until user clicks and authorizes
             const BOT_CODE = await _getAuthCode();
             const { access_token, refresh_token } = await _requestTokenByCode(CLIENT_ID, CLIENT_SECRET, BOT_CODE);
@@ -92,22 +105,48 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     // STEP 3
     if (isStep3Invalid(targetEnv)) {
         console.log(chalk.greenBright(i18n.t('SETUP_STEP_3')));
-        console.log(chalk.magenta(i18n.t('SETUP_STEP_3_TEXT')));
+        console.log(chalk.magentaBright(i18n.t('SETUP_STEP_3_TEXT')));
         TARGET_CHANNEL = ((await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TARGET_CHANNEL_QUESTION'), TARGET_CHANNEL)) || '').toLowerCase();
 
         const sendUnauthorizedMessage = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_UNAUTHORIZED_MESSAGE_QUESTION'), SEND_UNAUTHORIZED_MESSAGE)) || 'N';
         SEND_UNAUTHORIZED_MESSAGE = String(getBooleanByString(sendUnauthorizedMessage));
+
         const rewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_REWARDS_MODE_QUESTION'), REWARDS_MODE)) || 'Y';
         REWARDS_MODE = String(getBooleanByString(rewardsModeFlag));
 
         const vipRewardsModeFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_VIP_REWARDS_MODE_QUESTION'), VIP_REWARDS_MODE)) || 'Y';
         VIP_REWARDS_MODE = String(getBooleanByString(vipRewardsModeFlag));
+
+        const silenceMacroMessagesFlag = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_SILENCE_MACRO_MESSAGES_QUESTION'), SILENCE_MACRO_MESSAGES)) || 'Y';
+        SILENCE_MACRO_MESSAGES = String(getBooleanByString(silenceMacroMessagesFlag));
+
+        const allowCustomTimeSignature = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_ALLOW_CUSTOM_TIME_SIGNATURE_QUESTION'), ALLOW_CUSTOM_TIME_SIGNATURE)) || 'N';
+        ALLOW_CUSTOM_TIME_SIGNATURE = String(getBooleanByString(allowCustomTimeSignature));
+
+        // Only setup time signature CC when ALLOW_CUSTOM_TIME_SIGNATURE is true
+        if (getBooleanByString(ALLOW_CUSTOM_TIME_SIGNATURE)) {
+            TIME_SIGNATURE_NUMERATOR_CC =
+                (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TIME_SIGNATURE_NUMERATOR_CC_QUESTION'), TIME_SIGNATURE_NUMERATOR_CC)) || `${CONFIG.NOTE_COUNT_DEFAULT_CC}`;
+            TIME_SIGNATURE_DENOMINATOR_CC =
+                (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_TIME_SIGNATURE_DENOMINATOR_CC_QUESTION'), TIME_SIGNATURE_DENOMINATOR_CC)) || `${CONFIG.NOTE_VALUE_DEFAULT_CC}`;
+        } else {
+            TIME_SIGNATURE_NUMERATOR_CC = `${CONFIG.NOTE_COUNT_DEFAULT_CC}`;
+            TIME_SIGNATURE_DENOMINATOR_CC = `${CONFIG.NOTE_VALUE_DEFAULT_CC}`;
+        }
+
+        REPETITIONS_PER_LOOP = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_REPETITIONS_PER_LOOP_QUESTION'), REPETITIONS_PER_LOOP)) || `${CONFIG.DEFAULT_REPETITIONS_PER_LOOP}`;
     }
 
     // STEP 4
     if (isStep4Invalid(targetEnv)) {
         console.log(chalk.greenBright(i18n.t('SETUP_STEP_4')));
-        console.log(chalk.magenta(i18n.t('SETUP_STEP_4_TEXT')));
+        console.log(
+            chalk.magentaBright(i18n.t('SETUP_STEP_4_TEXT')) +
+                chalk.bgMagentaBright(CONFIG.LOOPMIDI_URL) +
+                chalk.magentaBright(i18n.t('SETUP_STEP_4_AFTER_LOOPMIDI')) +
+                chalk.bgMagentaBright(CONFIG.LOOPBE1_URL) +
+                chalk.magentaBright(i18n.t('SETUP_STEP_4_AFTER_LOOPBE1'))
+        );
         TARGET_MIDI_NAME = (await _makeQuestion(rl, i18n.t('SETUP_STEP_4_TARGET_MIDI_NAME_QUESTION'), TARGET_MIDI_NAME)) || 'loopMIDI Port';
         TARGET_MIDI_CHANNEL = (await _makeQuestion(rl, i18n.t('SETUP_STEP_4_TARGET_MIDI_CHANNEL_QUESTION'), TARGET_MIDI_CHANNEL)) || '1';
     }
@@ -115,7 +154,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     // Delete the original file first
     try {
         await fs.unlink(CONFIG.DOT_ENV_PATH);
-    } catch (error) {
+    } catch {
         // Do nothing if file didn't exist
     }
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'CLIENT_ID=' + CLIENT_ID + '\n');
@@ -130,13 +169,18 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REWARDS_MODE=' + REWARDS_MODE + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'VIP_REWARDS_MODE=' + VIP_REWARDS_MODE + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'SEND_UNAUTHORIZED_MESSAGE=' + SEND_UNAUTHORIZED_MESSAGE + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'SILENCE_MACRO_MESSAGES=' + SILENCE_MACRO_MESSAGES + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'ALLOW_CUSTOM_TIME_SIGNATURE=' + ALLOW_CUSTOM_TIME_SIGNATURE + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'TIME_SIGNATURE_NUMERATOR_CC=' + TIME_SIGNATURE_NUMERATOR_CC + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'TIME_SIGNATURE_DENOMINATOR_CC=' + TIME_SIGNATURE_DENOMINATOR_CC + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REPETITIONS_PER_LOOP=' + REPETITIONS_PER_LOOP + '\n');
 
     rl.close();
     console.log(chalk.greenBright(i18n.t('SETUP_STEP_END')));
-    console.log(chalk.magenta(i18n.t('SETUP_STEP_END_READY')));
+    console.log(chalk.magentaBright(i18n.t('SETUP_STEP_END_READY')));
     console.log(
         chalk.yellowBright(`
-    ***** ${i18n.t('SETUP_STEP_END_CREDITS')} Rafael Pernil (@rafaelpernil2) ***** 
+    ***** ${i18n.t('SETUP_STEP_END_CREDITS')} ${CONFIG.OP_SIGNATURE} ***** 
     `)
     );
 
@@ -152,7 +196,12 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         TARGET_MIDI_CHANNEL,
         REWARDS_MODE,
         VIP_REWARDS_MODE,
-        SEND_UNAUTHORIZED_MESSAGE
+        SEND_UNAUTHORIZED_MESSAGE,
+        SILENCE_MACRO_MESSAGES,
+        ALLOW_CUSTOM_TIME_SIGNATURE,
+        TIME_SIGNATURE_NUMERATOR_CC,
+        TIME_SIGNATURE_DENOMINATOR_CC,
+        REPETITIONS_PER_LOOP
     };
 }
 
@@ -168,7 +217,7 @@ function validateEnv(env: EnvObject): EnvObject {
         try {
             VALIDATORS?.[key as keyof typeof VALIDATORS]?.(value);
             return [key, value];
-        } catch (error) {
+        } catch {
             // If it throws an error, it means it is invalid
             return [key, null];
         }
@@ -199,8 +248,28 @@ function isStep2Invalid({ BROADCASTER_ACCESS_TOKEN, BROADCASTER_REFRESH_TOKEN, B
  * @param env Environment variables object
  * @returns If it is invalid or not configurated
  */
-function isStep3Invalid({ REWARDS_MODE, VIP_REWARDS_MODE, TARGET_CHANNEL, SEND_UNAUTHORIZED_MESSAGE }: EnvObject): boolean {
-    return isNullish(REWARDS_MODE) || isNullish(VIP_REWARDS_MODE) || isNullish(TARGET_CHANNEL) || isNullish(SEND_UNAUTHORIZED_MESSAGE);
+function isStep3Invalid({
+    REWARDS_MODE,
+    VIP_REWARDS_MODE,
+    TARGET_CHANNEL,
+    SEND_UNAUTHORIZED_MESSAGE,
+    SILENCE_MACRO_MESSAGES,
+    ALLOW_CUSTOM_TIME_SIGNATURE,
+    TIME_SIGNATURE_NUMERATOR_CC,
+    TIME_SIGNATURE_DENOMINATOR_CC,
+    REPETITIONS_PER_LOOP
+}: EnvObject): boolean {
+    return (
+        isNullish(REWARDS_MODE) ||
+        isNullish(VIP_REWARDS_MODE) ||
+        isNullish(TARGET_CHANNEL) ||
+        isNullish(SEND_UNAUTHORIZED_MESSAGE) ||
+        isNullish(SILENCE_MACRO_MESSAGES) ||
+        isNullish(ALLOW_CUSTOM_TIME_SIGNATURE) ||
+        isNullish(TIME_SIGNATURE_NUMERATOR_CC) ||
+        isNullish(TIME_SIGNATURE_DENOMINATOR_CC) ||
+        isNullish(REPETITIONS_PER_LOOP)
+    );
 }
 
 /**
@@ -219,7 +288,7 @@ async function deleteTokenJSONs() {
     try {
         await fs.unlink(CONFIG.BOT_TOKENS_PATH);
         await fs.unlink(CONFIG.BROADCASTER_TOKENS_PATH);
-    } catch (error) {
+    } catch {
         // Do nothing if file didn't exist
     }
 }
@@ -282,10 +351,9 @@ function _createAuthServer(host: string, port: number): http.Server {
  * @param client_id Twitch bot Client ID
  * @returns Authorization URL
  */
-async function _createAuthURL(client_id: string): Promise<string> {
+function _createAuthURL(client_id: string): string {
     // Obtains the scopes from the template file
-    const accessTokenTemplate = JSON.parse(await fs.readFile(CONFIG.TOKENS_TEMPLATE_PATH, { encoding: 'utf-8' })) as AccessToken;
-    const scope = accessTokenTemplate.scope.reduce((acc, curr) => (acc += '+' + curr));
+    const scope = CONFIG.TOKENS_TEMPLATE.scope.reduce((acc, curr) => acc + '+' + curr);
     const authParams = new URLSearchParams({
         response_type: 'code',
         client_id,

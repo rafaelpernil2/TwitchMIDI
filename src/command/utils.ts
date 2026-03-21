@@ -1,8 +1,6 @@
-import { ChatClient } from '@twurple/chat/lib';
-import { ALIASES_DB, GLOBAL } from '../configuration/constants';
-import { COMMANDS_KEY } from '../database/jsondb/types';
-import { buildTwitchMessage } from '../utils/generic';
-import { Command } from './types';
+import { ALIASES_DB, GLOBAL } from '../configuration/constants.js';
+import { COMMANDS_KEY, MACROS_KEY } from '../database/jsondb/types.js';
+import { Command } from './types.js';
 
 /**
  * Checks if a command is in the list of defined commands and aliases
@@ -19,12 +17,12 @@ export function isValidCommand(message: string): message is Command {
  * @param message
  * @returns [command?: Command, args?: string]
  */
-export function getCommand(message: string): [command?: Command, args?: string] {
+export function getCommand(message: string): [command: Command | null, args: string] {
     const [command, ...args] = message.slice(1).split(GLOBAL.SPACE_SEPARATOR);
     const parsedCommand = command.toLowerCase();
     const isCommand = message.startsWith(GLOBAL.EXCLAMATION_MARK) && isValidCommand(parsedCommand);
 
-    return [isCommand ? deAliasCommand(parsedCommand) : undefined, args.join(GLOBAL.SPACE_SEPARATOR)];
+    return [isCommand ? deAliasCommand(parsedCommand) : null, args.join(GLOBAL.SPACE_SEPARATOR)];
 }
 
 /**
@@ -37,6 +35,23 @@ export function deAliasCommand(command: string): Command {
 }
 
 /**
+ * Get command list by macro or single command
+ * @param message Single command or macro
+ * @returns Command list
+ */
+export function getCommandList(message: string): [isMacroMessage: boolean, commandList: Array<[command: Command | null, args: string, delay: number]>] {
+    const [command, args] = getCommand(message);
+
+    // Macro case - It is not a valid single command by itself
+    if (command == null) {
+        return [true, _getMacro(message)];
+    }
+
+    // Common case - Single command, delay of 0ns
+    return [false, [[command, args, 0]]];
+}
+
+/**
  * Splits message arguments separated by space
  * @param commandArguments
  * @returns List of arguments
@@ -46,14 +61,22 @@ export function splitCommandArguments(commandArguments: string): string[] {
 }
 
 /**
- * Splits and says in as many messages as needed the full message, even if it exceeds the 500 character limit
- * @param chatClient Twitch Chat Client
- * @param channel Twitch Chat channel
- * @param messageData [leading, content, trailing] Data for the message
+ * Obtains a command and arguments from chat message
+ * @param message
+ * @returns [command?: Command, args?: string]
  */
-export function sayLongTwitchChatMessage(chatClient: ChatClient, channel: string, [leading = '', content = '', trailing = ''] = []) {
-    const messageList = buildTwitchMessage([leading, content, trailing]);
-    for (const twitchMessage of messageList) {
-        chatClient.say(channel, twitchMessage);
+function _getMacro(message: string): Array<[command: Command | null, args: string, delay: number]> {
+    const [command] = message.slice(1).split(GLOBAL.SPACE_SEPARATOR);
+    const parsedCommand = command.toLowerCase();
+
+    // If there's no exclamation mark, it's an invalid macro. Ignore the arguments
+    if (!message.startsWith(GLOBAL.EXCLAMATION_MARK)) {
+        return [];
     }
+
+    // Obtain list of messages from the macro
+    const messageList = ALIASES_DB.select(MACROS_KEY, parsedCommand) ?? [];
+
+    // Parse all messages with delay in nanoseconds
+    return messageList.map(([message, delay]) => [...getCommand(message), delay * 1_000_000]);
 }

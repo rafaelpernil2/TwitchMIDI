@@ -1,19 +1,5 @@
-import { ERROR_MSG, GLOBAL } from '../configuration/constants';
-
-/**
- * Checks if the argument is an empty object
- * @param obj
- * @returns
- */
-export function isEmptyObject(obj: object): boolean {
-    // because Object.keys(new Date()).length === 0;
-    // we have to do some additional check
-    return (
-        obj && // 👈 null and undefined check
-        Object.keys(obj).length === 0 &&
-        Object.getPrototypeOf(obj) === Object.prototype
-    );
-}
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants.js';
+import i18n from '../i18n/loader.js';
 
 /**
  * Convert a string to a boolean
@@ -34,6 +20,15 @@ export function getBooleanByStringList(...valueList: string[]): boolean[] {
 }
 
 /**
+ * Convert a boolean to a Yes or No with internationalization
+ * @param value
+ * @returns
+ */
+export function getTextByBoolean(value: boolean): string {
+    return value ? i18n.t('YES') : i18n.t('NO');
+}
+
+/**
  * Checks if a string is a valid JSON
  * @param str
  * @returns
@@ -41,7 +36,7 @@ export function getBooleanByStringList(...valueList: string[]): boolean[] {
 export function isJsonString(str: string): boolean {
     try {
         JSON.parse(str);
-    } catch (e) {
+    } catch {
         return false;
     }
     return true;
@@ -57,18 +52,23 @@ export function removeDuplicates<T>(list: T[]): T[] {
 }
 
 /**
- * Builds a set of valid Twitch messages given the 500 characters limitation
+ * Builds a set of valid short messages given the 500 characters limitation on Twitch
  * @param messageData [leading, content, trailing] Text always appended before content, The content itself, Text appended always after the content
  * @param limit Character limitation, 500 by default
  */
-export function buildTwitchMessage([leading = '', content = '', trailing = ''] = [], limit = 500): string[] {
+export function buildChunkedMessage([leading = '', content = '', trailing = ''] = [], limit = CONFIG.MAX_TWITCH_MESSAGE_LENGTH): string[] {
+    // Simple case
+    if (leading.length === 0 && trailing.length === 0 && content.length < limit) {
+        return [content];
+    }
+
     const [leadingLength, trailingLength] = [leading.length, trailing.length];
 
     if (leadingLength > limit || trailingLength > limit) {
         throw new Error(ERROR_MSG.INVALID_AFFIXES());
     }
 
-    const [first, ...restOfChunks] = splitMessage(content, limit - leadingLength - trailingLength - GLOBAL.ETC.length * 2).map((chunk) => chunk.trim());
+    const [first, ...restOfChunks] = _splitMessage(content, limit - leadingLength - trailingLength - GLOBAL.ETC.length * 2).map((chunk) => chunk.trim());
 
     if (restOfChunks.length === 0) {
         return [[leading, first, trailing].join(GLOBAL.EMPTY_MESSAGE)];
@@ -79,13 +79,35 @@ export function buildTwitchMessage([leading = '', content = '', trailing = ''] =
 }
 
 /**
+ * Checks if a value is null, undefined or empty string.
+ * It differs from !!value because 0 is a valid value
+ * @param value A value to check
+ */
+export function isNullish(value: unknown): boolean {
+    return value == null || value === GLOBAL.EMPTY_MESSAGE;
+}
+
+/**
+ * Checks if a given timestamp is past a past timestamp + timeout in seconds
+ * @param srcTimestamp Source timestamp
+ * @param dstTimestamp Destination timestamp
+ * @param timeout Timeout in seconds
+ * @returns If timestamp is expired
+ */
+export function isTimestampExpired(srcTimestamp: Date, dstTimestamp: Date, timeout: number) {
+    const maxValidDate = srcTimestamp.getTime() + timeout * 1000;
+
+    return dstTimestamp.getTime() > maxValidDate;
+}
+
+/**
  * Splits a message in fixed size chunks
  * Except for the last one, which can be smaller
  * @param message Full message
  * @param blockSize Size of each chunk
  * @returns Splitted message
  */
-export function splitMessage(message: string, blockSize: number): string[] {
+function _splitMessage(message: string, blockSize: number): string[] {
     const messageLength = message.length;
     const [blockChunkCount, extraChunkLength] = [Math.floor(messageLength / blockSize), messageLength % blockSize];
 
@@ -100,13 +122,4 @@ export function splitMessage(message: string, blockSize: number): string[] {
     }
 
     return splittedMessage;
-}
-
-/**
- * Checks if a value is null, undefined or empty string.
- * It differs from !!value because 0 is a valid value
- * @param value A value to check
- */
-export function isNullish(value: unknown): boolean {
-    return value == null || value === GLOBAL.EMPTY_MESSAGE;
 }

@@ -1,9 +1,11 @@
 import i18next, { Resource, ResourceLanguage } from 'i18next';
-import translationES from './locales/es/translation.json';
-import translationEN from './locales/en/translation.json';
-import { askUserInput } from '../utils/promise';
-import { GLOBAL } from '../configuration/constants';
+import { askUserInput } from '../utils/promise.js';
+import { GLOBAL } from '../configuration/constants.js';
 import chalk from 'chalk';
+
+// Import attributes for ESModule
+import translationES from './locales/es/translation.json' with { type: 'json' };
+import translationEN from './locales/en/translation.json' with { type: 'json' };
 
 const resources: Resource = {
     es: translationES as ResourceLanguage,
@@ -20,9 +22,16 @@ const initialTranslations: Record<string, Record<string, string>> = {
     }
 };
 
+declare module 'i18next' {
+    interface CustomTypeOptions {
+        returnNull: false;
+    }
+}
+
 i18next.init({
     resources,
-    fallbackLng: 'en'
+    fallbackLng: 'en',
+    showSupportNotice: false
 });
 
 /**

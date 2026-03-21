@@ -1,15 +1,49 @@
 {
     "permissionsMap": {
-        "midihelp": {
+        "addchord": {
             "requirements": [],
             "whitelist": [],
             "blacklist": []
         },
-        "midion": {
+        "cclist": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "chordlist": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "fetchdb": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "fullstopmidi": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midibanuser": {
             "requirements": [
                 "isBroadcaster",
                 "isMod"
             ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midicurrentrequest": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midihelp": {
+            "requirements": [],
             "whitelist": [],
             "blacklist": []
         },
@@ -21,7 +55,50 @@
             "whitelist": [],
             "blacklist": []
         },
-        "addchord": {
+        "midion": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midipause": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midirequestqueue": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midiresume": {
+            "requirements": [
+                "isBroadcaster"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "miditimeout": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midiunbanuser": {
+            "requirements": [
+                "isBroadcaster",
+                "isMod"
+            ],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "midivolume": {
             "requirements": [],
             "whitelist": [],
             "blacklist": []
@@ -34,7 +111,12 @@
             "whitelist": [],
             "blacklist": []
         },
-        "chordlist": {
+        "sendcc": {
+            "requirements": [],
+            "whitelist": [],
+            "blacklist": []
+        },
+        "sendloop": {
             "requirements": [],
             "whitelist": [],
             "blacklist": []
@@ -44,29 +126,7 @@
             "whitelist": [],
             "blacklist": []
         },
-        "sendchord": {
-            "requirements": [
-                "isBroadcaster"
-            ],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "sendloop": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "sendcc": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "cclist": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midivolume": {
+        "settempo": {
             "requirements": [],
             "whitelist": [],
             "blacklist": []
@@ -80,18 +140,6 @@
             "whitelist": [],
             "blacklist": []
         },
-        "fullstopmidi": {
-            "requirements": [
-                "isBroadcaster"
-            ],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "settempo": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
         "syncmidi": {
             "requirements": [
                 "isBroadcaster",
@@ -101,34 +149,8 @@
             "whitelist": [],
             "blacklist": []
         },
-        "fetchdb": {
-            "requirements": [
-                "isBroadcaster"
-            ],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midicurrentrequest": {
+        "wrongloop": {
             "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midirequestqueue": {
-            "requirements": [],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midipause": {
-            "requirements": [
-                "isBroadcaster"
-            ],
-            "whitelist": [],
-            "blacklist": []
-        },
-        "midiresume": {
-            "requirements": [
-                "isBroadcaster"
-            ],
             "whitelist": [],
             "blacklist": []
         }

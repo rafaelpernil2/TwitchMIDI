@@ -1,46 +1,49 @@
-import { ChatClient } from '@twurple/chat';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../../configuration/constants';
-import { CommandHandlerType, MessageHandler, RequestSource, TwitchParams } from './types';
-import { getCommand } from '../../command/utils';
-import * as CommandHandlers from '../../command/handler';
-import { checkCommandAccess } from '../../command/guards';
-import { ParsedEnvVariables } from '../../configuration/env/types';
 import { RefreshingAuthProvider } from '@twurple/auth';
+import { ChatClient } from '@twurple/chat';
+import { ParsedEnvObject } from '../../configuration/env/types.js';
+import { onMessageHandlerClosure } from '../command/handler.js';
+import { RequestSource } from '../command/types.js';
+import { buildChunkedMessage } from '../../utils/generic.js';
 
 /**
- * A closure that returns a ChatClient onMessageHandler to call the commands and provide access control
- * @param authProvider Broadcaster Authentication Provider
- * @param chatClient Twitch ChatClient
+ * Creates and connects Twitch ChatClient with an AuthProvider and target channel
+ * @param botAuthProvider Bot auth provider
  * @param env Environment variables
- * @param source Request source
- * @returns A ChatClient MessageHandler
+ * @returns Chat client
  */
-export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvVariables, source: RequestSource): MessageHandler => {
-    return async (channel, user, message, msg): Promise<void> => {
-        const [command, args = GLOBAL.EMPTY_MESSAGE] = getCommand(message);
-        // Ignore messages that are not commands
-        if (command == null) {
-            return;
-        }
-        try {
-            const commandHandler = CommandHandlers[command] as CommandHandlerType;
-            // If rewards mode enabled and the input is a command and the user is not streamer or mod or vip, only allow safe commands
-            if (commandHandler == null) {
-                return;
-            }
+export function connectChatClient(botAuthProvider: RefreshingAuthProvider, env: ParsedEnvObject) {
+    const chatClient = new ChatClient({ authProvider: botAuthProvider, channels: [env.TARGET_CHANNEL] });
+    chatClient.connect();
 
-            // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
-            const twitch: TwitchParams = { channel, chatClient, authProvider, user, broadcasterUser: env.TARGET_CHANNEL, userRoles: msg?.userInfo ?? CONFIG.DEFAULT_USER_ROLES };
-            // Checks if the user has enough permissions
-            checkCommandAccess(command, twitch, source, env);
-            await commandHandler(args, { targetMIDIChannel: env.TARGET_MIDI_CHANNEL, targetMIDIName: env.TARGET_MIDI_NAME, isRewardsMode: env.REWARDS_MODE }, twitch);
-        } catch (error) {
-            // Skip error notification if SEND_UNAUTHORIZED_MESSAGE is false
-            if (!(error instanceof Error) || error.message !== ERROR_MSG.BAD_PERMISSIONS() || env.SEND_UNAUTHORIZED_MESSAGE) {
-                chatClient.say(channel, String(error));
-            }
-            // Raise error if it's a reward to handle the redemption status
-            if (source === RequestSource.REWARD) throw error;
-        }
-    };
-};
+    return chatClient;
+}
+
+/**
+ * Initializes Rewards mode
+ * @param broadcasterAuthProvider Broadcaster auth provider
+ * @param chatClient Chat client
+ * @param env Environment variables
+ */
+export function initializeChatMode(broadcasterAuthProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvObject): void {
+    // Chat code
+
+    // Due to the way twurple.js defines onMessage, its return value is considered "any" and ESLint throws an error
+    chatClient.onMessage(onMessageHandlerClosure(broadcasterAuthProvider, chatClient, env, RequestSource.CHAT));
+}
+
+/**
+ * Splits and says in as many messages as needed the full message, even if it exceeds the 500 character limit
+ * @param chatClient Twitch Chat Client
+ * @param channel Twitch Chat channel
+ * @param messageData [leading, content, trailing] Data for the message
+ * @param { silenceMessages } options Parameters for customizing the behaviour
+ */
+export function sayTwitchChatMessage(chatClient: ChatClient, channel: string, [leading = '', content = '', trailing = ''] = [], { silenceMessages } = { silenceMessages: false }) {
+    // Do nothing if messages are muted
+    if (silenceMessages) return;
+
+    const messageList = buildChunkedMessage([leading, content, trailing]);
+    for (const twitchMessage of messageList) {
+        chatClient.say(channel, twitchMessage);
+    }
+}

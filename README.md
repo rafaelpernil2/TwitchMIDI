@@ -1,17 +1,19 @@
-# TwitchMIDI
+# <img src="https://feranern.sirv.com/Images/logo.svg" width="35"></img> TwitchMIDI
 
 A full-featured configurable Twitch bot to connect with your MIDI equipment while streaming. Allow your viewers to be part of your musical creations!
 
 [![Twitch MIDI Demo](https://feranern.sirv.com/Images/twitchmidicropshort.gif)](https://www.youtube.com/watch?v=3JK5JukHRn0)
 
+> 🌟 If you want more... **TwitchMIDI+** provides extensive documentation, extra features and a useful control panel, check out **[https://store.rafaelpernil.com/l/twitchmidiplus](https://store.rafaelpernil.com/l/twitchmidiplus)**
+
 ## Table of Contents
-- [TwitchMIDI](#twitchmidi)
+- [ TwitchMIDI](#-twitchmidi)
   - [Table of Contents](#table-of-contents)
   - [Download](#download)
   - [Installation](#installation)
+    - [Executable without external dependencies (recommended)](#executable-without-external-dependencies-recommended)
+    - [Using Node.js](#using-nodejs)
   - [Update](#update)
-    - [Overriding custom settings](#overriding-custom-settings)
-    - [Safe method](#safe-method)
   - [Why?](#why)
   - [Features](#features)
   - [Commands](#commands)
@@ -24,8 +26,8 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
       - [!removechord](#removechord)
       - [!chordlist](#chordlist)
       - [!sendnote](#sendnote)
-      - [!sendchord](#sendchord)
       - [!sendloop](#sendloop)
+      - [!wrongloop](#wrongloop)
       - [!sendcc](#sendcc)
       - [!midicurrentrequest](#midicurrentrequest)
       - [!midirequestqueue](#midirequestqueue)
@@ -36,7 +38,11 @@ A full-featured configurable Twitch bot to connect with your MIDI equipment whil
       - [!settempo](#settempo)
       - [!syncmidi](#syncmidi)
       - [!fetchdb](#fetchdb)
+      - [!midibanuser](#midibanuser)
+      - [!midiunbanuser](#midiunbanuser)
+      - [!miditimeout](#miditimeout)
   - [Troubleshooting](#troubleshooting)
+  - [Chords](#chords)
   - [Contributing](#contributing)
   - [Support](#support)
   - [Credits](#credits)
@@ -49,34 +55,35 @@ Latest release - [TwitchMIDI for Windows, Linux & MacOS (x86-64)](https://github
 
 ## Installation
 
+### Executable without external dependencies (recommended)
+
 * Extract the zip
 * Run TwitchMIDI-yourplatform (e.g TwitchMIDI-win.exe)
 * Follow the configuration steps to link this bot to your account. You will see something like this:
 
-[![](https://feranern.sirv.com/Images/TwitchMIDI_initConfig.png)](#installation)
+[![](https://feranern.sirv.com/Images/init_config.webp)](#installation)
 
 * Done. Have fun!
 
 > Note: For MacOS, open a terminal, "cd" into the extracted folder and then execute it from there with "./TwitchMIDI-macos".
 > Otherwise you will get an error like: "no such file or directory, open './config/aliases.json'"
 
+---
+
+### Using Node.js
+
+If you want to use this app with your installation of Node.js, feel free to do it. 
+
+> Tested with Node.js 20 LTS and 22 LTS
+
+* Clone this project or download it
+* Run `npm install`
+* Run `npm run build`
+* And finally to execute run `npm run start`
+
 ## Update
 
-### Overriding custom settings
-
-* Extract and replace all files into your folder
-
-### Safe method
-
-Okay, this can get a little more complicated, but if you are using custom settings, you already know how they work
-
-* Extract the zip in a different folder than before
-* Copy and replace TwitchMIDI-yourplatform (e.g TwitchMIDI-win.exe) and package.json into your folder
-* Open [config/permissions.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/permissions.json) and make sure all commands have an entry, otherwise those missing will always return permissions errors
-* That's it!
-
-> Note: You do not need to replace the entire config folder unless there is a major version change (e.g, from 1.x.x to 2.x.x).
-> In case of doubt, compare old with new versions of config files and re-apply your changes. See [CHANGELOG.md](CHANGELOG.md) for more info.
+Just put the new version in your folder. TwitchMIDI will configure everything automatically and add anything missing.
 
 
 ## Why?
@@ -100,20 +107,26 @@ So far, this first version does all that, keep reading the features for more det
 * Wide set of MIDI functionalities:
   * High precision MIDI Clock using "nanotimer" with adjustable tempo via [!settempo](#settempo)
   * Sequencer on 4/4 time signature with infinite subdivisions (1 = Quarter note, 0.5 = 8th note, 0.25 = 16th note...)
+  * Each loop repeats itself 4 times by default before moving to the next loop in queue
   * Trigger individual notes, build a chord or send a melody separated by commas via [!sendnote](#sendnote)
-  * Trigger chord progressions with specific length per chord via [!sendchord](#sendchord) with an extensive list of chords to choose from. See [CHORDS.md](CHORDS.md)
-  * Loop chord progressions via [!sendloop](#sendloop)
-  * Support for music rests using "rest" as a replacement for a chord or note in [!sendnote](#sendnote), [!sendchord](#sendchord) and [!sendloop](#sendloop) requests
+  * Trigger looped chord progressions with specific length per chord via [!sendloop](#sendloop) with an extensive list of chords to choose from. See [CHORDS.md](CHORDS.md)
+  * Remove your last request if you change your mind via [!wrongloop](#wrongloop)
+  * Limit to one request in queue per user (unless user is broadcaster or mod). The user has to wait until their request has played to request again
+  * Support for music rests using "rest" as a replacement for a chord or note in [!sendnote](#sendnote) and [!sendloop](#sendloop) requests
+  * Support for custom time signatures (one per request) using "\[X/Y\]" on [!sendloop](#sendloop) requests (e.g "\[4/4\] Dmin7 G7 C" or "\[5/4\] Dmin7(2) G7(3)")
   * See the current chord progression via [!midicurrentrequest](#midicurrentrequest)
   * Check the chord progression request queue via [!midirequestqueue](#midirequestqueue)
   * Change MIDI velocity via [!midivolume](#midivolume)
   * Send CC (Control Change) messages and sweeps between values via [!sendcc](#sendcc)
   * Clock-Loop synchronizer to correct sync issues via [!syncmidi](#syncmidi)
   * Automatic synchronization that forces loops to wait until the start of the beat
-  * On/Off bot toggle
+  * On/Off bot toggle with [!midion](#midion)/[!midioff](#midioff)
   * Pause requests with [!midipause](#midipause) and resume with [!midiresume](#midiresume)
+  * Ban users with [!midibanuser](#midibanuser) and unban with [!midiunbanuser](#midiunbanuser)
+  * Set timeout between requests per user with [!miditimeout](#miditimeout) (10 seconds by default)
 * Configurable aliases on [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json)
   * Commands - Add as many command aliases as you want
+  * Macros - Launch a set of actions from a single command
   * Chord progressions/loops - Add an alias for a chord progresion to play or loop using "name/chords" syntax
     * Add chord progressions via [!addchord](#addchord)
     * Remove chord progression via [!removechord](#removechord)
@@ -132,8 +145,10 @@ So far, this first version does all that, keep reading the features for more det
   * Commands only work for the streamer and mods
   * Allow VIPs to bypass rewards via VIP_REWARDS_MODE
 * Bundle optimized for different operating systems and no extra software required for execution
+* HTTP API to interact with the bot behind the scenes with an alternative UI (like [TwitchMIDI+ Control Panel](https://github.com/rafaelpernil2/TwitchMIDIControlPanelBin))
 * Internationalization with full support for English and Spanish as of right now
 * Update checking on startup, a message appears if there is a new version available
+* Automatic checking and fix of configuration files. It ensures that all settings are correct while keeping the good ones
 
 ## Commands
 
@@ -186,20 +201,16 @@ So far, this first version does all that, keep reading the features for more det
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````note1 note2 ... // (e.g. "C4 E4 G4")````
 
 
-#### !sendchord
-&nbsp;&nbsp;&nbsp;&nbsp;Sends a chord progression with an alias or with chords.
-
-&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````chord1 chord2(chord length in quarter notes)... // (e.g. "C(4) G Amin(2) F","pop")````
-
-
 #### !sendloop
 &nbsp;&nbsp;&nbsp;&nbsp;Sends a loop with an alias or with chords.
 
 &nbsp;&nbsp;&nbsp;&nbsp;Syntax:
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````chord1 chord2(chord length in quarter notes)... // (e.g. "C G Amin F","pop")````
+
+
+#### !wrongloop
+&nbsp;&nbsp;&nbsp;&nbsp;Removes your last request from the queue
 
 
 #### !sendcc
@@ -253,13 +264,73 @@ So far, this first version does all that, keep reading the features for more det
 #### !fetchdb
 &nbsp;&nbsp;&nbsp;&nbsp;Refreshes aliases, rewards and permissions configurations from the respective files.
 
+
+#### !midibanuser
+&nbsp;&nbsp;&nbsp;&nbsp;Blocks access to TwitchMIDI commands and rewards to a given username.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````!midibanuser username````
+
+
+#### !midiunbanuser
+&nbsp;&nbsp;&nbsp;&nbsp;Unblocks access to TwitchMIDI commands and rewards to a previously blocked user.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````!midiunbanuser username````
+
+
+#### !miditimeout
+&nbsp;&nbsp;&nbsp;&nbsp;Sets a request timeout per user.
+
+&nbsp;&nbsp;&nbsp;&nbsp;Syntax:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````!miditimeout timeinseconds // (e.g. 20)````
+
 ## Troubleshooting
+
+Question: Where are my settings? It asked me at first but now I can't change them.
+
+Answer:
+
+>Your settings are inside the file `.env` within your TwitchMIDI folder. You can change any setting there, if there's an invalid value, TwitchMIDI will ask you to correct it on boot.
+
+---
 
 Question: I get authentication errors each time I open the app. What can I do?
 
 Answer:
 
 >Delete `bot-tokens.json` and `broadcaster-tokens.json` from your `config` folder. If that does not work, remove BROADCASTER_REFRESH_TOKEN, BROADCASTER_ACCESS_TOKEN, BOT_REFRESH_TOKEN and BOT_ACCESS_TOKEN from your `.env` file and re-configure it again
+
+---
+
+Question: My Twitch channel points rewards do not load correctly. What is happening?
+
+Answer:
+
+> If you changed your client ID or updated from an old version, rewards may not load. To fix that, go to [Channel Points](https://link.twitch.tv/myChannelPoints), click on "Manage Rewards", scroll to the bottom and remove all TwitchMIDI rewards (they start by default with `MIDI - something`)
+> [![Twitch Channel Point Rewards](https://assets.help.twitch.tv/article/img/000002245-07u.png)](https://help.twitch.tv/s/article/channel-points-guide?language=en_US#managing) 
+> ![](https://feranern.sirv.com/Images/manage_rewards.webp)
+
+
+---
+
+Question: The app says there is an instance of TwitchMIDI already running but it is not open
+
+Answer:
+
+>There is a `.lock` file generated when launching TwitchMIDI that is removed when it gets closed, even with runtime errors or exceptions. Make sure no instance of TwitchMIDI is running. If that is the case, just delete the `.lock` file.
+
+
+## Chords
+
+This program uses [harmonics](https://github.com/scribbletune/harmonics) by [scribbletune](https://github.com/scribbletune) to convert chord notation to MIDI notes.
+
+But, in addition to those provided by [harmonics](https://github.com/scribbletune/harmonics), I included some extra ones for a more confortable syntax.
+
+See [CHORDS.md](CHORDS.md) for a full list
 
 ## Contributing
 There is no plan regarding contributions in this project.

@@ -1,11 +1,15 @@
-import { ERROR_MSG, PERMISSIONS_DB, SAFE_COMMANDS } from '../configuration/constants';
-import { ParsedEnvVariables } from '../configuration/env/types';
-import { PermissionsTable, PERMISSIONS_MAP } from '../database/jsondb/types';
-import { SharedVariable } from '../shared-variable/implementation';
-import { RequestSource, TwitchParams, UserRoles } from '../twitch/chat/types';
-import { Command } from './types';
+import { isTimestampExpired } from '../utils/generic.js';
+import { CONFIG, ERROR_MSG, PERMISSIONS_DB, SAFE_COMMANDS } from '../configuration/constants.js';
+import { ParsedEnvObject } from '../configuration/env/types.js';
+import { PermissionsTable, PERMISSIONS_MAP } from '../database/jsondb/types.js';
+import { SharedVariable } from '../shared-variable/implementation.js';
+import { RequestSource, TwitchParams, UserRoles } from '../twitch/command/types.js';
+import { Command } from './types.js';
 
 export const areRequestsOpen = new SharedVariable(false);
+export const requestTimeout = new SharedVariable<number>(CONFIG.DEFAULT_REQUEST_TIMEOUT);
+
+const lastRequestTimestampByUserMap = new Map<string, Date>();
 
 /**
  * Checks that the user has enough permissions to execute the command matching permissions.json
@@ -16,7 +20,7 @@ export const areRequestsOpen = new SharedVariable(false);
  * @param env Environment variables
  * @returns
  */
-export function checkCommandAccess(command: Command, { userRoles, user }: TwitchParams, source: RequestSource, env: ParsedEnvVariables): void {
+export function checkCommandAccess(command: Command, { userRoles, user }: TwitchParams, source: RequestSource, env: ParsedEnvObject): void {
     const { blacklist, whitelist, requirements } = _getPermissionsTable(command);
 
     // Full access: If it is broadcaster, access is allowed
@@ -31,7 +35,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
     // If it is not a safe command, check requests open and source (reward/chat)
     if (!SAFE_COMMANDS[command]) {
         // Check if requests are open
-        _checkRequestsOpen();
+        _checkRequestsOpen(userRoles);
 
         // Restricted access: Active and chat requests
         _checkRequestSource(source, env, userRoles);
@@ -39,11 +43,54 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
 }
 
 /**
- * Checks if the requests are open
+ * Checks that the user request timeout has expired
+ * Throws an error if it does not
+ * @param commandList Request Command list
+ * @param twitch Twitch Params
+ * @param { isMacroMessage } options Checks if it's macro request
  * @returns
  */
-function _checkRequestsOpen(): void {
-    if (!areRequestsOpen.get()) {
+export function checkTimeout(
+    commandList: Array<[command: Command | null, args: string, delay: number]>,
+    { user, userRoles }: TwitchParams,
+    { isMacroMessage }: { isMacroMessage: boolean }
+): void {
+    // If it's macro message, provide no command to check
+    const [[command]] = isMacroMessage ? [[null]] : commandList;
+
+    // If it is broadcaster, is mod, command is safe or timeout has expired, continue
+    if (userRoles.isBroadcaster || userRoles.isMod || (command != null && SAFE_COMMANDS[command]) || _hasLastRequestByUserExpired(user)) {
+        return;
+    }
+
+    // If timeout has not expired, throw error
+    throw new Error(ERROR_MSG.TIMEOUT_REQUEST());
+}
+
+/**
+ * Sets last request timeout for user
+ * @param user Username
+ * @param now Time now
+ */
+export function setTimeoutToRequest(user: string, now: Date): void {
+    lastRequestTimestampByUserMap.set(user, now);
+}
+
+/**
+ * Deletes last request timeout by user
+ * @param user Username
+ */
+export function removeRequestTimeoutByUser(user: string): void {
+    lastRequestTimestampByUserMap.delete(user);
+}
+
+/**
+ * Checks if the requests are open
+ * @param userRoles Roles of user
+ * @returns
+ */
+function _checkRequestsOpen(userRoles: UserRoles): void {
+    if (!areRequestsOpen.get() && !userRoles.isMod) {
         throw new Error(ERROR_MSG.BOT_PAUSED_DISCONNECTED());
     }
 }
@@ -112,7 +159,7 @@ function _checkWhitelist(whitelist: string[], user: string): void {
  * @param userRoles { isMod, isVip } Twitch user roles
  * @returns
  */
-function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvVariables, { isMod, isVip }: UserRoles): void {
+function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvObject, { isMod, isVip }: UserRoles): void {
     if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
@@ -129,4 +176,20 @@ function _getPermissionsTable(command: Command): PermissionsTable {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
     return permissionTable;
+}
+
+/**
+ * Has last request expired checking with timeout
+ * @param requesterUser
+ * @returns
+ */
+function _hasLastRequestByUserExpired(requesterUser: string): boolean {
+    const lastTimestampByUser = lastRequestTimestampByUserMap.get(requesterUser);
+
+    // If there is no last request, it has expired and another can be requested
+    if (lastTimestampByUser == null) {
+        return true;
+    }
+
+    return isTimestampExpired(lastTimestampByUser, new Date(), requestTimeout.get());
 }

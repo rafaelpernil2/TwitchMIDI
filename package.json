@@ -1,23 +1,26 @@
 {
   "name": "twitch-midi",
-  "version": "2.7.2",
+  "version": "3.0.0",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
+  "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "bin": "dist/index.cjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
     "build": "tsc",
-    "lint": "eslint -c .eslintrc.json --ext .ts src/**/*.ts",
-    "format": "eslint --fix -c .eslintrc.json --ext .ts src/{,**/}*.ts",
+    "lint": "eslint -c eslint.config.mjs src/**/*.ts",
+    "format": "eslint --fix -c eslint.config.mjs src/{,**/}*.ts",
     "watch-build": "tsc -w",
     "serve": "npm run build && npm run start",
     "start": "node ./lib/index.js",
     "clean": "del-cli dist package",
-    "ncc": "ncc build src/index.ts -m -o dist -e jazz-midi",
+    "esbuild": "esbuild lib/index.js --bundle --format=cjs --platform=node --target=node20 --external:jazz-midi --outfile=dist/index.cjs --minify",
     "package": "pkg . -o package/TwitchMIDI",
-    "prezip": "cpy config package && cpy package.json package",
+    "prezip": "cpy assets/* package && cpy package.json package",
     "zip": "cd package && bestzip ../TwitchMIDI.zip *",
-    "bundle": "npm run clean && npm run ncc && npm run package && npm run zip"
+    "bundle": "npm run clean && npm run build && npm run esbuild && npm run package && npm run zip",
+    "find-unused-exports": "find-unused-exports"
   },
   "keywords": [
     "midi",
@@ -28,42 +31,44 @@
   "author": "rafaelpernil2",
   "license": "ISC",
   "dependencies": {
-    "@twurple/api": "^5.1.6",
-    "@twurple/auth": "^5.1.6",
-    "@twurple/chat": "^5.1.6",
-    "@twurple/pubsub": "^5.1.6",
-    "chalk": "^4.1.2",
-    "dotenv": "^16.0.1",
-    "harmonics": "^1.1.0",
-    "i18next": "^21.8.2",
-    "jzz": "^1.5.1",
-    "nanotimer": "^0.3.15"
+    "@twurple/api": "7.4.0",
+    "@twurple/auth": "7.4.0",
+    "@twurple/chat": "7.4.0",
+    "@twurple/eventsub-ws": "7.4.0",
+    "chalk": "4.1.2",
+    "dotenv": "17.3.1",
+    "harmonics": "1.1.0",
+    "i18next": "25.8.18",
+    "jzz": "1.9.6",
+    "nanotimer": "0.3.15"
   },
   "pkg": {
     "assets": [
       "./node_modules/jazz-midi"
     ],
     "targets": [
-      "node16-windows-x64",
-      "node16-linux-x64",
-      "node16-macos-x64"
+      "node20-windows-x64",
+      "node20-linux-x64",
+      "node20-macos-x64"
     ]
   },
   "devDependencies": {
-    "@types/nanotimer": "^0.3.0",
-    "@types/node": "^17.0.23",
-    "@typescript-eslint/eslint-plugin": "^5.15.0",
-    "@typescript-eslint/parser": "^5.15.0",
-    "@vercel/ncc": "^0.33.4",
-    "bestzip": "^2.2.0",
-    "cpy-cli": "^4.1.0",
-    "del-cli": "^4.0.1",
-    "eslint": "^8.11.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "pkg": "^5.6.0",
-    "prettier": "^2.6.0",
-    "typescript": "^4.6.2"
+    "@eslint/js": "9.39.2",
+    "@types/nanotimer": "0.3.2",
+    "@types/node": "25.5.0",
+    "@yao-pkg/pkg": "6.14.1",
+    "bestzip": "2.2.1",
+    "cpy-cli": "7.0.0",
+    "del-cli": "7.0.0",
+    "esbuild": "0.27.4",
+    "eslint": "9.39.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.5",
+    "find-unused-exports": "7.1.1",
+    "globals": "17.4.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.57.1"
   },
   "prettier": {
     "printWidth": 180,
@@ -71,6 +76,5 @@
     "singleQuote": true,
     "tabWidth": 4,
     "endOfLine": "auto"
-  },
-  "bin": "dist/index.js"
+  }
 }

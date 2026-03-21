@@ -1,9 +1,8 @@
-import { ResponseStatus } from '../database/interface';
-import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, REWARDS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants';
-import { queue, clearQueueList, currentTurnMap, getCurrentRequestPlaying, getRequestQueue } from './queue';
-import { isValidCommand, deAliasCommand, splitCommandArguments, sayLongTwitchChatMessage } from './utils';
-import { CommandParams } from '../twitch/chat/types';
-import { removeDuplicates } from '../utils/generic';
+import { ALIASES_DB, COMMAND_DESCRIPTIONS, CONFIG, ERROR_MSG, EVENT, EVENT_EMITTER, GLOBAL, PERMISSIONS_DB, TOGGLE_MIDI_VALUES } from '../configuration/constants.js';
+import { enqueue, getCurrentRequestPlaying, getRequestQueue, createAutomaticClockSyncedQueue, clearAllQueues, dequeueLastUserRequest } from './queue.js';
+import { isValidCommand, deAliasCommand, splitCommandArguments } from './utils.js';
+import { CommandParams } from '../twitch/command/types.js';
+import { removeDuplicates } from '../utils/generic.js';
 import {
     checkMIDIConnection,
     connectMIDI,
@@ -11,17 +10,21 @@ import {
     triggerCCCommandList,
     stopAllMidi,
     triggerClock,
-    triggerChordList,
     triggerNoteList,
-    setMIDIVolume
-} from '../midi/handler';
-import { CCCommand, Command } from './types';
-import { inlineChord } from 'harmonics';
-import { CC_COMMANDS, CC_CONTROLLERS, CHORD_PROGRESSIONS } from '../database/jsondb/types';
-import { ChatClient } from '@twurple/chat/lib/ChatClient';
-import { createRewards, toggleRewardsStatus } from '../rewards/handler';
-import { areRequestsOpen } from './guards';
-import i18n from '../i18n/loader';
+    setMIDIVolume,
+    autoStartClock,
+    resetTimeSignature
+} from '../midi/handler.js';
+import { CCCommand, Command } from './types.js';
+import harmonics from 'harmonics';
+const { inlineChord } = harmonics;
+import { CC_COMMANDS_KEY, CC_CONTROLLERS_KEY, CHORD_PROGRESSIONS_KEY, PERMISSIONS_MAP, PermissionsTable } from '../database/jsondb/types.js';
+import { ChatClient } from '@twurple/chat';
+import { areRequestsOpen, requestTimeout } from './guards.js';
+import i18n from '../i18n/loader.js';
+import { createRewards, toggleRewardsStatus, reloadRewards } from '../twitch/rewards/handler.js';
+import { sayTwitchChatMessage } from '../twitch/chat/handler.js';
+import { ResponseStatus } from '../types/generic.js';
 
 /**
  * Shows all available commands and explains how to use them
@@ -30,12 +33,14 @@ import i18n from '../i18n/loader';
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midihelp(...[message, , { chatClient, channel }]: CommandParams): void {
+export function midihelp(...[message, { silenceMessages }, { chatClient, channel, user }]: CommandParams): void {
     const [commandToTest] = splitCommandArguments(message);
     if (isValidCommand(commandToTest)) {
-        sayLongTwitchChatMessage(chatClient, channel, [`${i18n.t('MIDIHELP_VALID')} !${commandToTest}: `, COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()]);
+        sayTwitchChatMessage(chatClient, channel, [`@${user} ${i18n.t('MIDIHELP_VALID')} !${commandToTest}: `, COMMAND_DESCRIPTIONS[deAliasCommand(commandToTest)]()], {
+            silenceMessages
+        });
     } else {
-        sayLongTwitchChatMessage(chatClient, channel, [i18n.t('MIDIHELP_INVALID') + ' ', Object.values(Command).join(GLOBAL.COMMA_JOIN)]);
+        sayTwitchChatMessage(chatClient, channel, [`@${user} ` + i18n.t('MIDIHELP_INVALID') + ' ', Object.values(Command).join(GLOBAL.COMMA_JOIN)], { silenceMessages });
     }
 }
 
@@ -46,22 +51,29 @@ export function midihelp(...[message, , { chatClient, channel }]: CommandParams)
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
+export async function midion(
+    ...[, { targetMIDIName, targetMIDIChannel, isRewardsMode, allowCustomTimeSignature, timeSignatureCC }, { chatClient, authProvider, channel, targetChannel }]: CommandParams
+): Promise<void> {
     try {
-        await connectMIDI(targetMIDIName);
+        await connectMIDI(targetMIDIName, targetMIDIChannel);
+        if (allowCustomTimeSignature) {
+            resetTimeSignature(targetMIDIChannel, timeSignatureCC);
+        }
         if (isRewardsMode) {
-            chatClient.say(channel, i18n.t('MIDION_REWARDS'));
-            await createRewards(authProvider, broadcasterUser);
-            await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: true });
+            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDION_REWARDS')]);
+            await createRewards(authProvider, targetChannel);
+            await toggleRewardsStatus(authProvider, targetChannel, { isEnabled: true });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         EVENT_EMITTER.on(EVENT.PLAYING_NOW, _onPlayingNowChange(chatClient, channel));
         areRequestsOpen.set(true);
         console.log(i18n.t('MIDION_LOG_ENABLED'));
-    } catch (error) {
-        throw new Error(ERROR_MSG.MIDI_CONNECTION_ERROR());
+    } catch {
+        const error = new Error(ERROR_MSG.MIDI_CONNECTION_ERROR());
+        console.log(String(error));
+        throw error;
     }
-    chatClient.say(channel, `${i18n.t('MIDION_ENABLED')} Rafael Pernil (@rafaelpernil2)`);
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDION_ENABLED')} ${CONFIG.OP_SIGNATURE}`]);
 }
 
 /**
@@ -71,21 +83,23 @@ export async function midion(...[, { targetMIDIName, isRewardsMode }, { chatClie
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, broadcasterUser }]: CommandParams): Promise<void> {
-    chatClient.say(channel, i18n.t('MIDIOFF_INIT'));
+export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chatClient, authProvider, channel, targetChannel }]: CommandParams): Promise<void> {
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_INIT')]);
     try {
         await disconnectMIDI(targetMIDIChannel);
         if (isRewardsMode) {
-            chatClient.say(channel, i18n.t('MIDIOFF_REWARDS'));
-            await toggleRewardsStatus(authProvider, broadcasterUser, { isEnabled: false });
+            sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIOFF_REWARDS')]);
+            await toggleRewardsStatus(authProvider, targetChannel, { isEnabled: false });
         }
         EVENT_EMITTER.removeAllListeners(EVENT.PLAYING_NOW);
         areRequestsOpen.set(false);
         console.log(i18n.t('MIDIOFF_LOG_DISABLED'));
-    } catch (error) {
-        throw new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
+    } catch {
+        const error = new Error(ERROR_MSG.MIDI_DISCONNECTION_ERROR());
+        console.log(String(error));
+        throw error;
     }
-    chatClient.say(channel, `${i18n.t('MIDIOFF_DISABLED')} Rafael Pernil (@rafaelpernil2)`);
+    sayTwitchChatMessage(chatClient, channel, [, `${i18n.t('MIDIOFF_DISABLED')} ${CONFIG.OP_SIGNATURE}`]);
 }
 
 /**
@@ -95,9 +109,9 @@ export async function midioff(...[, { targetMIDIChannel, isRewardsMode }, { chat
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midipause(...[, , { chatClient, channel }]: CommandParams): void {
+export function midipause(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     areRequestsOpen.set(false);
-    chatClient.say(channel, i18n.t('MIDIPAUSE'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIPAUSE')], { silenceMessages });
 }
 
 /**
@@ -107,9 +121,9 @@ export function midipause(...[, , { chatClient, channel }]: CommandParams): void
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midiresume(...[, , { chatClient, channel }]: CommandParams): void {
+export function midiresume(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     areRequestsOpen.set(true);
-    chatClient.say(channel, i18n.t('MIDIRESUME'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDIRESUME')], { silenceMessages });
 }
 /**
  * Saves a chord progresion with an alias to be used later
@@ -118,20 +132,26 @@ export function midiresume(...[, , { chatClient, channel }]: CommandParams): voi
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function addchord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
+export async function addchord(...[message, { silenceMessages, allowCustomTimeSignature }, { chatClient, channel, user }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     const [alias, ...chordProgressionTokens] = message.split(GLOBAL.SLASH_SEPARATOR).map((str) => str.trim());
+
+    // If the alias contains brackets, the requests is in wrong order
+    if (alias.indexOf(GLOBAL.OPEN_SQUARE_BRACKETS) !== -1) {
+        throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
+    }
+
     const chordProgression = chordProgressionTokens.join(GLOBAL.SLASH_SEPARATOR);
 
     // Validate chord progression
-    _parseChordProgression(chordProgression);
+    _parseChordProgressionList(chordProgression, { allowCustomTimeSignature });
 
-    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS, alias.toLowerCase(), chordProgression);
+    const insertStatus = ALIASES_DB.insert(CHORD_PROGRESSIONS_KEY, alias.toLowerCase(), chordProgression);
     if (insertStatus === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_BAD_INSERTION());
     }
     await ALIASES_DB.commit();
-    chatClient.say(channel, i18n.t('ADDCHORD'));
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('ADDCHORD')], { silenceMessages });
 }
 
 /**
@@ -141,15 +161,15 @@ export async function addchord(...[message, , { chatClient, channel }]: CommandP
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function removechord(...[message, , { chatClient, channel }]: CommandParams): Promise<void> {
+export async function removechord(...[message, { silenceMessages }, { chatClient, channel, user }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     const parsedAlias = message.toLowerCase();
-    const status = ALIASES_DB.delete(CHORD_PROGRESSIONS, parsedAlias);
+    const status = ALIASES_DB.delete(CHORD_PROGRESSIONS_KEY, parsedAlias);
     if (status === ResponseStatus.Error) {
         throw new Error(ERROR_MSG.CHORD_PROGRESSION_NOT_FOUND());
     }
     await ALIASES_DB.commit();
-    chatClient.say(channel, i18n.t('REMOVECHORD'));
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('REMOVECHORD')], { silenceMessages });
 }
 
 /**
@@ -159,20 +179,20 @@ export async function removechord(...[message, , { chatClient, channel }]: Comma
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function chordlist(...[message, , { chatClient, channel }]: CommandParams): void {
+export function chordlist(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     // Case with alias to lookup
     const aliasToLookup = message.toLowerCase();
-    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS, message);
+    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, message);
     if (aliasToLookup !== GLOBAL.EMPTY_MESSAGE && chordProgression != null) {
-        chatClient.say(channel, `🎵${aliasToLookup}🎵:🎼${chordProgression}🎼`);
+        sayTwitchChatMessage(chatClient, channel, [, `🎵${aliasToLookup}🎵:🎼${chordProgression}🎼`], { silenceMessages });
         return;
     }
     // Default case showing all
     const chordProgressionList = Object.entries(ALIASES_DB.value?.chordProgressions ?? {});
     if (chordProgressionList.length === 0) return;
-    chatClient.say(channel, i18n.t('CHORDLIST_DEFAULT'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('CHORDLIST_DEFAULT')], { silenceMessages });
     for (const [alias, chordProgression] of chordProgressionList) {
-        sayLongTwitchChatMessage(chatClient, channel, [`🎵${alias}🎵:🎼`, chordProgression, '🎼']);
+        sayTwitchChatMessage(chatClient, channel, [`🎵${alias}🎵:🎼`, chordProgression, '🎼'], { silenceMessages });
     }
 }
 
@@ -183,33 +203,14 @@ export function chordlist(...[message, , { chatClient, channel }]: CommandParams
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendnote(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+export async function sendnote(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel, user }]: CommandParams): Promise<void> {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     const requestList = message.split(GLOBAL.COMMA_SEPARATOR).map((request) => _getNoteList(request));
-    chatClient.say(channel, i18n.t('SENDNOTE'));
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('SENDNOTE')], { silenceMessages });
     for (const request of requestList) {
         await triggerNoteList(request, targetMIDIChannel);
     }
-}
-
-/**
- * Parses and sends a chord progression with chords separated by space or with an alias
- * @param commandParams [message, // Command arguments
- *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
- *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
- *         ]
- */
-export async function sendchord(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
-    _checkMessageNotEmpty(message);
-    checkMIDIConnection();
-    // Lookup previously saved chord progressions
-    const chordProgression = _getChordProgression(message);
-
-    const myTurn = queue(message, Command.sendchord);
-    chatClient.say(channel, i18n.t('SENDCHORD'));
-
-    await triggerChordList(chordProgression, targetMIDIChannel, Command.sendchord, myTurn);
 }
 
 /**
@@ -219,18 +220,30 @@ export async function sendchord(...[message, { targetMIDIChannel }, { chatClient
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function sendloop(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): Promise<void> {
+export function sendloop(
+    ...[message, { targetMIDIChannel, silenceMessages, allowCustomTimeSignature, timeSignatureCC, repetitionsPerLoop }, { chatClient, channel, user, userRoles }]: CommandParams
+): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Queue chord progression petition
-    const chordProgression = _getChordProgression(message);
-    const myTurn = queue(message, Command.sendloop);
+    const data = _getChordProgression(message, { allowCustomTimeSignature });
+    enqueue(message, data, user, userRoles, Command.sendloop);
+    autoStartClock(targetMIDIChannel);
+    createAutomaticClockSyncedQueue(targetMIDIChannel, timeSignatureCC, { allowCustomTimeSignature, repetitionsPerLoop });
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('SENDLOOP')], { silenceMessages });
+}
 
-    chatClient.say(channel, i18n.t('SENDLOOP'));
-    do {
-        // Execute at least once to wait for your turn in the queue
-        await triggerChordList(chordProgression, targetMIDIChannel, Command.sendloop, myTurn);
-    } while (myTurn === currentTurnMap.sendloop);
+/**
+ * Removes the last request by the requester
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function wrongloop(...[, { silenceMessages }, { chatClient, channel, user }]: CommandParams): void {
+    checkMIDIConnection();
+    dequeueLastUserRequest(Command.sendloop, user);
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('WRONGLOOP')], { silenceMessages });
 }
 
 /**
@@ -240,7 +253,7 @@ export async function sendloop(...[message, { targetMIDIChannel }, { chatClient,
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function sendcc(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel, user }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     const ccCommandList = _getCCCommandList(message);
@@ -248,7 +261,7 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
     triggerCCCommandList(ccCommandList, targetMIDIChannel);
 
     const controllerList = removeDuplicates(ccCommandList.map(([controller]) => controller)).join(GLOBAL.COMMA_JOIN);
-    chatClient.say(channel, `${i18n.t('SENDCC_1')}${controllerList}${i18n.t('SENDCC_2')}`);
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, `${i18n.t('SENDCC_1')}${controllerList}${i18n.t('SENDCC_2')}`], { silenceMessages });
 }
 
 /**
@@ -258,13 +271,13 @@ export function sendcc(...[message, { targetMIDIChannel }, { chatClient, channel
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midicurrentrequest(...[, , { chatClient, channel }]: CommandParams): void {
+export function midicurrentrequest(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const currentRequestPlaying = getCurrentRequestPlaying();
     if (currentRequestPlaying == null) {
-        chatClient.say(channel, i18n.t('MIDICURRENTREQUEST_NOTHING'));
+        sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDICURRENTREQUEST_NOTHING')], { silenceMessages });
         return;
     }
-    sayLongTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request));
+    sayTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(currentRequestPlaying.type, currentRequestPlaying.request), { silenceMessages });
 }
 
 /**
@@ -274,11 +287,13 @@ export function midicurrentrequest(...[, , { chatClient, channel }]: CommandPara
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams): void {
+export function midirequestqueue(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const requestList = getRequestQueue()
         .map(([type, request]) => `!${type} "${request}"`)
         .join(GLOBAL.COMMA_JOIN);
-    sayLongTwitchChatMessage(chatClient, channel, [i18n.t('MIDIREQUESTQUEUE_OK') + ': ', requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList]);
+    sayTwitchChatMessage(chatClient, channel, [i18n.t('MIDIREQUESTQUEUE_OK') + ': ', requestList.length === 0 ? i18n.t('MIDIREQUESTQUEUE_EMPTY') : requestList], {
+        silenceMessages
+    });
 }
 
 /**
@@ -288,10 +303,10 @@ export function midirequestqueue(...[, , { chatClient, channel }]: CommandParams
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
+export function cclist(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
     const commands = Object.keys(ALIASES_DB.value?.ccCommands ?? {});
     if (commands.length === 0) return;
-    sayLongTwitchChatMessage(chatClient, channel, [i18n.t('CCLIST') + ': ', commands.join(GLOBAL.COMMA_JOIN)]);
+    sayTwitchChatMessage(chatClient, channel, [i18n.t('CCLIST') + ': ', commands.join(GLOBAL.COMMA_JOIN)], { silenceMessages });
 }
 
 /**
@@ -301,13 +316,13 @@ export function cclist(...[, , { chatClient, channel }]: CommandParams): void {
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function midivolume(...[message, , { chatClient, channel }]: CommandParams): void {
+export function midivolume(...[message, { silenceMessages }, { chatClient, channel, user }]: CommandParams): void {
     const value = parseInt(splitCommandArguments(message)[0]);
     // Convert to range 0-127
     setMIDIVolume(value);
-    chatClient.say(channel, i18n.t('MIDIVOLUME') + ' ' + String(value) + '%');
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('MIDIVOLUME') + ' ' + String(value) + '%'], { silenceMessages });
     if (value === 69) {
-        chatClient.say(channel, i18n.t('EASTEREGG_69'));
+        sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('EASTEREGG_69')], { silenceMessages });
     }
 }
 
@@ -318,9 +333,9 @@ export function midivolume(...[message, , { chatClient, channel }]: CommandParam
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function stoploop(...[, , { chatClient, channel }]: CommandParams): void {
-    clearQueueList(Command.sendchord, Command.sendloop);
-    chatClient.say(channel, i18n.t('STOPLOOP'));
+export function stoploop(...[, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
+    clearAllQueues();
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('STOPLOOP')], { silenceMessages });
 }
 
 /**
@@ -330,9 +345,9 @@ export function stoploop(...[, , { chatClient, channel }]: CommandParams): void 
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function fullstopmidi(...[, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     stopAllMidi(targetMIDIChannel);
-    chatClient.say(channel, i18n.t('FULLSTOPMIDI'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('FULLSTOPMIDI')], { silenceMessages });
 }
 
 /**
@@ -342,17 +357,14 @@ export function fullstopmidi(...[, { targetMIDIChannel }, { chatClient, channel 
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function settempo(...[message, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function settempo(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel, user }]: CommandParams): void {
     const newTempo = Number(splitCommandArguments(message)[0]);
-    if (isNaN(newTempo) || newTempo < CONFIG.MIN_TEMPO || newTempo > CONFIG.MAX_TEMPO) {
-        throw new Error(ERROR_MSG.INVALID_TEMPO());
-    }
     // Generates a MIDI clock
     triggerClock(targetMIDIChannel, newTempo);
 
-    chatClient.say(channel, i18n.t('SETTEMPO') + ' ' + String(newTempo));
+    sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('SETTEMPO') + ' ' + String(newTempo)], { silenceMessages });
     if (Math.floor(newTempo) === 69) {
-        chatClient.say(channel, i18n.t('EASTEREGG_69'));
+        sayTwitchChatMessage(chatClient, channel, [`@${user} `, i18n.t('EASTEREGG_69')], { silenceMessages });
     }
 }
 
@@ -363,9 +375,9 @@ export function settempo(...[message, { targetMIDIChannel }, { chatClient, chann
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: CommandParams): void {
+export function syncmidi(...[, { targetMIDIChannel, silenceMessages }, { chatClient, channel }]: CommandParams): void {
     triggerClock(targetMIDIChannel);
-    chatClient.say(channel, i18n.t('SYNCMIDI'));
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('SYNCMIDI')], { silenceMessages });
 }
 
 /**
@@ -375,11 +387,115 @@ export function syncmidi(...[, { targetMIDIChannel }, { chatClient, channel }]: 
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export async function fetchdb(...[, , { chatClient, channel }]: CommandParams): Promise<void> {
+export async function fetchdb(...[, { silenceMessages, isRewardsMode }, { chatClient, channel, authProvider, targetChannel }]: CommandParams): Promise<void> {
     await ALIASES_DB.fetchDB();
-    await REWARDS_DB.fetchDB();
     await PERMISSIONS_DB.fetchDB();
-    chatClient.say(channel, i18n.t('FETCHDB'));
+    if (isRewardsMode) {
+        await reloadRewards(authProvider, targetChannel);
+    }
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('FETCHDB')], { silenceMessages });
+}
+
+/**
+ * Bans a user from using TwitchMIDI
+ * @param commandParams [message, // Command arguments
+ *         common: { silenceMessages }, // Configuration parameters
+ *         twitch: { chatClient, channel } // Twitch chat and user data
+ *         ]
+ */
+export async function midibanuser(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
+    const [userToBanRaw, ...rest] = splitCommandArguments(message);
+
+    if (userToBanRaw == null || rest.length > 0) {
+        throw new Error(ERROR_MSG.INVALID_BAN_USER());
+    }
+
+    const userToBan = userToBanRaw.toLowerCase();
+    const currentPermissionMap = PERMISSIONS_DB.selectAll(PERMISSIONS_MAP);
+
+    if (currentPermissionMap == null) {
+        throw new Error(ERROR_MSG.RUNTIME_PERMISSIONS());
+    }
+
+    // Ban access to all commands
+    const targetPermissionMap = {} as Record<Command, PermissionsTable>;
+    const commandList = Object.values(Command);
+    for (const command of commandList) {
+        // If command permissions do not exist, skip (this should not happen)
+        const permissions = currentPermissionMap[command];
+        if (permissions == null) continue;
+
+        const commandPermissions = {
+            ...permissions,
+            blacklist: removeDuplicates([...permissions.blacklist, userToBan])
+        };
+
+        targetPermissionMap[command] = commandPermissions;
+    }
+    PERMISSIONS_DB.upsert(PERMISSIONS_MAP, { ...currentPermissionMap, ...targetPermissionMap });
+
+    await PERMISSIONS_DB.commit();
+
+    sayTwitchChatMessage(chatClient, channel, [userToBan + '\t', i18n.t('MIDIBANUSER_OK')], { silenceMessages });
+}
+
+/**
+ * Unbans a previously banned user from using TwitchMIDI
+ * @param commandParams [message, // Command arguments
+ *         common: { silenceMessages }, // Configuration parameters
+ *         twitch: { chatClient, channel } // Twitch chat and user data
+ *         ]
+ */
+export async function midiunbanuser(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): Promise<void> {
+    const [userToUnbanRaw, ...rest] = splitCommandArguments(message);
+
+    if (userToUnbanRaw == null || rest.length > 0) {
+        throw new Error(ERROR_MSG.INVALID_UNBAN_USER());
+    }
+
+    const userToUnban = userToUnbanRaw.toLowerCase();
+    const currentPermissionMap = PERMISSIONS_DB.selectAll(PERMISSIONS_MAP);
+
+    if (currentPermissionMap == null) {
+        throw new Error(ERROR_MSG.RUNTIME_PERMISSIONS());
+    }
+
+    // Unban access to all commands
+    const targetPermissionMap = {} as Record<Command, PermissionsTable>;
+    const commandList = Object.values(Command);
+    for (const command of commandList) {
+        // If command permissions do not exist, skip (this should not happen)
+        const permissions = currentPermissionMap[command];
+        if (permissions == null) continue;
+
+        const commandPermissions = {
+            ...permissions,
+            blacklist: permissions.blacklist.filter((user) => user !== userToUnban)
+        };
+
+        targetPermissionMap[command] = commandPermissions;
+    }
+    PERMISSIONS_DB.upsert(PERMISSIONS_MAP, { ...currentPermissionMap, ...targetPermissionMap });
+
+    await PERMISSIONS_DB.commit();
+
+    sayTwitchChatMessage(chatClient, channel, [userToUnban + '\t', i18n.t('MIDIUNBANUSER_OK')], { silenceMessages });
+}
+
+/**
+ * Sets the timeout between requests per users in seconds
+ * @param commandParams [message, // Command arguments
+ *         common: { targetMIDIName, targetMIDIChannel }, // Configuration parameters
+ *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
+ *         ]
+ */
+export function miditimeout(...[message, { silenceMessages }, { chatClient, channel }]: CommandParams): void {
+    const newTimeout = Number(splitCommandArguments(message)[0]);
+    if (isNaN(newTimeout) || newTimeout < CONFIG.MIN_TIMEOUT || newTimeout > CONFIG.MAX_TIMEOUT) {
+        throw new Error(ERROR_MSG.INVALID_TIMEOUT());
+    }
+    requestTimeout.set(newTimeout);
+    sayTwitchChatMessage(chatClient, channel, [, i18n.t('MIDITIMEOUT_1') + ' ' + String(newTimeout) + i18n.t('MIDITIMEOUT_2')], { silenceMessages });
 }
 
 /**
@@ -400,13 +516,17 @@ function _getNoteList(message: string): Array<[note: string, timeSubDivision: nu
 /**
  * Looks up a chord progression/loop or returns the original message if not found
  * @param message Command arguments (alias or chord progression)
+ * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
  * @returns Chord progression
  */
-function _getChordProgression(message: string): Array<[noteList: string[], timeSubDivision: number]> {
+function _getChordProgression(
+    message: string,
+    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+): Array<[timeSignature: [noteCount: number, noteValue: number], chordProgression: Array<[noteList: string[], timeSubDivision: number]>]> {
     const aliasToLookup = message.toLowerCase();
-    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS, aliasToLookup) ?? message;
+    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, aliasToLookup) ?? message;
     // Check everything is okay
-    return _parseChordProgression(chordProgression);
+    return _parseChordProgressionList(chordProgression, { allowCustomTimeSignature });
 }
 
 /**
@@ -416,7 +536,7 @@ function _getChordProgression(message: string): Array<[noteList: string[], timeS
  */
 function _getCCCommandList(message: string): CCCommand[] {
     const aliasToLookup = message.toLowerCase();
-    const ccCommandList = ALIASES_DB.select(CC_COMMANDS, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
+    const ccCommandList = ALIASES_DB.select(CC_COMMANDS_KEY, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
     if (ccCommandList.length < 1) {
         throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE());
     }
@@ -506,23 +626,83 @@ function _isValidAndBounded(chord: string, extraChars: number): boolean {
 }
 
 /**
- * Validates a chord progression string to be played in a 4/4 beat
+ * Validates a chord progression string with time signature
  * @param chordProgression Chord progression separated by spaces
+ * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
  * @return List of notes to play with their respective release times
  */
-function _parseChordProgression(chordProgression: string): Array<[noteList: string[], timeSubDivision: number]> {
-    const chordProgressionList = splitCommandArguments(chordProgression);
-    return chordProgressionList.map((chord) => {
-        try {
-            const [chordPart, timeSubDivision] = _splitTokenTime(chord);
-            // If it is a rest, do not parse chord
-            if (chordPart.toLowerCase() === GLOBAL.MUSIC_REST_TOKEN) return [[GLOBAL.MUSIC_REST_TOKEN], timeSubDivision];
+function _parseChordProgressionList(
+    chordProgression: string,
+    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+): Array<[timeSignature: [noteCount: number, noteValue: number], chordProgression: Array<[noteList: string[], timeSubDivision: number]>]> {
+    const timeSignedRequestList = chordProgression
+        .trim()
+        .split(GLOBAL.OPEN_SQUARE_BRACKETS)
+        .filter((value) => value !== GLOBAL.EMPTY_MESSAGE)
+        .map((value) => value.trim());
 
-            return [inlineChord(_parseChord(chordPart)), timeSubDivision];
-        } catch (error) {
-            throw new Error(ERROR_MSG.INVALID_CHORD(chord));
+    if (timeSignedRequestList.length > 1) {
+        throw new Error(ERROR_MSG.MULTIPLE_TIMESIGNATURE());
+    }
+
+    return timeSignedRequestList.map((chordProgression) => _parseChordProgression(chordProgression, { allowCustomTimeSignature }));
+}
+
+/**
+ * Validates a chord progression string
+ * @param chordProgression Chord progression separated by spaces
+ * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+ * @return List of notes to play with their respective release times
+ */
+function _parseChordProgression(
+    chordProgression: string,
+    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+): [timeSignature: [noteCount: number, noteValue: number], chordProgression: Array<[noteList: string[], timeSubDivision: number]>] {
+    const [firstToken, ...restOfTokens] = splitCommandArguments(chordProgression);
+    const chordProgressionList = restOfTokens;
+
+    let finalTimeSignature: [noteCount: number, noteValue: number] = [CONFIG.DEFAULT_NOTE_COUNT, CONFIG.DEFAULT_NOTE_VALUE]; // Set default time signature
+    // Check if time signature is provided in request
+    if (firstToken.endsWith(GLOBAL.CLOSE_SQUARE_BRACKETS)) {
+        const timeSignatureRaw = firstToken.slice(0, -1); // Remove brackets
+
+        const [noteCount, noteValue, ...rest] = timeSignatureRaw.split(GLOBAL.SLASH_SEPARATOR).map((str) => parseInt(str.trim()));
+
+        if (
+            allowCustomTimeSignature &&
+            (isNaN(noteCount) ||
+                isNaN(noteValue) ||
+                rest.length ||
+                CONFIG.VALID_MEASURE.every((validMeasure) => noteValue !== validMeasure) ||
+                noteCount > noteValue * CONFIG.MAX_MEASURE_MULTIPLIER)
+        ) {
+            throw new Error(ERROR_MSG.INVALID_TIMESIGNATURE());
         }
-    });
+        finalTimeSignature = allowCustomTimeSignature ? [noteCount, noteValue] : finalTimeSignature;
+    } else {
+        // It does not have a time signature, so the first token is valid
+        chordProgressionList.unshift(firstToken);
+    }
+
+    // If no chord progression
+    if (!restOfTokens.length) {
+        throw new Error(ERROR_MSG.INVALID_CHORD(`""`));
+    }
+
+    return [
+        finalTimeSignature,
+        chordProgressionList.map((chord) => {
+            try {
+                const [chordPart, timeSubDivision] = _splitTokenTime(chord);
+                // If it is a rest, do not parse chord
+                if (chordPart.toLowerCase() === GLOBAL.MUSIC_REST_TOKEN) return [[GLOBAL.MUSIC_REST_TOKEN], timeSubDivision];
+
+                return [inlineChord(_parseChord(chordPart)), timeSubDivision];
+            } catch {
+                throw new Error(ERROR_MSG.INVALID_CHORD(chord));
+            }
+        })
+    ];
 }
 
 /**
@@ -533,11 +713,16 @@ function _parseChordProgression(chordProgression: string): Array<[noteList: stri
  */
 function _parseCCCommand(ccCommand: string): [controller: number, value: number, time: number] {
     const [rawController, rawValue] = ccCommand.toLowerCase().trim().split(GLOBAL.SPACE_SEPARATOR);
+    // If rawValue is null, the command is invalid
+    if (rawValue == null) {
+        throw new Error(ERROR_MSG.BAD_CC_MESSAGE());
+    }
+
     // Controller
-    const parsedController = ALIASES_DB.select(CC_CONTROLLERS, rawController) ?? rawController.replace(GLOBAL.CC_CONTROLLER, '');
+    const parsedController = ALIASES_DB.select(CC_CONTROLLERS_KEY, rawController) ?? rawController.replace(GLOBAL.CC_CONTROLLER, '');
     const controller = _parseMIDIValue(parsedController);
 
-    // Value
+    // Value and Time
     const [ccValue, time] = _splitTokenTime(rawValue);
     const parsedValue = TOGGLE_MIDI_VALUES[ccValue] ?? ccValue; // Parse toggle values (on/off)
     const value = _parseMIDIValue(parsedValue);
@@ -580,7 +765,7 @@ function _parseMIDIValue(midiValue: string | number): number {
  * @returns An event handler
  */
 function _onPlayingNowChange(chatClient: ChatClient, channel: string): (type: Command, request: string) => void {
-    return (type, request) => sayLongTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request));
+    return (type, request) => sayTwitchChatMessage(chatClient, channel, _buildPlayingNowMessage(type, request), { silenceMessages: false });
 }
 
 /**

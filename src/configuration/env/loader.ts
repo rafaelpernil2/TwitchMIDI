@@ -1,13 +1,14 @@
-import { EnvObject, envVariables } from './types';
-import { ERROR_MSG, GLOBAL } from '../constants';
-import * as VALIDATORS from './validators';
+import { EnvObject, envVariables, ParsedEnvObject } from './types.js';
+import { ERROR_MSG, GLOBAL } from '../constants.js';
+import * as VALIDATORS from './validators.js';
+import { parseEnvVariables } from './parsers.js';
 
 /**
  * Loads all variables from process.env (after being loaded by dotenv) and triggers the setup if some variable is missing
  * @param altSetupProcess Setup process called if some variable is missing
  * @returns All environment variables ready to go
  */
-export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables: EnvObject) => Promise<EnvObject>): Promise<EnvObject> {
+export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables: EnvObject) => Promise<EnvObject>): Promise<ParsedEnvObject> {
     try {
         return _getVariables();
     } catch (error) {
@@ -18,7 +19,11 @@ export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables:
         if (loadedVariables == null || !_areVariablesValid(loadedVariables)) {
             throw new Error(ERROR_MSG.BAD_SETUP_PROCESS());
         }
-        return loadedVariables;
+
+        // And now we parse them
+        const parsedEnvVariables = parseEnvVariables(loadedVariables);
+
+        return parsedEnvVariables;
     }
 }
 
@@ -26,12 +31,19 @@ export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables:
  * Obtains the variables from process.env and validates them
  * @returns The validated envionment variables
  */
-function _getVariables(): EnvObject {
+function _getVariables(): ParsedEnvObject {
+    // Load
     const loadedVariables = Object.fromEntries(envVariables.map((key) => [key, process.env[key]]));
+
+    // Validate
     if (!_areVariablesValid(loadedVariables)) {
         throw new Error(ERROR_MSG.BAD_ENV_VARIABLE_GENERIC());
     }
-    return loadedVariables;
+
+    // Parse
+    const parsedEnvVariables = parseEnvVariables(loadedVariables);
+
+    return parsedEnvVariables;
 }
 
 /**

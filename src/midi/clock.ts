@@ -1,16 +1,18 @@
 import NanoTimer from 'nanotimer';
-import { EVENT_EMITTER, EVENT } from '../configuration/constants';
-import { JZZTypes } from '../custom-typing/jzz';
-import { NanoTimerProperties } from '../custom-typing/nanotimer';
-import { SharedVariable } from '../shared-variable/implementation';
-import { isChordInProgress } from './handler';
-import { Sync } from './types';
+import { JZZTypes } from '../custom-typing/jzz.js';
+import { NanoTimerProperties } from '../custom-typing/nanotimer.js';
+import { SharedVariable } from '../shared-variable/implementation.js';
+import { isChordInProgress } from './handler.js';
+import { Sync } from './types.js';
+import { onBarLoopChange } from '../command/queue.js';
 
 // Shared variables
 export const syncMode = new SharedVariable<Sync>(Sync.OFF);
+export const clockPulses = new SharedVariable<number>(96); // 24ppq * 4 quarter notes
 // Clock variables
 let timer = new NanoTimer();
 let tick = 0;
+let isClockRunning = false;
 
 /**
  * MIDI Clock: Sends ticks synced with tempo at 24ppq following MIDI spec
@@ -18,11 +20,12 @@ let tick = 0;
  * @param targetMIDIChannel Target MIDI channel
  * @param output VirtualMIDI device
  * @param tempo Tempo in BPM
+ * @param options { sync = false }: { sync: boolean }
  */
-export function startClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, tempo: number): void {
+export function startClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, tempo: number, { sync } = { sync: true }): void {
     const tickTime = `${_calculateClockTickTimeNs(tempo)}n`;
     const sendTick = _sendTick(output);
-    _resetClock(targetMIDIChannel, output);
+    _resetClock(targetMIDIChannel, output, { sync });
 
     timer.setInterval(sendTick, '', tickTime);
 }
@@ -56,10 +59,14 @@ export function initClockData(): void {
  * Resets the clock parameters and marks it as "syncing"
  * @param targetMIDIChannel Target MIDI channel for the virtual MIDI device
  * @param output VirtualMIDI device
+ * @param options { sync = false }: { sync: boolean }
  */
-function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>): void {
-    syncMode.set(Sync.REPEAT);
+function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['openMidiOut']>, { sync } = { sync: true }): void {
+    if (sync) {
+        syncMode.set(Sync.REPEAT);
+    }
     initClockData();
+    isClockRunning = false;
     output.stop();
     output.allNotesOff(targetMIDIChannel);
 }
@@ -70,26 +77,28 @@ function _resetClock(targetMIDIChannel: number, output: ReturnType<JZZTypes['ope
  * @returns
  */
 function _sendTick(output: ReturnType<JZZTypes['openMidiOut']>): () => void {
-    // We store in closure variables the event emitter and event for speed and consistency
-    const emitter = EVENT_EMITTER;
-    const event = EVENT.BAR_LOOP_CHANGE_EVENT;
     let isFirst = true;
     return () => {
+        if (!isFirst && !isClockRunning) {
+            return;
+        }
         // Constant time operations to ensure time stability
         const isInProgress = isChordInProgress.get();
-        tick = (tick + 1) % 96; // 24ppq * 4 quarter notes
+        const pulses = clockPulses.get(); // 24ppq * 4 quarter notes by default
+        tick = (tick + 1) % pulses;
         // This way, the next condition always take the exact amout of time
 
         output.clock();
         // If is bar start and it's not executing blocking section
         if (tick === 1 && !isInProgress) {
             // Notify and send the current active mode
-            emitter.emit(event);
+            onBarLoopChange?.();
         }
 
         if (isFirst) {
             output.start();
             isFirst = false;
+            isClockRunning = true;
         }
     };
 }

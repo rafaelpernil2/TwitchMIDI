@@ -1,12 +1,12 @@
-import { setTimeoutPromise } from '../utils/promise';
-import * as JZZ from 'jzz';
-import { JZZTypes } from '../custom-typing/jzz';
-import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants';
-import { forwardQueue, waitForMyTurn, clearAllQueues } from '../command/queue';
-import { SharedVariable } from '../shared-variable/implementation';
-import { initClockData, isClockActive, syncMode, startClock, stopClock } from './clock';
-import { CCCommand, Command } from '../command/types';
-import { Sync } from './types';
+import { setTimeoutPromise } from '../utils/promise.js';
+import JZZ from 'jzz';
+import { JZZTypes } from '../custom-typing/jzz.js';
+import { CONFIG, ERROR_MSG, GLOBAL } from '../configuration/constants.js';
+import { forwardQueue, clearAllQueues } from '../command/queue.js';
+import { SharedVariable } from '../shared-variable/implementation.js';
+import { initClockData, isClockActive, syncMode, startClock, stopClock, clockPulses } from './clock.js';
+import { CCCommand, Command } from '../command/types.js';
+import { Sync } from './types.js';
 
 // IMPORTANT: ONLY THIS FILE CONTAINS A MIDI CONNECTION
 // For example, the clock uses the MIDI connection but it is always provided as an argument
@@ -19,13 +19,27 @@ let globalVolume = CONFIG.DEFAULT_VOLUME;
 export const isChordInProgress = new SharedVariable<boolean>(false);
 
 /**
+ * Requests MIDI access from JZZ library
+ */
+export async function requestMIDIAccess(): Promise<unknown> {
+    return JZZ.requestMIDIAccess();
+}
+
+/**
  * Connects to the virtual MIDI device
  * @param targetMIDIName Virtual MIDI device name
+ * @param targetMIDIChannel Virtual MIDI device channel
  */
-export async function connectMIDI(targetMIDIName: string): Promise<void> {
+export async function connectMIDI(targetMIDIName: string, targetMIDIChannel: number): Promise<void> {
     _initVariables();
-    const midi = await JZZ.default();
-    output = midi.openMidiOut(targetMIDIName);
+    const midi = await JZZ();
+    try {
+        output = midi.openMidiOut(targetMIDIName);
+        await output?.connect(targetMIDIChannel);
+    } catch (error) {
+        output = undefined; // Reset output variable on connection error
+        throw error;
+    }
 }
 
 /**
@@ -46,6 +60,14 @@ export function checkMIDIConnection(): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
+}
+
+/**
+ * Retrieves the MIDI volume between 0 and 127
+ * @returns
+ */
+export function getMIDIVolume(): number {
+    return globalVolume;
 }
 
 /**
@@ -75,43 +97,53 @@ export async function triggerNoteList(rawNoteList: Array<[note: string, timeSubD
  * Triggers a chord progression
  * @param rawChordProgression Chord progression to trigger
  * @param targetMIDIChannel Virtual device MIDI channel
- * @param type 'sendloop' or 'sendchord'
- * @param myTurn My turn in the queue
+ * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+ * @param timeSignatureCC: [numeratorCC: number, denominatorCC: number]
+ * @param type 'sendloop'
+ * @param repetitionsPerLoop Maximum allowed iterations
  */
 export async function triggerChordList(
-    rawChordProgression: Array<[noteList: string[], timeSubDivision: number]>,
+    requestList: Array<[timeSignature: [noteCount: number, noteValue: number], chordProgression: Array<[noteList: string[], timeSubDivision: number]>]>,
     targetMIDIChannel: number,
-    type: Command.sendloop | Command.sendchord,
-    myTurn: number
+    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean },
+    timeSignatureCC: [numeratorCC: number, denominatorCC: number],
+    type: Command.sendloop,
+    repetitionsPerLoop: number
 ): Promise<void> {
     // If the MIDI clock has not started yet, start it to make the chord progression sound
-    _autoStartClock(targetMIDIChannel);
+    autoStartClock(targetMIDIChannel);
     // Reset sync flag
     syncMode.set(Sync.OFF);
 
     // We wait until the bar starts and is your turn
     try {
-        await waitForMyTurn(myTurn, type);
-        const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
-
         // Blocking section
         isChordInProgress.set(true);
-        for (const [noteList, timeout] of chordProgression) {
-            // Skip iteration if sync is on or request is no longer in queue
+
+        for (const [timeSignature, rawChordProgression] of requestList) {
             if (!syncMode.is(Sync.OFF)) continue;
-            await _sendMIDINoteListPromise(noteList, timeout, targetMIDIChannel);
+
+            _setTimeSignature(targetMIDIChannel, timeSignature, timeSignatureCC, { allowCustomTimeSignature });
+            const chordProgression = _processChordProgression(rawChordProgression, globalTempo);
+
+            for (const [noteList, timeout] of chordProgression) {
+                // Skip iteration if sync is on or request is no longer in queue
+                if (!syncMode.is(Sync.OFF)) continue;
+                await _sendMIDINoteListPromise(noteList, timeout, targetMIDIChannel);
+            }
         }
+    } catch {
+        // In case of error, we forward the queue and exit
+        // This should happen when the request queue is cleared
+        // But this is done either way in "finally" block
+    } finally {
         // Move to next in queue
-        forwardQueue(type);
+        forwardQueue(type, repetitionsPerLoop);
         // Only the current request should be repeated after tempo change (repeat sync)
         if (syncMode.is(Sync.REPEAT)) {
             syncMode.set(Sync.OFF);
         }
         isChordInProgress.set(false);
-    } catch (error) {
-        // In case of error, we forward the queue and exit
-        // This should happen when the request queue is cleared
-        forwardQueue(type);
     }
 }
 
@@ -131,18 +163,27 @@ export function triggerCCCommandList(rawCCCommandList: CCCommand[], targetMIDICh
 }
 
 /**
+ * Retrieves the tempo
+ * @returns
+ */
+export function getTempo(): number {
+    return globalTempo;
+}
+
+/**
  * Starts/resets the clock with the given tempo
  * @param targetMIDIChannel Virtual MIDI device channel
  * @param newTempo Tempo in BPM
+ * @param options { sync = false }: { sync: boolean }
  */
-export function triggerClock(targetMIDIChannel: number, newTempo?: number): void {
+export function triggerClock(targetMIDIChannel: number, newTempo?: number, { sync } = { sync: true }): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
     if (newTempo != null) {
-        globalTempo = newTempo;
+        _setTempo(newTempo);
     }
-    startClock(targetMIDIChannel, output, globalTempo);
+    startClock(targetMIDIChannel, output, globalTempo, { sync });
 }
 
 /**
@@ -160,6 +201,32 @@ export function stopAllMidi(targetMIDIChannel: number): void {
 }
 
 /**
+ * Checks if the clock is active and if not, it starts it
+ * @param targetMIDIChannel Virtual MIDI device channel
+ */
+export function autoStartClock(targetMIDIChannel: number): void {
+    if (output == null) {
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
+    }
+    if (!isClockActive()) {
+        startClock(targetMIDIChannel, output, globalTempo);
+    }
+}
+
+/**
+ * Sends MIDI CC message with default time signature
+ * @param targetMIDIChannel Virtual MIDI device channel
+ * @param timeSignatureCC: [numeratorCC: number, denominatorCC: number]
+ */
+export function resetTimeSignature(targetMIDIChannel: number, [numeratorCC, denominatorCC]: [numeratorCC: number, denominatorCC: number]): void {
+    if (output == null) {
+        throw new Error(ERROR_MSG.BOT_DISCONNECTED());
+    }
+    output.control(targetMIDIChannel, numeratorCC, CONFIG.DEFAULT_NOTE_COUNT);
+    output.control(targetMIDIChannel, denominatorCC, CONFIG.DEFAULT_NOTE_VALUE);
+}
+
+/**
  * Initializes the common variables
  */
 function _initVariables(): void {
@@ -167,6 +234,18 @@ function _initVariables(): void {
     isChordInProgress.set(false);
     globalTempo = CONFIG.DEFAULT_TEMPO;
     globalVolume = CONFIG.DEFAULT_VOLUME;
+}
+
+/**
+ * Validates and sets a new tempo value
+ * @param newTempo number
+ */
+function _setTempo(newTempo: number): void {
+    if (isNaN(newTempo) || newTempo < CONFIG.MIN_TEMPO || newTempo > CONFIG.MAX_TEMPO) {
+        throw new Error(ERROR_MSG.INVALID_TEMPO());
+    }
+
+    globalTempo = newTempo;
 }
 
 /**
@@ -303,14 +382,31 @@ function _sweep(
 }
 
 /**
- * Checks if the clock is active and if not, it starts it
+ * Sets time signature
  * @param targetMIDIChannel Virtual MIDI device channel
+ * @param timeSignature [noteCount, noteValue]: [noteCount: number, noteValue: number]
+ * @param timeSignatureCC: [numeratorCC: number, denominatorCC: number]
+ * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+ *
  */
-function _autoStartClock(targetMIDIChannel: number): void {
+function _setTimeSignature(
+    targetMIDIChannel: number,
+    [noteCount, noteValue]: [noteCount: number, noteValue: number],
+    [numeratorCC, denominatorCC]: [numeratorCC: number, denominatorCC: number],
+    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+): void {
     if (output == null) {
         throw new Error(ERROR_MSG.BOT_DISCONNECTED());
     }
-    if (!isClockActive()) {
-        startClock(targetMIDIChannel, output, globalTempo);
+    const newClockPulses = (noteCount * 96) / noteValue;
+    // If timeSignature is the same, do nothing
+    if (!allowCustomTimeSignature || clockPulses.is(newClockPulses)) {
+        return;
     }
+
+    output.control(targetMIDIChannel, numeratorCC, noteCount);
+    output.control(targetMIDIChannel, denominatorCC, noteValue);
+
+    clockPulses.set(newClockPulses); // Set time signature. 96 is 24 pulses per quarter * 4 quarter notes
+    triggerClock(targetMIDIChannel, undefined, { sync: false });
 }
