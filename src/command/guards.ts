@@ -37,7 +37,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
         _checkRequestsOpen(userRoles);
 
         // Restricted access: Active and chat requests
-        _checkRequestSource(source, env, userRoles);
+        _checkRequestSource(source, env, userRoles, whitelist, user);
     }
 }
 
@@ -108,16 +108,24 @@ function _checkRequirements(source: RequestSource, requirements: Array<keyof Use
     const hasNoRequirements = requirements == null || requirements.length === 0;
     // We can't obtain user info from rewards, so they are trusted
     const isRewardSource = source === RequestSource.REWARD;
-    // If user is in the whitelist, do not check requirements. A whitelist implies full access for those users in the list
-    const isWhitelisted = whitelist != null && whitelist.length > 0 && whitelist.indexOf(user) !== -1;
 
-    if (hasNoRequirements || isRewardSource || isWhitelisted) {
+    if (hasNoRequirements || isRewardSource || _isInWhitelist(whitelist, user)) {
         return;
     }
 
     if (!requirements.some((requirement) => userRoles[requirement])) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
+}
+
+/**
+ * Checks if the user is in the whitelist
+ * @param whitelist Whitelist
+ * @param user Twitch username
+ * @returns Whether the user is in the whitelist
+ */
+function _isInWhitelist(whitelist: string[], user: string): boolean {
+    return whitelist != null && whitelist.length > 0 && whitelist.indexOf(user) !== -1;
 }
 
 /**
@@ -143,10 +151,12 @@ function _checkBlacklist(blacklist: string[], user: string): void {
  * @param source Request source
  * @param env Environment variables
  * @param userRoles { isMod, isVip } Twitch user roles
+ * @param whitelist Whitelist
+ * @param user Twitch username
  * @returns
  */
-function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvObject, { isMod, isVip }: UserRoles): void {
-    if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
+function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvObject, { isMod, isVip }: UserRoles, whitelist: string[], user: string): void {
+    if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE) && !_isInWhitelist(whitelist, user)) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
