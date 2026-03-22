@@ -29,8 +29,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
     }
 
     _checkBlacklist(blacklist, user);
-    _checkWhitelist(whitelist, user);
-    _checkRequirements(source, requirements, userRoles, whitelist);
+    _checkRequirements(source, requirements, userRoles, whitelist, user);
 
     // If it is not a safe command, check requests open and source (reward/chat)
     if (!SAFE_COMMANDS[command]) {
@@ -101,17 +100,22 @@ function _checkRequestsOpen(userRoles: UserRoles): void {
  * @param requirements Role requirements
  * @param userRoles Roles of user
  * @param whitelist Whitelist
+ * @param user Twitch username
  * @returns
  */
-function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles, whitelist: string[]): void {
+function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles, whitelist: string[], user: string): void {
     // If no data, that means everyone is allowed
-    // If whitelist is active, do not check requirements. A whitelist implies full access for those users in the list
-    // Also, we can't obtain user info from rewards, so they are trusted
-    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD || whitelist.length > 0) {
+    const hasNoRequirements = requirements == null || requirements.length === 0;
+    // We can't obtain user info from rewards, so they are trusted
+    const isRewardSource = source === RequestSource.REWARD;
+    // If user is in the whitelist, do not check requirements. A whitelist implies full access for those users in the list
+    const isWhitelisted = whitelist != null && whitelist.length > 0 && whitelist.indexOf(user) !== -1;
+
+    if (hasNoRequirements || isRewardSource || isWhitelisted) {
         return;
     }
-    const isValid = requirements.some((requirement) => userRoles[requirement]);
-    if (!isValid) {
+
+    if (!requirements.some((requirement) => userRoles[requirement])) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
@@ -130,24 +134,6 @@ function _checkBlacklist(blacklist: string[], user: string): void {
     }
     const isInBlacklist = blacklist.indexOf(user) !== -1;
     if (isInBlacklist) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
-    }
-}
-
-/**
- * Checks if there is a whitelist and if the user is there
- * Otherwise it throws an error
- * @param whitelist Whitelist
- * @param user Twitch username
- * @returns
- */
-function _checkWhitelist(whitelist: string[], user: string): void {
-    // If no data, that means everyone is allowed
-    if (whitelist == null || whitelist.length === 0) {
-        return;
-    }
-    const isInWhitelist = whitelist.indexOf(user) !== -1;
-    if (!isInWhitelist) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
