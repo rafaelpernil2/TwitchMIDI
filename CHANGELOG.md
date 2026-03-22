@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - README.txt and LEEME.txt were included in an "assets" folder by mistake when they should appear in the root of the zip file
 ### Changed
-- Whitelist logic now makes more sense. If you are not in the whitelist, permissions apply, if you are in the whitelist, you have access without checking requirements and you can even override VIP Rewards mode, as if you were VIP. Before, if anyone was on the whitelist, not being on the whitelist meant being banned from using that command.
+- Whitelist logic now makes more sense. If you are not in the whitelist, permissions apply, if you are in the whitelist, you have access without checking requirements and you can use those commands via chat even when VIP Rewards mode is active. Before, if anyone was on the whitelist, not being on the whitelist meant being banned from using that command.
 
 ## [3.0.0] - 2026-03-21
 ### Added
