@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.0.1] - 2026-03-22
+### Fixed
+- README.txt and LEEME.txt were included in an "assets" folder by mistake when they should appear in the root of the zip file
+### Changed
+- Whitelist logic now makes more sense. If you are not in the whitelist, permissions apply, if you are in the whitelist, you have access without checking requirements and you can use those commands via chat even when VIP Rewards mode is active. Before, if anyone was on the whitelist, not being on the whitelist meant being banned from using that command.
+
 ## [3.0.0] - 2026-03-21
 ### Added
 - Repetitions per loop, now each loop repeats itself 4 times by default before moving to the next loop in queue. It can be customized via REPETITIONS_PER_LOOP at .env file
@@ -520,6 +526,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.0.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.2...v3.0.0
 [2.7.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.1...v2.7.2
 [2.7.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.0...v2.7.1

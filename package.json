@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "type": "module",
   "main": "lib/index.js",
@@ -17,7 +17,7 @@
     "clean": "del-cli dist package",
     "esbuild": "esbuild lib/index.js --bundle --format=cjs --platform=node --target=node20 --external:jazz-midi --outfile=dist/index.cjs --minify",
     "package": "pkg . -o package/TwitchMIDI",
-    "prezip": "cpy assets/* package && cpy package.json package",
+    "prezip": "cpy assets/* package --flat && cpy package.json package",
     "zip": "cd package && bestzip ../TwitchMIDI.zip *",
     "bundle": "npm run clean && npm run build && npm run esbuild && npm run package && npm run zip",
     "find-unused-exports": "find-unused-exports"

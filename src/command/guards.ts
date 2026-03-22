@@ -29,8 +29,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
     }
 
     _checkBlacklist(blacklist, user);
-    _checkWhitelist(whitelist, user);
-    _checkRequirements(source, requirements, userRoles, whitelist);
+    _checkRequirements(source, requirements, userRoles, whitelist, user);
 
     // If it is not a safe command, check requests open and source (reward/chat)
     if (!SAFE_COMMANDS[command]) {
@@ -38,7 +37,7 @@ export function checkCommandAccess(command: Command, { userRoles, user }: Twitch
         _checkRequestsOpen(userRoles);
 
         // Restricted access: Active and chat requests
-        _checkRequestSource(source, env, userRoles);
+        _checkRequestSource(source, env, userRoles, whitelist, user);
     }
 }
 
@@ -101,19 +100,30 @@ function _checkRequestsOpen(userRoles: UserRoles): void {
  * @param requirements Role requirements
  * @param userRoles Roles of user
  * @param whitelist Whitelist
+ * @param user Twitch username
  * @returns
  */
-function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles, whitelist: string[]): void {
+function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles, whitelist: string[], user: string): void {
     // If no data, that means everyone is allowed
-    // If whitelist is active, do not check requirements. A whitelist implies full access for those users in the list
-    // Also, we can't obtain user info from rewards, so they are trusted
-    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD || whitelist.length > 0) {
+    // If user is in the whitelist, do not check requirements. A whitelist implies full access for those users in the list
+    // We can't obtain user info from rewards, so they are trusted
+    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD || _isInWhitelist(whitelist, user)) {
         return;
     }
     const isValid = requirements.some((requirement) => userRoles[requirement]);
     if (!isValid) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
+}
+
+/**
+ * Checks if the user is in the whitelist
+ * @param whitelist Whitelist
+ * @param user Twitch username
+ * @returns Whether the user is in the whitelist
+ */
+function _isInWhitelist(whitelist: string[], user: string): boolean {
+    return whitelist != null && whitelist.length > 0 && whitelist.indexOf(user) !== -1;
 }
 
 /**
@@ -135,32 +145,16 @@ function _checkBlacklist(blacklist: string[], user: string): void {
 }
 
 /**
- * Checks if there is a whitelist and if the user is there
- * Otherwise it throws an error
- * @param whitelist Whitelist
- * @param user Twitch username
- * @returns
- */
-function _checkWhitelist(whitelist: string[], user: string): void {
-    // If no data, that means everyone is allowed
-    if (whitelist == null || whitelist.length === 0) {
-        return;
-    }
-    const isInWhitelist = whitelist.indexOf(user) !== -1;
-    if (!isInWhitelist) {
-        throw new Error(ERROR_MSG.BAD_PERMISSIONS());
-    }
-}
-
-/**
  * Checks rewardsMode/vipRewardsMode to assess if a command can be executed from the current source
  * @param source Request source
  * @param env Environment variables
  * @param userRoles { isMod, isVip } Twitch user roles
+ * @param whitelist Whitelist
+ * @param user Twitch username
  * @returns
  */
-function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvObject, { isMod, isVip }: UserRoles): void {
-    if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE)) {
+function _checkRequestSource(source: RequestSource, { REWARDS_MODE, VIP_REWARDS_MODE }: ParsedEnvObject, { isMod, isVip }: UserRoles, whitelist: string[], user: string): void {
+    if (source === RequestSource.CHAT && REWARDS_MODE && !isMod && (!isVip || !VIP_REWARDS_MODE) && !_isInWhitelist(whitelist, user)) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
