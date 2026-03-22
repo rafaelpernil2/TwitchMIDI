@@ -105,15 +105,13 @@ function _checkRequestsOpen(userRoles: UserRoles): void {
  */
 function _checkRequirements(source: RequestSource, requirements: Array<keyof UserRoles>, userRoles: UserRoles, whitelist: string[], user: string): void {
     // If no data, that means everyone is allowed
-    const hasNoRequirements = requirements == null || requirements.length === 0;
+    // If user is in the whitelist, do not check requirements. A whitelist implies full access for those users in the list
     // We can't obtain user info from rewards, so they are trusted
-    const isRewardSource = source === RequestSource.REWARD;
-
-    if (hasNoRequirements || isRewardSource || _isInWhitelist(whitelist, user)) {
+    if (requirements == null || requirements.length === 0 || source === RequestSource.REWARD || _isInWhitelist(whitelist, user)) {
         return;
     }
-
-    if (!requirements.some((requirement) => userRoles[requirement])) {
+    const isValid = requirements.some((requirement) => userRoles[requirement]);
+    if (!isValid) {
         throw new Error(ERROR_MSG.BAD_PERMISSIONS());
     }
 }
