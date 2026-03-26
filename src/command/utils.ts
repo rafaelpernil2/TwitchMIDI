@@ -21,8 +21,14 @@ export function getCommand(message: string): [command: Command | null, args: str
     const [command, ...args] = message.slice(1).split(GLOBAL.SPACE_SEPARATOR);
     const parsedCommand = command.toLowerCase();
     const isCommand = message.startsWith(GLOBAL.EXCLAMATION_MARK) && isValidCommand(parsedCommand);
+    const resolvedCommand = isCommand ? deAliasCommand(parsedCommand) : null;
 
-    return [isCommand ? deAliasCommand(parsedCommand) : null, args.join(GLOBAL.SPACE_SEPARATOR)];
+    // Strip command self-reference from first argument (e.g. "!sendloop !sendloop C E G" -> args: "C E G")
+    const firstArg = args[0]?.toLowerCase() ?? '';
+    const isFirstArgSelfReference = resolvedCommand != null && firstArg.startsWith(GLOBAL.EXCLAMATION_MARK) && deAliasCommand(firstArg.slice(1)) === resolvedCommand;
+    const cleanArgs = isFirstArgSelfReference ? args.slice(1).join(GLOBAL.SPACE_SEPARATOR) : args.join(GLOBAL.SPACE_SEPARATOR);
+
+    return [resolvedCommand, cleanArgs];
 }
 
 /**

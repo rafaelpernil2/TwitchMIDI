@@ -35,6 +35,10 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
             if (!commandList.length) {
                 return;
             }
+            // Skip redemption messages in chat when rewards mode is active, as they are handled by the rewards handler
+            if (source === RequestSource.CHAT && env.REWARDS_MODE && msg?.isRedemption) {
+                return;
+            }
             // Check request timeout
             checkTimeout(commandList, twitch, { isMacroMessage });
             // Set last request by user to now
