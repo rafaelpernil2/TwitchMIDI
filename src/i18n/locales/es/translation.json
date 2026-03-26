@@ -119,7 +119,7 @@
         "HELP_REMOVECHORD": "Elimina una progresión de acordes o loop con un alias. Sintaxis: alias (e.g. \"pop\")",
         "HELP_CHORDLIST": "Muestra todas las progresiones de acordess o loops guardados que se pueden usar y también busca por alias.  Sintaxis: alias",
         "HELP_SENDNOTE": "Manda una nota, un conjunto de notas/silencios (rest) formando un acorde o una melodía. Sintaxis: nota1 nota2, rest, nota3 ... (e.g. \"C4 E4 G4\" o \"C4, E4, G4\")",
-        "HELP_SENDLOOP": "Manda un loop con un alias o con acordes/silencios (rest). Sintaxis: [cantidadNotas/longitudNota] acorde1 rest acorde2(longitud del acorde en negras)... (e.g. \"[4/4] C G Amin F\",\"pop\")",
+        "HELP_SENDLOOP": "Manda un loop con un alias o con acordes/silencios (rest). Sintaxis: [cantidadNotas/longitudNota] acorde1 rest acorde2(longitud del acorde en negras)... (e.g. \"[4/4] C G Amin F\",\"pop\"). Usa https://loop.twitchmidi.com para construir tus loops y probarlos antes de hacer tu petición",
         "HELP_SENDCC": "Manda un mensaje MIDI CC con un alias, valor fijo o barrido de valores. Sintaxis: controlador valor,controlador2 valor2(delay_in_ms) (e.g. \"43 100,43 60\",\"cutoff sweep\",\"cutoff 100,cutoff 60\",\"cutoff 100,cutoff 10(10000)\")",
         "HELP_WRONGLOOP": "Elimina tu última petición de la cola",
         "HELP_CCLIST": "Muestra la lista de macros de mensajes CC disponible (e.g. cutoff sweep)",

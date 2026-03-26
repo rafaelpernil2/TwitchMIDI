@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.0.2] - 2026-03-26
+### Added
+- Reference to [loop.twitchmidi.com](https://loop.twitchmidi.com) in !sendloop help text and README for building and testing loops before making a request
+### Fixed
+- Strip command self-references from arguments when redeeming commands (e.g. !sendloop !sendloop C E G now correctly parses as C E G)
+
 ## [3.0.1] - 2026-03-22
 ### Fixed
 - README.txt and LEEME.txt were included in an "assets" folder by mistake when they should appear in the root of the zip file
@@ -526,6 +532,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.0.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.2...v3.0.0
 [2.7.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.1...v2.7.2
