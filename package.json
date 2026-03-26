@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "type": "module",
   "main": "lib/index.js",
@@ -38,7 +38,7 @@
     "chalk": "4.1.2",
     "dotenv": "17.3.1",
     "harmonics": "1.1.0",
-    "i18next": "25.8.18",
+    "i18next": "25.10.9",
     "jzz": "1.9.6",
     "nanotimer": "0.3.15"
   },
@@ -57,7 +57,7 @@
     "@types/nanotimer": "0.3.2",
     "@types/node": "25.5.0",
     "@yao-pkg/pkg": "6.14.1",
-    "bestzip": "2.2.1",
+    "bestzip": "2.2.3",
     "cpy-cli": "7.0.0",
     "del-cli": "7.0.0",
     "esbuild": "0.27.4",
@@ -68,7 +68,7 @@
     "globals": "17.4.0",
     "prettier": "3.8.1",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.57.1"
+    "typescript-eslint": "8.57.2"
   },
   "prettier": {
     "printWidth": 180,

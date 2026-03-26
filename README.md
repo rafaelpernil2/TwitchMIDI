@@ -208,6 +208,8 @@ So far, this first version does all that, keep reading the features for more det
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;````chord1 chord2(chord length in quarter notes)... // (e.g. "C G Amin F","pop")````
 
+&nbsp;&nbsp;&nbsp;&nbsp;Use [loop.twitchmidi.com](https://loop.twitchmidi.com) to build your loops and test them before making your request.
+
 
 #### !wrongloop
 &nbsp;&nbsp;&nbsp;&nbsp;Removes your last request from the queue
