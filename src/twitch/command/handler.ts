@@ -19,7 +19,9 @@ import i18n from '../../i18n/loader.js';
  * @returns A ChatClient MessageHandler
  */
 export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, chatClient: ChatClient, env: ParsedEnvObject, source: RequestSource): MessageHandler => {
-    return async (channel, user, message, msg): Promise<void> => {
+    return async (channel, user, rawMessage, msg): Promise<void> => {
+        // Twitch appends U+034F (Combining Grapheme Joiner) to duplicate consecutive messages to bypass its deduplication filter, which breaks alias lookups
+        const message = rawMessage.replace(/[\s\u034F]+$/u, '');
         const [isMacroMessage, commandList] = getCommandList(message);
         try {
             // If no user info was provided, this is is Channel Points/Rewards mode, so there's no block
