@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.0.3] - 2026-03-27
 ### Added
 - New .env flag ALLOW_MANUAL_CC_MESSAGES to control whether users can send arbitrary CC messages via !sendcc. When disabled, only predefined CC command aliases from aliases.json are allowed (e.g. "!sendcc cutoff sweep" works but "!sendcc cutoff 64" does not)
+### Fixed
+- Duplicate consecutive Twitch messages appending U+034F (Combining Grapheme Joiner) caused alias lookups to fail, breaking commands like !sendcc on repeated requests
 
 ## [3.0.2] - 2026-03-26
 ### Added
