@@ -17,6 +17,7 @@ export async function getLoadedEnvVariables(altSetupProcess?: (currentVariables:
         const loadedVariables = await altSetupProcess?.(currentVariables);
         // We validate again, just in case
         if (loadedVariables == null || !_areVariablesValid(loadedVariables)) {
+            // eslint-disable-next-line preserve-caught-error
             throw new Error(ERROR_MSG.BAD_SETUP_PROCESS());
         }
 

@@ -15,7 +15,8 @@ export const envVariables = [
     'ALLOW_CUSTOM_TIME_SIGNATURE',
     'TIME_SIGNATURE_NUMERATOR_CC',
     'TIME_SIGNATURE_DENOMINATOR_CC',
-    'REPETITIONS_PER_LOOP'
+    'REPETITIONS_PER_LOOP',
+    'ALLOW_MANUAL_CC_MESSAGES'
 ] as const;
 
 export type EnvObject = Record<(typeof envVariables)[number], string>;
@@ -31,6 +32,7 @@ export interface ParsedEnvObject extends Omit<
     | 'TIME_SIGNATURE_NUMERATOR_CC'
     | 'TIME_SIGNATURE_DENOMINATOR_CC'
     | 'REPETITIONS_PER_LOOP'
+    | 'ALLOW_MANUAL_CC_MESSAGES'
 > {
     REWARDS_MODE: boolean;
     VIP_REWARDS_MODE: boolean;
@@ -41,4 +43,5 @@ export interface ParsedEnvObject extends Omit<
     TIME_SIGNATURE_NUMERATOR_CC: number;
     TIME_SIGNATURE_DENOMINATOR_CC: number;
     REPETITIONS_PER_LOOP: number;
+    ALLOW_MANUAL_CC_MESSAGES: boolean;
 }
