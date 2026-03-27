@@ -77,7 +77,8 @@ export const onMessageHandlerClosure = (authProvider: RefreshingAuthProvider, ch
                         silenceMessages: isMacroMessage && env.SILENCE_MACRO_MESSAGES,
                         allowCustomTimeSignature: env.ALLOW_CUSTOM_TIME_SIGNATURE,
                         timeSignatureCC: [env.TIME_SIGNATURE_NUMERATOR_CC, env.TIME_SIGNATURE_DENOMINATOR_CC],
-                        repetitionsPerLoop: env.REPETITIONS_PER_LOOP
+                        repetitionsPerLoop: env.REPETITIONS_PER_LOOP,
+                        allowManualCCMessages: env.ALLOW_MANUAL_CC_MESSAGES
                     },
                     twitch
                 );

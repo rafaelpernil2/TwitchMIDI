@@ -117,7 +117,7 @@ So far, this first version does all that, keep reading the features for more det
   * See the current chord progression via [!midicurrentrequest](#midicurrentrequest)
   * Check the chord progression request queue via [!midirequestqueue](#midirequestqueue)
   * Change MIDI velocity via [!midivolume](#midivolume)
-  * Send CC (Control Change) messages and sweeps between values via [!sendcc](#sendcc)
+  * Send CC (Control Change) messages and sweeps between values via [!sendcc](#sendcc) and optionally limit requests only to CC Command aliases by disabling `ALLOW_MANUAL_CC_MESSAGES` .env flag
   * Clock-Loop synchronizer to correct sync issues via [!syncmidi](#syncmidi)
   * Automatic synchronization that forces loops to wait until the start of the beat
   * On/Off bot toggle with [!midion](#midion)/[!midioff](#midioff)
@@ -216,7 +216,7 @@ So far, this first version does all that, keep reading the features for more det
 
 
 #### !sendcc
-&nbsp;&nbsp;&nbsp;&nbsp;Sends a MIDI CC message with an alias, code or value sweeps.
+&nbsp;&nbsp;&nbsp;&nbsp;Sends a MIDI CC message with an alias, code or value sweeps. If ALLOW_MANUAL_CC_MESSAGES is set to false, only predefined CC command aliases from [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json) are accepted.
 
 &nbsp;&nbsp;&nbsp;&nbsp;Syntax:
 

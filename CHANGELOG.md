@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.0.3] - 2026-03-27
+### Added
+- New .env flag ALLOW_MANUAL_CC_MESSAGES to control whether users can send arbitrary CC messages via !sendcc. When disabled, only predefined CC command aliases from aliases.json are allowed (e.g. "!sendcc cutoff sweep" works but "!sendcc cutoff 64" does not)
+
 ## [3.0.2] - 2026-03-26
 ### Added
 - Reference to [loop.twitchmidi.com](https://loop.twitchmidi.com) in !sendloop help text and README for building and testing loops before making a request
@@ -532,6 +536,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.0.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v2.7.2...v3.0.0

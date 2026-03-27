@@ -7,12 +7,13 @@ import { EnvObject, ParsedEnvObject } from './types.js';
  * @returns ParsedEnvVariables
  */
 export function parseEnvVariables(env: EnvObject): ParsedEnvObject {
-    const [REWARDS_MODE, VIP_REWARDS_MODE, SEND_UNAUTHORIZED_MESSAGE, SILENCE_MACRO_MESSAGES, ALLOW_CUSTOM_TIME_SIGNATURE] = getBooleanByStringList(
+    const [REWARDS_MODE, VIP_REWARDS_MODE, SEND_UNAUTHORIZED_MESSAGE, SILENCE_MACRO_MESSAGES, ALLOW_CUSTOM_TIME_SIGNATURE, ALLOW_MANUAL_CC_MESSAGES] = getBooleanByStringList(
         env.REWARDS_MODE,
         env.VIP_REWARDS_MODE,
         env.SEND_UNAUTHORIZED_MESSAGE,
         env.SILENCE_MACRO_MESSAGES,
-        env.ALLOW_CUSTOM_TIME_SIGNATURE
+        env.ALLOW_CUSTOM_TIME_SIGNATURE,
+        env.ALLOW_MANUAL_CC_MESSAGES
     );
     const TARGET_MIDI_CHANNEL = Number(env.TARGET_MIDI_CHANNEL) - 1;
 
@@ -30,6 +31,7 @@ export function parseEnvVariables(env: EnvObject): ParsedEnvObject {
         ALLOW_CUSTOM_TIME_SIGNATURE,
         TIME_SIGNATURE_NUMERATOR_CC,
         TIME_SIGNATURE_DENOMINATOR_CC,
-        REPETITIONS_PER_LOOP
+        REPETITIONS_PER_LOOP,
+        ALLOW_MANUAL_CC_MESSAGES
     };
 }

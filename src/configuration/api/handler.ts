@@ -250,7 +250,7 @@ function _onRequest(
             case '/isActive': {
                 switch (req.method) {
                     case 'GET': {
-                        let isActive = false;
+                        let isActive;
                         try {
                             checkMIDIConnection();
                             isActive = true;

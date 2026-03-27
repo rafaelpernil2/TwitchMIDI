@@ -253,10 +253,10 @@ export function wrongloop(...[, { silenceMessages }, { chatClient, channel, user
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function sendcc(...[message, { targetMIDIChannel, silenceMessages }, { chatClient, channel, user }]: CommandParams): void {
+export function sendcc(...[message, { targetMIDIChannel, silenceMessages, allowManualCCMessages }, { chatClient, channel, user }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
-    const ccCommandList = _getCCCommandList(message);
+    const ccCommandList = _getCCCommandList(message, { allowManualCCMessages });
 
     triggerCCCommandList(ccCommandList, targetMIDIChannel);
 
@@ -532,11 +532,18 @@ function _getChordProgression(
 /**
  * Retrieves a set of CC commands saved for an alias or splits the one sent
  * @param message Alias or CC commands
+ * @param options { allowManualCCMessages }: { allowManualCCMessages: boolean }
  * @return List of parsed CC Commands
  */
-function _getCCCommandList(message: string): CCCommand[] {
+function _getCCCommandList(message: string, { allowManualCCMessages }: { allowManualCCMessages: boolean }): CCCommand[] {
     const aliasToLookup = message.toLowerCase();
-    const ccCommandList = ALIASES_DB.select(CC_COMMANDS_KEY, aliasToLookup) ?? message.split(GLOBAL.COMMA_SEPARATOR);
+    const aliasResult = ALIASES_DB.select(CC_COMMANDS_KEY, aliasToLookup);
+
+    if (aliasResult == null && !allowManualCCMessages) {
+        throw new Error(ERROR_MSG.MANUAL_CC_NOT_ALLOWED());
+    }
+
+    const ccCommandList = aliasResult ?? message.split(GLOBAL.COMMA_SEPARATOR);
     if (ccCommandList.length < 1) {
         throw new Error(ERROR_MSG.BAD_MIDI_MESSAGE());
     }

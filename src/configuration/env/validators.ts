@@ -81,6 +81,16 @@ export function ALLOW_CUSTOM_TIME_SIGNATURE(value: string): boolean {
 }
 
 /**
+ * Validates ALLOW_MANUAL_CC_MESSAGES to make sure the boolean is valid
+ * @param value
+ * @returns If it's valid
+ */
+export function ALLOW_MANUAL_CC_MESSAGES(value: string): boolean {
+    _validateBoolean(value, 'ALLOW_MANUAL_CC_MESSAGES');
+    return true;
+}
+
+/**
  * Validates REPETITIONS_PER_LOOP to make sure the value is valid
  * @param value
  * @returns If it's valid
