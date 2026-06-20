@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [TwitchMIDI]
 
 ## [3.1.0] - 2026-06-20
+### Added
+- New .env flag ALLOW_MANUAL_LOOPS to control whether users can request arbitrary chord progressions via !sendloop. When disabled, only predefined chord progression aliases from aliases.json are allowed (e.g. "!sendloop pop" works but "!sendloop C G Amin F" does not)
 ### Changed
 - MIDI Clock rewritten as a drift-compensated hybrid scheduler (coarse timer + short busy-wait tail) instead of NanoTimer's continuous busy-wait. Keeps sub-millisecond precision while dropping CPU usage from a fully pinned core to a small fraction. Spin window is tunable via CLOCK_SPIN_MARGIN_NS
 - Note timing now uses plain timers instead of NanoTimer, removing the busy-wait that competed with the clock and reducing allocation churn

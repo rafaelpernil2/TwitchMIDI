@@ -54,7 +54,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "26.0.0",
-    "@yao-pkg/pkg": "6.20.0",
+    "@yao-pkg/pkg": "6.14.1",
     "bestzip": "3.0.1",
     "cpy-cli": "7.0.0",
     "del-cli": "7.0.0",

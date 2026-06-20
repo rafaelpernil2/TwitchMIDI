@@ -109,7 +109,7 @@ So far, this first version does all that, keep reading the features for more det
   * Sequencer on 4/4 time signature with infinite subdivisions (1 = Quarter note, 0.5 = 8th note, 0.25 = 16th note...)
   * Each loop repeats itself 4 times by default before moving to the next loop in queue
   * Trigger individual notes, build a chord or send a melody separated by commas via [!sendnote](#sendnote)
-  * Trigger looped chord progressions with specific length per chord via [!sendloop](#sendloop) with an extensive list of chords to choose from. See [CHORDS.md](CHORDS.md)
+  * Trigger looped chord progressions with specific length per chord via [!sendloop](#sendloop) with an extensive list of chords to choose from. See [CHORDS.md](CHORDS.md). Optionally limit requests only to saved chord progression aliases by disabling `ALLOW_MANUAL_LOOPS` .env flag
   * Remove your last request if you change your mind via [!wrongloop](#wrongloop)
   * Limit to one request in queue per user (unless user is broadcaster or mod). The user has to wait until their request has played to request again
   * Support for music rests using "rest" as a replacement for a chord or note in [!sendnote](#sendnote) and [!sendloop](#sendloop) requests
@@ -202,7 +202,7 @@ So far, this first version does all that, keep reading the features for more det
 
 
 #### !sendloop
-&nbsp;&nbsp;&nbsp;&nbsp;Sends a loop with an alias or with chords.
+&nbsp;&nbsp;&nbsp;&nbsp;Sends a loop with an alias or with chords. If ALLOW_MANUAL_LOOPS is set to false, only predefined chord progression aliases from [config/aliases.json](https://github.com/rafaelpernil2/TwitchMIDI/blob/master/config/aliases.json) are accepted.
 
 &nbsp;&nbsp;&nbsp;&nbsp;Syntax:
 

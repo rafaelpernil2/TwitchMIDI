@@ -51,7 +51,8 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         TIME_SIGNATURE_NUMERATOR_CC,
         TIME_SIGNATURE_DENOMINATOR_CC,
         REPETITIONS_PER_LOOP,
-        ALLOW_MANUAL_CC_MESSAGES
+        ALLOW_MANUAL_CC_MESSAGES,
+        ALLOW_MANUAL_LOOPS
     } = targetEnv;
 
     // STEP 1
@@ -139,6 +140,9 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
 
         const allowManualCCMessages = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_ALLOW_MANUAL_CC_MESSAGES_QUESTION'), ALLOW_MANUAL_CC_MESSAGES)) || 'Y';
         ALLOW_MANUAL_CC_MESSAGES = String(getBooleanByString(allowManualCCMessages));
+
+        const allowManualLoops = (await _makeQuestion(rl, i18n.t('SETUP_STEP_3_ALLOW_MANUAL_LOOPS_QUESTION'), ALLOW_MANUAL_LOOPS)) || 'Y';
+        ALLOW_MANUAL_LOOPS = String(getBooleanByString(allowManualLoops));
     }
 
     // STEP 4
@@ -179,6 +183,7 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'TIME_SIGNATURE_DENOMINATOR_CC=' + TIME_SIGNATURE_DENOMINATOR_CC + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'REPETITIONS_PER_LOOP=' + REPETITIONS_PER_LOOP + '\n');
     await fs.appendFile(CONFIG.DOT_ENV_PATH, 'ALLOW_MANUAL_CC_MESSAGES=' + ALLOW_MANUAL_CC_MESSAGES + '\n');
+    await fs.appendFile(CONFIG.DOT_ENV_PATH, 'ALLOW_MANUAL_LOOPS=' + ALLOW_MANUAL_LOOPS + '\n');
 
     rl.close();
     console.log(chalk.greenBright(i18n.t('SETUP_STEP_END')));
@@ -207,7 +212,8 @@ export async function setupConfiguration(currentVariables: EnvObject): Promise<E
         TIME_SIGNATURE_NUMERATOR_CC,
         TIME_SIGNATURE_DENOMINATOR_CC,
         REPETITIONS_PER_LOOP,
-        ALLOW_MANUAL_CC_MESSAGES
+        ALLOW_MANUAL_CC_MESSAGES,
+        ALLOW_MANUAL_LOOPS
     };
 }
 
@@ -264,7 +270,8 @@ function isStep3Invalid({
     TIME_SIGNATURE_NUMERATOR_CC,
     TIME_SIGNATURE_DENOMINATOR_CC,
     REPETITIONS_PER_LOOP,
-    ALLOW_MANUAL_CC_MESSAGES
+    ALLOW_MANUAL_CC_MESSAGES,
+    ALLOW_MANUAL_LOOPS
 }: EnvObject): boolean {
     return (
         isNullish(REWARDS_MODE) ||
@@ -276,7 +283,8 @@ function isStep3Invalid({
         isNullish(TIME_SIGNATURE_NUMERATOR_CC) ||
         isNullish(TIME_SIGNATURE_DENOMINATOR_CC) ||
         isNullish(REPETITIONS_PER_LOOP) ||
-        isNullish(ALLOW_MANUAL_CC_MESSAGES)
+        isNullish(ALLOW_MANUAL_CC_MESSAGES) ||
+        isNullish(ALLOW_MANUAL_LOOPS)
     );
 }
 

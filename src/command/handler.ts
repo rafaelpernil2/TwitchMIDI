@@ -221,12 +221,16 @@ export async function sendnote(...[message, { targetMIDIChannel, silenceMessages
  *         ]
  */
 export function sendloop(
-    ...[message, { targetMIDIChannel, silenceMessages, allowCustomTimeSignature, timeSignatureCC, repetitionsPerLoop }, { chatClient, channel, user, userRoles }]: CommandParams
+    ...[
+        message,
+        { targetMIDIChannel, silenceMessages, allowCustomTimeSignature, timeSignatureCC, repetitionsPerLoop, allowManualLoops },
+        { chatClient, channel, user, userRoles }
+    ]: CommandParams
 ): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Queue chord progression petition
-    const data = _getChordProgression(message, { allowCustomTimeSignature });
+    const data = _getChordProgression(message, { allowCustomTimeSignature, allowManualLoops });
     enqueue(message, data, user, userRoles, Command.sendloop);
     autoStartClock(targetMIDIChannel);
     createAutomaticClockSyncedQueue(targetMIDIChannel, timeSignatureCC, { allowCustomTimeSignature, repetitionsPerLoop });
@@ -516,15 +520,22 @@ function _getNoteList(message: string): Array<[note: string, timeSubDivision: nu
 /**
  * Looks up a chord progression/loop or returns the original message if not found
  * @param message Command arguments (alias or chord progression)
- * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+ * @param options { allowCustomTimeSignature, allowManualLoops }
  * @returns Chord progression
  */
 function _getChordProgression(
     message: string,
-    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+    { allowCustomTimeSignature, allowManualLoops }: { allowCustomTimeSignature: boolean; allowManualLoops: boolean }
 ): Array<[timeSignature: [noteCount: number, noteValue: number], chordProgression: Array<[noteList: string[], timeSubDivision: number]>]> {
     const aliasToLookup = message.toLowerCase();
-    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, aliasToLookup) ?? message;
+    const aliasResult = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, aliasToLookup);
+
+    // When manual loops are disabled, only saved chord progression aliases are accepted
+    if (aliasResult == null && !allowManualLoops) {
+        throw new Error(ERROR_MSG.MANUAL_LOOP_NOT_ALLOWED());
+    }
+
+    const chordProgression = aliasResult ?? message;
     // Check everything is okay
     return _parseChordProgressionList(chordProgression, { allowCustomTimeSignature });
 }
