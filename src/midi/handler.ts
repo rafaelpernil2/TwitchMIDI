@@ -283,6 +283,12 @@ function _processNoteList(noteList: Array<[note: string, timeSubDivision: number
     return noteList.map(([note, timeSubDivision]) => [note, _calculateTimeout(timeSubDivision, tempo)]);
 }
 
+// Memoization cache for processed chord progressions.
+// Keyed by the raw progression array reference (stable while the request lives in the queue)
+// and then by tempo. A WeakMap lets entries be GC'd once the request leaves the queue.
+// This avoids rebuilding the same array on every bar, which caused GC pressure on long loops.
+const _chordProgressionCache = new WeakMap<Array<[noteList: string[], timeSubDivision: number]>, Map<number, Array<[noteList: string[], timeout: number]>>>();
+
 /**
  * Processes a chord progression string to be played in a 4/4 beat
  * @param chordProgressionList Chord progression separated by spaces
@@ -290,12 +296,24 @@ function _processNoteList(noteList: Array<[note: string, timeSubDivision: number
  * @return List of notes to play with their respective release times
  */
 function _processChordProgression(chordProgressionList: Array<[noteList: string[], timeSubDivision: number]>, tempo: number): Array<[noteList: string[], timeout: number]> {
+    let perTempoCache = _chordProgressionCache.get(chordProgressionList);
+    if (perTempoCache == null) {
+        perTempoCache = new Map();
+        _chordProgressionCache.set(chordProgressionList, perTempoCache);
+    }
+    const cached = perTempoCache.get(tempo);
+    if (cached != null) {
+        return cached;
+    }
+
     const lastChordIndex = chordProgressionList.length - 1;
-    return chordProgressionList.map(([chord, timeSubdivision], index) => {
+    const processed = chordProgressionList.map<[noteList: string[], timeout: number]>(([chord, timeSubdivision], index) => {
         // If it is the last, reduce the note length to make sure the loop executes properly
         const multiplier = index !== lastChordIndex ? 1 : 0.8;
         return [chord, Math.round(_calculateTimeout(timeSubdivision, tempo) * multiplier)];
     });
+    perTempoCache.set(tempo, processed);
+    return processed;
 }
 
 /**

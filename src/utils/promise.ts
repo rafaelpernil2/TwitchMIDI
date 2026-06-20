@@ -1,4 +1,3 @@
-import NanoTimer from 'nanotimer';
 import https from 'https';
 import http from 'http';
 import { isJsonString } from './generic.js';
@@ -17,9 +16,12 @@ export async function setTimeoutPromise(timeout: number): Promise<void> {
         return;
     }
 
-    const timer = new NanoTimer();
+    // Plain setTimeout (milliseconds). Note release timing tolerates sub-millisecond slop,
+    // so this avoids NanoTimer's busy-wait tail, which pinned the event loop and starved
+    // the MIDI clock tick. Sub-millisecond precision is reserved for the clock itself.
+    const timeoutMs = timeout / 1_000_000;
     return new Promise((resolve) => {
-        timer.setTimeout(resolve, '', String(timeout) + 'n');
+        setTimeout(resolve, timeoutMs);
     });
 }
 

@@ -105,7 +105,7 @@ So far, this first version does all that, keep reading the features for more det
 ## Features
 
 * Wide set of MIDI functionalities:
-  * High precision MIDI Clock using "nanotimer" with adjustable tempo via [!settempo](#settempo)
+  * High precision MIDI Clock using a drift-compensated hybrid scheduler with adjustable tempo via [!settempo](#settempo)
   * Sequencer on 4/4 time signature with infinite subdivisions (1 = Quarter note, 0.5 = 8th note, 0.25 = 16th note...)
   * Each loop repeats itself 4 times by default before moving to the next loop in queue
   * Trigger individual notes, build a chord or send a melody separated by commas via [!sendnote](#sendnote)

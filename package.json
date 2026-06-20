@@ -39,8 +39,7 @@
     "dotenv": "17.3.1",
     "harmonics": "1.1.0",
     "i18next": "25.10.10",
-    "jzz": "1.9.6",
-    "nanotimer": "0.3.15"
+    "jzz": "1.9.6"
   },
   "pkg": {
     "assets": [
@@ -54,7 +53,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/nanotimer": "0.3.2",
     "@types/node": "25.5.0",
     "@yao-pkg/pkg": "6.14.1",
     "bestzip": "2.2.3",
