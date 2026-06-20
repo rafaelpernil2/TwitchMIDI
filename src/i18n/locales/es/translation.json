@@ -94,6 +94,7 @@
         "ERROR_MIDI_CONNECTION_ERROR": "No se pudo conectar mediante MIDI. Asegúrate de que tu dispositivo MIDI virtual está activado o revisa tus ajustes (e.g. loopMIDI está abierto)",
         "ERROR_BAD_CC_MESSAGE": "Mensaje de \"Control Change\" mal formado, por favor, revisa tus valores. Controlador/valor debe estar entre 0 y 127 (ambos incluídos)",
         "ERROR_MANUAL_CC_NOT_ALLOWED": "Los mensajes CC manuales no están permitidos. Usa un alias de comando CC predefinido en su lugar",
+        "ERROR_PROTECTED_TIME_SIGNATURE_CC": "Estos números de CC controlan el compás y no se pueden fijar directamente con !sendcc. Usa la sintaxis [X/Y] para que el tempo del loop siga sincronizado. CCs protegidos:",
         "ERROR_BAD_SWEEP_DELAY": "Barrido de \"Control Change\" inválido, asegúrate de que tus tiempos de delay están en orden incremental",
         "ERROR_BAD_PERMISSIONS": "No tienes suficientes permisos para usar este comando. Lo siento!",
         "ERROR_INVALID_SWEEP_RANGE": "Rango de barrido inválido",

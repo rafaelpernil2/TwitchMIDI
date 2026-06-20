@@ -94,6 +94,7 @@
         "ERROR_MIDI_CONNECTION_ERROR": "MIDI could not connect. Make sure your virtual MIDI device is active or review your settings (e.g. loopMIDI is open)",
         "ERROR_BAD_CC_MESSAGE": "Bad Control Change message, please review your values. Controller/value must be between 0 and 127 (inclusive)",
         "ERROR_MANUAL_CC_NOT_ALLOWED": "Manual CC messages are not allowed. Use a predefined CC command alias instead",
+        "ERROR_PROTECTED_TIME_SIGNATURE_CC": "These CC numbers control the time signature and cannot be set directly via !sendcc. Use the [X/Y] syntax so loop timing stays in sync. Protected CCs:",
         "ERROR_BAD_SWEEP_DELAY": "Invalid control change sweep, make sure your delay times are in incremental order",
         "ERROR_BAD_PERMISSIONS": "You don't have enough permissions to use this command. Sorry!",
         "ERROR_INVALID_SWEEP_RANGE": "Invalid sweep range",

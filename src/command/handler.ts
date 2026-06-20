@@ -253,10 +253,10 @@ export function wrongloop(...[, { silenceMessages }, { chatClient, channel, user
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function sendcc(...[message, { targetMIDIChannel, silenceMessages, allowManualCCMessages }, { chatClient, channel, user }]: CommandParams): void {
+export function sendcc(...[message, { targetMIDIChannel, silenceMessages, allowManualCCMessages, timeSignatureCC }, { chatClient, channel, user }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
-    const ccCommandList = _getCCCommandList(message, { allowManualCCMessages });
+    const ccCommandList = _getCCCommandList(message, { allowManualCCMessages, timeSignatureCC });
 
     triggerCCCommandList(ccCommandList, targetMIDIChannel);
 
@@ -535,7 +535,10 @@ function _getChordProgression(
  * @param options { allowManualCCMessages }: { allowManualCCMessages: boolean }
  * @return List of parsed CC Commands
  */
-function _getCCCommandList(message: string, { allowManualCCMessages }: { allowManualCCMessages: boolean }): CCCommand[] {
+function _getCCCommandList(
+    message: string,
+    { allowManualCCMessages, timeSignatureCC }: { allowManualCCMessages: boolean; timeSignatureCC: [numeratorCC: number, denominatorCC: number] }
+): CCCommand[] {
     const aliasToLookup = message.toLowerCase();
     const aliasResult = ALIASES_DB.select(CC_COMMANDS_KEY, aliasToLookup);
 
@@ -549,7 +552,24 @@ function _getCCCommandList(message: string, { allowManualCCMessages }: { allowMa
     }
 
     const rawCCCommandList = ccCommandList.map(_parseCCCommand);
+    // Block direct writes to the time-signature CC numbers (both manual and alias paths). Setting them
+    // here bypasses TwitchMIDI's time-signature logic, so clockPulses (bar length) would not update and
+    // the loop timing would drift from the DAW's meter. Only the [X/Y] syntax may change these.
+    _checkNotProtectedTimeSignatureCC(rawCCCommandList, timeSignatureCC);
     return _parseCCCommandList(rawCCCommandList);
+}
+
+/**
+ * Throws if any CC command targets a time-signature CC number, which must only be changed
+ * through the [X/Y] time-signature syntax to keep loop timing in sync with the DAW meter
+ * @param ccCommandList Parsed CC commands
+ * @param timeSignatureCC [numeratorCC, denominatorCC]
+ */
+function _checkNotProtectedTimeSignatureCC(ccCommandList: CCCommand[], [numeratorCC, denominatorCC]: [numeratorCC: number, denominatorCC: number]): void {
+    const hasProtectedCC = ccCommandList.some(([controller]) => controller === numeratorCC || controller === denominatorCC);
+    if (hasProtectedCC) {
+        throw new Error(ERROR_MSG.PROTECTED_TIME_SIGNATURE_CC(numeratorCC, denominatorCC));
+    }
 }
 
 /**

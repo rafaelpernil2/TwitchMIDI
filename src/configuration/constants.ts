@@ -102,6 +102,7 @@ export const ERROR_MSG = {
     MIDI_CONNECTION_ERROR: () => i18n.t('ERROR_MIDI_CONNECTION_ERROR'),
     BAD_CC_MESSAGE: () => i18n.t('ERROR_BAD_CC_MESSAGE'),
     MANUAL_CC_NOT_ALLOWED: () => i18n.t('ERROR_MANUAL_CC_NOT_ALLOWED'),
+    PROTECTED_TIME_SIGNATURE_CC: (numeratorCC: number, denominatorCC: number) => i18n.t('ERROR_PROTECTED_TIME_SIGNATURE_CC') + ` ${numeratorCC}, ${denominatorCC}`,
     BAD_SWEEP_DELAY: () => i18n.t('ERROR_BAD_SWEEP_DELAY'),
     BAD_PERMISSIONS: () => i18n.t('ERROR_BAD_PERMISSIONS'),
     INVALID_SWEEP_RANGE: () => i18n.t('ERROR_INVALID_SWEEP_RANGE'),
@@ -140,6 +141,7 @@ export const GLOBAL = {
     CLOSE_SQUARE_BRACKETS: ']',
     CC_CONTROLLER: 'CC#',
     MUSIC_REST_TOKEN: 'rest',
+    MIDI_CC_RESET_ALL_CONTROLLERS: 121,
     ETC: '...'
 } as const;
 
