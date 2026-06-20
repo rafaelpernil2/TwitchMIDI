@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.1.1] - 2026-06-20
+### Fixed
+- Config API /refreshConfig?file=rewards no longer crashes the bot when called on a channel without channel points or when rewards mode is off
+
 ## [3.1.0] - 2026-06-20
 ### Added
 - New .env flag ALLOW_MANUAL_LOOPS to control whether users can request arbitrary chord progressions via !sendloop. When disabled, only predefined chord progression aliases from aliases.json are allowed (e.g. "!sendloop pop" works but "!sendloop C G Amin F" does not)
@@ -551,6 +555,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.1.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.3...v3.1.0
 [3.0.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.1...v3.0.2
