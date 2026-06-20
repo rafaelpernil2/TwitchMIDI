@@ -2,7 +2,7 @@ import { RefreshingAuthProvider } from '@twurple/auth';
 import { writeFileSync, rmSync, existsSync, readFileSync } from 'fs';
 import { CONFIG, ERROR_MSG } from '../../configuration/constants.js';
 import { ParsedEnvObject } from '../../configuration/env/types.js';
-import { stopAllMidi } from '../../midi/handler.js';
+import { shutdownMIDI } from '../../midi/handler.js';
 import { toggleRewardsStatus } from '../../twitch/rewards/handler.js';
 import process from 'process';
 
@@ -57,11 +57,18 @@ export function attachExitCallbacksAfterInit(broadcasterAuthProvider: Refreshing
     process.removeAllListeners('exit');
     process.removeAllListeners('SIGHUP');
     process.removeAllListeners('SIGINT');
+    process.removeAllListeners('SIGBREAK');
+    process.removeAllListeners('SIGTERM');
     process.removeAllListeners('uncaughtException');
 
-    process.on('exit', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    // 'exit' is synchronous-only: keep it for lock release. The async MIDI teardown (port close)
+    // runs on the signal paths below (Ctrl+C, Ctrl+Break, console close, terminate), which are the
+    // real shutdown triggers and can await before the process exits.
+    process.on('exit', _releaseLock);
     process.on('SIGHUP', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('SIGINT', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    process.on('SIGBREAK', _onExitProcessAfterInit(broadcasterAuthProvider, env));
+    process.on('SIGTERM', _onExitProcessAfterInit(broadcasterAuthProvider, env));
     process.on('uncaughtException', _onExitProcessAfterInit(broadcasterAuthProvider, env));
 }
 
@@ -95,7 +102,8 @@ function _onExitProcessAfterInit(broadcasterAuthProvider: RefreshingAuthProvider
     // After initialization check everything
     return async () => {
         try {
-            stopAllMidi(env.TARGET_MIDI_CHANNEL);
+            // Send a MIDI panic and close the port cleanly so the OS releases the virtual handle
+            await shutdownMIDI(env.TARGET_MIDI_CHANNEL);
         } catch {
             // Do nothing
         }

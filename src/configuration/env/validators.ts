@@ -91,6 +91,16 @@ export function ALLOW_MANUAL_CC_MESSAGES(value: string): boolean {
 }
 
 /**
+ * Validates ALLOW_MANUAL_LOOPS to make sure the boolean is valid
+ * @param value
+ * @returns If it's valid
+ */
+export function ALLOW_MANUAL_LOOPS(value: string): boolean {
+    _validateBoolean(value, 'ALLOW_MANUAL_LOOPS');
+    return true;
+}
+
+/**
  * Validates REPETITIONS_PER_LOOP to make sure the value is valid
  * @param value
  * @returns If it's valid

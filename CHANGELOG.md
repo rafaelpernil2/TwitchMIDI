@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [TwitchMIDI]
 
+## [3.1.0] - 2026-06-20
+### Added
+- New .env flag ALLOW_MANUAL_LOOPS to control whether users can request arbitrary chord progressions via !sendloop. When disabled, only predefined chord progression aliases from aliases.json are allowed (e.g. "!sendloop pop" works but "!sendloop C G Amin F" does not)
+### Changed
+- MIDI Clock rewritten as a drift-compensated hybrid scheduler (coarse timer + short busy-wait tail) instead of NanoTimer's continuous busy-wait. Keeps sub-millisecond precision while dropping CPU usage from a fully pinned core to a small fraction. Spin window is tunable via CLOCK_SPIN_MARGIN_NS
+- Note timing now uses plain timers instead of NanoTimer, removing the busy-wait that competed with the clock and reducing allocation churn
+- Processed chord progressions are now memoized per request and tempo, avoiding a full rebuild every bar and reducing GC pressure that caused audio stutter on long sessions
+- Removed the nanotimer dependency (no longer used) and updated dependencies
+### Fixed
+- MIDI port is now closed cleanly on process shutdown (Ctrl+C, console close, terminate) instead of leaking the virtual port handle, which could leave the DAW silent after a quick reopen while MIDI was still being sent
+- Channel state (all sound off, all notes off, reset controllers) is reset on reconnect so a stale CC left from a previous session can no longer silence the channel
+- !sendcc can no longer write directly to the time-signature CC numbers (numerator/denominator), via either manual messages or aliases. Such writes bypassed TwitchMIDI's time-signature logic and desynced loop timing from the DAW meter; only the [X/Y] syntax may change the meter now
+
 ## [3.0.3] - 2026-03-27
 ### Added
 - New .env flag ALLOW_MANUAL_CC_MESSAGES to control whether users can send arbitrary CC messages via !sendcc. When disabled, only predefined CC command aliases from aliases.json are allowed (e.g. "!sendcc cutoff sweep" works but "!sendcc cutoff 64" does not)
@@ -538,6 +551,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [TwitchMIDI]: https://github.com/rafaelpernil2/TwitchMIDI
+[3.1.0]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.3...v3.1.0
 [3.0.3]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/rafaelpernil2/TwitchMIDI/compare/v3.0.0...v3.0.1

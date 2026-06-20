@@ -69,6 +69,7 @@ export interface CommandConfigParams {
     timeSignatureCC: [numeratorCC: number, denominatorCC: number];
     repetitionsPerLoop: number;
     allowManualCCMessages: boolean;
+    allowManualLoops: boolean;
 }
 
 /**

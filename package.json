@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "type": "module",
   "main": "lib/index.js",
@@ -36,11 +36,10 @@
     "@twurple/chat": "7.4.0",
     "@twurple/eventsub-ws": "7.4.0",
     "chalk": "4.1.2",
-    "dotenv": "17.3.1",
+    "dotenv": "17.4.2",
     "harmonics": "1.1.0",
     "i18next": "25.10.10",
-    "jzz": "1.9.6",
-    "nanotimer": "0.3.15"
+    "jzz": "1.9.6"
   },
   "pkg": {
     "assets": [
@@ -54,21 +53,20 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/nanotimer": "0.3.2",
-    "@types/node": "25.5.0",
+    "@types/node": "26.0.0",
     "@yao-pkg/pkg": "6.14.1",
-    "bestzip": "2.2.3",
+    "bestzip": "3.0.1",
     "cpy-cli": "7.0.0",
     "del-cli": "7.0.0",
-    "esbuild": "0.27.4",
-    "eslint": "^10.1.0",
+    "esbuild": "0.28.1",
+    "eslint": "^10.5.0",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-prettier": "5.5.5",
-    "find-unused-exports": "7.1.1",
-    "globals": "17.4.0",
-    "prettier": "3.8.1",
+    "eslint-plugin-prettier": "5.5.6",
+    "find-unused-exports": "9.0.0",
+    "globals": "17.6.0",
+    "prettier": "3.8.4",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.57.2"
+    "typescript-eslint": "8.61.1"
   },
   "prettier": {
     "printWidth": 180,

@@ -31,6 +31,7 @@ export function showInitReadyMessages(env: ParsedEnvObject): void {
     console.log(chalk.magenta(i18n.t('INIT_SEND_UNAUTHORIZED_MESSAGE_FLAG')), chalk.magentaBright(getTextByBoolean(env.SEND_UNAUTHORIZED_MESSAGE)), '\n');
     console.log(chalk.magenta(i18n.t('INIT_SILENCE_MACRO_MESSAGES')), chalk.magentaBright(getTextByBoolean(env.SILENCE_MACRO_MESSAGES)), '\n');
     console.log(chalk.magenta(i18n.t('INIT_ALLOW_MANUAL_CC_MESSAGES')), chalk.magentaBright(getTextByBoolean(env.ALLOW_MANUAL_CC_MESSAGES)), '\n');
+    console.log(chalk.magenta(i18n.t('INIT_ALLOW_MANUAL_LOOPS')), chalk.magentaBright(getTextByBoolean(env.ALLOW_MANUAL_LOOPS)), '\n');
     console.log(chalk.magenta(i18n.t('INIT_ALLOW_CUSTOM_TIME_SIGNATURE')), chalk.magentaBright(getTextByBoolean(env.ALLOW_CUSTOM_TIME_SIGNATURE)));
 
     // Values

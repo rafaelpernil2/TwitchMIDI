@@ -221,12 +221,16 @@ export async function sendnote(...[message, { targetMIDIChannel, silenceMessages
  *         ]
  */
 export function sendloop(
-    ...[message, { targetMIDIChannel, silenceMessages, allowCustomTimeSignature, timeSignatureCC, repetitionsPerLoop }, { chatClient, channel, user, userRoles }]: CommandParams
+    ...[
+        message,
+        { targetMIDIChannel, silenceMessages, allowCustomTimeSignature, timeSignatureCC, repetitionsPerLoop, allowManualLoops },
+        { chatClient, channel, user, userRoles }
+    ]: CommandParams
 ): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
     // Queue chord progression petition
-    const data = _getChordProgression(message, { allowCustomTimeSignature });
+    const data = _getChordProgression(message, { allowCustomTimeSignature, allowManualLoops });
     enqueue(message, data, user, userRoles, Command.sendloop);
     autoStartClock(targetMIDIChannel);
     createAutomaticClockSyncedQueue(targetMIDIChannel, timeSignatureCC, { allowCustomTimeSignature, repetitionsPerLoop });
@@ -253,10 +257,10 @@ export function wrongloop(...[, { silenceMessages }, { chatClient, channel, user
  *         twitch: { chatClient, channel, user, userRoles } // Twitch chat and user data
  *         ]
  */
-export function sendcc(...[message, { targetMIDIChannel, silenceMessages, allowManualCCMessages }, { chatClient, channel, user }]: CommandParams): void {
+export function sendcc(...[message, { targetMIDIChannel, silenceMessages, allowManualCCMessages, timeSignatureCC }, { chatClient, channel, user }]: CommandParams): void {
     _checkMessageNotEmpty(message);
     checkMIDIConnection();
-    const ccCommandList = _getCCCommandList(message, { allowManualCCMessages });
+    const ccCommandList = _getCCCommandList(message, { allowManualCCMessages, timeSignatureCC });
 
     triggerCCCommandList(ccCommandList, targetMIDIChannel);
 
@@ -516,15 +520,22 @@ function _getNoteList(message: string): Array<[note: string, timeSubDivision: nu
 /**
  * Looks up a chord progression/loop or returns the original message if not found
  * @param message Command arguments (alias or chord progression)
- * @param options { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+ * @param options { allowCustomTimeSignature, allowManualLoops }
  * @returns Chord progression
  */
 function _getChordProgression(
     message: string,
-    { allowCustomTimeSignature }: { allowCustomTimeSignature: boolean }
+    { allowCustomTimeSignature, allowManualLoops }: { allowCustomTimeSignature: boolean; allowManualLoops: boolean }
 ): Array<[timeSignature: [noteCount: number, noteValue: number], chordProgression: Array<[noteList: string[], timeSubDivision: number]>]> {
     const aliasToLookup = message.toLowerCase();
-    const chordProgression = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, aliasToLookup) ?? message;
+    const aliasResult = ALIASES_DB.select(CHORD_PROGRESSIONS_KEY, aliasToLookup);
+
+    // When manual loops are disabled, only saved chord progression aliases are accepted
+    if (aliasResult == null && !allowManualLoops) {
+        throw new Error(ERROR_MSG.MANUAL_LOOP_NOT_ALLOWED());
+    }
+
+    const chordProgression = aliasResult ?? message;
     // Check everything is okay
     return _parseChordProgressionList(chordProgression, { allowCustomTimeSignature });
 }
@@ -535,7 +546,10 @@ function _getChordProgression(
  * @param options { allowManualCCMessages }: { allowManualCCMessages: boolean }
  * @return List of parsed CC Commands
  */
-function _getCCCommandList(message: string, { allowManualCCMessages }: { allowManualCCMessages: boolean }): CCCommand[] {
+function _getCCCommandList(
+    message: string,
+    { allowManualCCMessages, timeSignatureCC }: { allowManualCCMessages: boolean; timeSignatureCC: [numeratorCC: number, denominatorCC: number] }
+): CCCommand[] {
     const aliasToLookup = message.toLowerCase();
     const aliasResult = ALIASES_DB.select(CC_COMMANDS_KEY, aliasToLookup);
 
@@ -549,7 +563,24 @@ function _getCCCommandList(message: string, { allowManualCCMessages }: { allowMa
     }
 
     const rawCCCommandList = ccCommandList.map(_parseCCCommand);
+    // Block direct writes to the time-signature CC numbers (both manual and alias paths). Setting them
+    // here bypasses TwitchMIDI's time-signature logic, so clockPulses (bar length) would not update and
+    // the loop timing would drift from the DAW's meter. Only the [X/Y] syntax may change these.
+    _checkNotProtectedTimeSignatureCC(rawCCCommandList, timeSignatureCC);
     return _parseCCCommandList(rawCCCommandList);
+}
+
+/**
+ * Throws if any CC command targets a time-signature CC number, which must only be changed
+ * through the [X/Y] time-signature syntax to keep loop timing in sync with the DAW meter
+ * @param ccCommandList Parsed CC commands
+ * @param timeSignatureCC [numeratorCC, denominatorCC]
+ */
+function _checkNotProtectedTimeSignatureCC(ccCommandList: CCCommand[], [numeratorCC, denominatorCC]: [numeratorCC: number, denominatorCC: number]): void {
+    const hasProtectedCC = ccCommandList.some(([controller]) => controller === numeratorCC || controller === denominatorCC);
+    if (hasProtectedCC) {
+        throw new Error(ERROR_MSG.PROTECTED_TIME_SIGNATURE_CC(numeratorCC, denominatorCC));
+    }
 }
 
 /**

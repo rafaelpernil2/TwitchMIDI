@@ -36,10 +36,27 @@ export async function connectMIDI(targetMIDIName: string, targetMIDIChannel: num
     try {
         output = midi.openMidiOut(targetMIDIName);
         await output?.connect(targetMIDIChannel);
+        // Clear any stale state left over from a previous session so notes are audible:
+        // a lingering CC (volume, filter, sustain) could otherwise silence the channel
+        // even while MIDI is being sent correctly.
+        _resetChannelState(targetMIDIChannel);
     } catch (error) {
         output = undefined; // Reset output variable on connection error
         throw error;
     }
+}
+
+/**
+ * Resets all sound, notes and controllers on a channel to a clean default state
+ * @param targetMIDIChannel Virtual MIDI device channel
+ */
+function _resetChannelState(targetMIDIChannel: number): void {
+    if (output == null) {
+        return;
+    }
+    output.allSoundOff(targetMIDIChannel);
+    output.allNotesOff(targetMIDIChannel);
+    output.control(targetMIDIChannel, GLOBAL.MIDI_CC_RESET_ALL_CONTROLLERS, 0); // CC121: Reset All Controllers (clears sustain, expression, etc.)
 }
 
 /**
@@ -49,6 +66,25 @@ export async function connectMIDI(targetMIDIName: string, targetMIDIChannel: num
 export async function disconnectMIDI(targetMIDIChannel: number): Promise<void> {
     stopAllMidi(targetMIDIChannel);
     await setTimeoutPromise(3_000_000_000);
+    await output?.close();
+    output = undefined;
+}
+
+/**
+ * Closes the MIDI connection cleanly on process shutdown.
+ * Sends a panic (all sound/notes off) and closes the port so the OS releases the
+ * virtual (loopMIDI) handle. Without this, killing the process leaks the handle and a
+ * quick reopen can route to the dead session, leaving the DAW silent while MIDI still flows.
+ * Uses a short flush instead of disconnectMIDI's long delay so shutdown stays responsive.
+ * @param targetMIDIChannel Virtual MIDI device channel
+ */
+export async function shutdownMIDI(targetMIDIChannel: number): Promise<void> {
+    if (output == null) {
+        return;
+    }
+    output.allSoundOff(targetMIDIChannel);
+    stopAllMidi(targetMIDIChannel);
+    await setTimeoutPromise(100_000_000); // 100ms flush so the panic reaches the device before close
     await output?.close();
     output = undefined;
 }
@@ -283,6 +319,12 @@ function _processNoteList(noteList: Array<[note: string, timeSubDivision: number
     return noteList.map(([note, timeSubDivision]) => [note, _calculateTimeout(timeSubDivision, tempo)]);
 }
 
+// Memoization cache for processed chord progressions.
+// Keyed by the raw progression array reference (stable while the request lives in the queue)
+// and then by tempo. A WeakMap lets entries be GC'd once the request leaves the queue.
+// This avoids rebuilding the same array on every bar, which caused GC pressure on long loops.
+const _chordProgressionCache = new WeakMap<Array<[noteList: string[], timeSubDivision: number]>, Map<number, Array<[noteList: string[], timeout: number]>>>();
+
 /**
  * Processes a chord progression string to be played in a 4/4 beat
  * @param chordProgressionList Chord progression separated by spaces
@@ -290,12 +332,24 @@ function _processNoteList(noteList: Array<[note: string, timeSubDivision: number
  * @return List of notes to play with their respective release times
  */
 function _processChordProgression(chordProgressionList: Array<[noteList: string[], timeSubDivision: number]>, tempo: number): Array<[noteList: string[], timeout: number]> {
+    let perTempoCache = _chordProgressionCache.get(chordProgressionList);
+    if (perTempoCache == null) {
+        perTempoCache = new Map();
+        _chordProgressionCache.set(chordProgressionList, perTempoCache);
+    }
+    const cached = perTempoCache.get(tempo);
+    if (cached != null) {
+        return cached;
+    }
+
     const lastChordIndex = chordProgressionList.length - 1;
-    return chordProgressionList.map(([chord, timeSubdivision], index) => {
+    const processed = chordProgressionList.map<[noteList: string[], timeout: number]>(([chord, timeSubdivision], index) => {
         // If it is the last, reduce the note length to make sure the loop executes properly
         const multiplier = index !== lastChordIndex ? 1 : 0.8;
         return [chord, Math.round(_calculateTimeout(timeSubdivision, tempo) * multiplier)];
     });
+    perTempoCache.set(tempo, processed);
+    return processed;
 }
 
 /**
