@@ -84,27 +84,27 @@ export async function createRewards(authProvider: RefreshingAuthProvider, userna
  * @param { isEnabled } optionData Boolean to activate/deactivate rewards
  */
 export async function toggleRewardsStatus(authProvider: RefreshingAuthProvider, username: string, { isEnabled }: { isEnabled: boolean }): Promise<void> {
-    const apiClient = _getApiClient(authProvider);
-    const userId = await _getBroadcasterId(authProvider, username);
-    const allRewards = await apiClient.channelPoints.getCustomRewards(userId, true);
-
-    // Only treat our rewards
-    const validRewards = isEnabled ? allRewards.filter(({ title }) => REWARDS_DB.select(REWARD_TITLE_COMMAND, title) != null) : allRewards;
-    const updatePromiseMap = validRewards.map((reward) => {
-        const [command = '', cost] = REWARDS_DB.select(REWARD_TITLE_COMMAND, reward.title) ?? [];
-
-        // Re-check if it is a macro command
-        const [parsedCommand] = getCommand(command);
-        const userInputRequired = parsedCommand != null; // Single commands require user input while macros do not
-
-        return apiClient.channelPoints.updateCustomReward(userId, reward.id, { ...reward, userInputRequired, isEnabled, cost });
-    });
     try {
+        const apiClient = _getApiClient(authProvider);
+        const userId = await _getBroadcasterId(authProvider, username);
+        const allRewards = await apiClient.channelPoints.getCustomRewards(userId, true);
+
+        // Only treat our rewards
+        const validRewards = isEnabled ? allRewards.filter(({ title }) => REWARDS_DB.select(REWARD_TITLE_COMMAND, title) != null) : allRewards;
+        const updatePromiseMap = validRewards.map((reward) => {
+            const [command = '', cost] = REWARDS_DB.select(REWARD_TITLE_COMMAND, reward.title) ?? [];
+
+            // Re-check if it is a macro command
+            const [parsedCommand] = getCommand(command);
+            const userInputRequired = parsedCommand != null; // Single commands require user input while macros do not
+
+            return apiClient.channelPoints.updateCustomReward(userId, reward.id, { ...reward, userInputRequired, isEnabled, cost });
+        });
         await Promise.all(updatePromiseMap);
+        areRewardsOn = isEnabled;
     } catch {
-        // Implement if needed
+        // Channel may not have channel points (e.g. non-affiliate) or the API call failed; ignore instead of crashing
     }
-    areRewardsOn = isEnabled;
 }
 
 /**

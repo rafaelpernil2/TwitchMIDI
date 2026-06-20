@@ -66,11 +66,16 @@ function _onRequest(
                         // Validate request
                         if (configFileMap[queryFile] == null) return _buildResponse(res, 400, i18n.t('API_ERROR_FILE'));
 
-                        // If it is a reward, reload them, otherwise, refresh the file
-                        if (queryFile === 'rewards') {
-                            await reloadRewards(authProvider, targetChannel);
-                        } else {
-                            await configFileMap[queryFile].fetchDB();
+                        try {
+                            // If it is a reward, reload them, otherwise, refresh the file
+                            if (queryFile === 'rewards') {
+                                await reloadRewards(authProvider, targetChannel);
+                            } else {
+                                await configFileMap[queryFile].fetchDB();
+                            }
+                        } catch (error) {
+                            // Reloading rewards can fail (e.g. a channel without channel points). Return an error instead of crashing
+                            return _buildResponse(res, 400, error instanceof Error ? error.message : i18n.t('API_GENERIC_ERROR'));
                         }
 
                         // Happy path, all OK! :)

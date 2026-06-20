@@ -1,6 +1,6 @@
 {
   "name": "twitch-midi",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "A Twitch bot that allows viewers to control your MIDI setup",
   "type": "module",
   "main": "lib/index.js",
